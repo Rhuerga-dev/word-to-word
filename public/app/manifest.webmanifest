@@ -1,0 +1,17 @@
+{
+  "name": "Word to Word",
+  "short_name": "Word to Word",
+  "description": "Palabras nuevas cada día, repasos espaciados, escenas AID y práctica de speaking.",
+  "lang": "es",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e9eef3",
+  "theme_color": "#1f4fd1",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
