@@ -80,6 +80,18 @@ button[disabled]{opacity:.5;cursor:not-allowed}
 .tok{display:inline-block;padding:1px 6px;border-radius:4px;margin:2px 3px 2px 0;font-weight:700}
 .tok.ok{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
 .tok.miss{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad);text-decoration:underline wavy}
+.drill{display:grid;gap:10px;margin-top:12px;padding:12px 14px;border:1px solid var(--bad);border-radius:8px;background:color-mix(in srgb,var(--bad) 6%,transparent)}
+.drill h4{margin:0;font-size:15px}
+.drill .queue{display:flex;flex-wrap:wrap;gap:6px}
+.drill .queue .tok.now{outline:2px solid var(--accent);outline-offset:1px}
+.drill .big{font-size:28px;font-weight:700;margin:0}
+.drill .res{font-size:15px;min-height:1.4em}
+.drill.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 8%,transparent)}
+.tips{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.tips li{display:grid;gap:2px;padding:8px 10px;border-radius:6px;background:var(--bg);border:1px solid var(--rule)}
+.tips b{font-size:15px}
+.tips .how{font-size:14px}
+.tips .pair{font-size:13px;color:var(--muted)}
 .score{font-family:var(--mono);font-weight:500}
 textarea{width:100%;min-height:76px;resize:vertical;font:inherit;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .sugg{display:grid;gap:6px}
@@ -128,6 +140,69 @@ input[type=number]{width:72px;font:inherit;padding:6px 8px;border:1px solid var(
 .install .arrow{position:absolute;bottom:calc(2px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);color:var(--accent);font-size:22px;line-height:1;animation:bob 1.2s infinite}
 @keyframes bob{50%{transform:translate(-50%,4px)}}
 body.has-install{padding-bottom:230px}
+/* --- Cuenta, niveles y recordatorios --- */
+.auth .demo-cta{display:grid;gap:8px;margin-top:6px;padding-top:14px;border-top:1px solid var(--line, rgba(127,127,127,.25));font-size:14px;color:var(--muted, inherit)}
+.auth .demo-cta button{width:100%}
+.auth .linkish{background:none;border:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-size:14px;justify-self:start}
+.okmsg{color:var(--good);font-size:14px;margin:0}
+.banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:14px;border:1px solid var(--warn);border-radius:6px;padding:10px 12px;background:color-mix(in srgb,var(--warn) 9%,var(--card))}
+.banner.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 9%,var(--card))}
+.banner p{margin:0;min-width:0}
+.lvl-head{display:flex;align-items:center;gap:12px}
+.lvl-badge{font-family:var(--display);font-weight:800;font-size:26px;line-height:1;padding:8px 10px;border-radius:8px;background:var(--hl);color:var(--hl-ink);letter-spacing:-.02em}
+.lvl-head b{display:block;font-size:16px}
+.lvl-head span{font-size:13px;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.can{margin:0;padding-left:18px;font-size:14px;display:grid;gap:4px}
+.path{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.path li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.path li:last-child{border-bottom:none}
+.path .code{font-family:var(--mono);font-weight:500}
+.path .st{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.path li.cur .code,.path li.cur .st{color:var(--accent)}
+.path li.done .st{color:var(--good)}
+.quiz .q-word{font-family:var(--display);font-weight:700;font-size:clamp(36px,7vw,56px);line-height:1;margin:0;overflow-wrap:anywhere}
+.quiz .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.quiz .opts{grid-template-columns:minmax(0,1fr)}}
+.quiz .opts button{text-align:left;padding:12px 14px;font-size:16px}
+.quiz .q-bar{height:6px}
+.quiz .result{font-family:var(--display);font-size:44px;line-height:1;margin:0}
+.quiz select{font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input[type=time]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+/* --- Ficha sin botones: tocar, deslizar, teclado --- */
+.tappable{cursor:pointer}
+.tappable:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+.word.tappable:hover{color:var(--accent)}
+.ex.tappable{cursor:pointer;text-decoration:underline dotted var(--line);text-underline-offset:5px}
+.card.swipeable{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.card.dragging{transition:none}
+.card{transition:transform .2s ease, box-shadow .2s ease}
+.swipe-legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;font-size:13px;text-align:center}
+@media (max-width:480px){.swipe-legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.swipe-legend span{display:grid;gap:1px;padding:8px 4px;border-radius:6px;border:1px dashed var(--line)}
+.swipe-legend span:hover{background:var(--bg)}
+.swipe-legend b{font-size:14px}
+.swipe-legend small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.swipe-legend .l{color:var(--bad)} .swipe-legend .d{color:var(--warn)} .swipe-legend .r{color:var(--good)} .swipe-legend .u{color:var(--accent)}
+.gesture{font-size:14px;color:var(--muted);margin:0;text-align:center;border:1px dashed var(--line);border-radius:6px;padding:10px}
+.gesture kbd,.keys kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--bg)}
+.keys{font-size:12px;color:var(--muted);margin:0}
+@media (hover:none){.keys{display:none}}
+.swipe-hint{position:absolute;top:14px;font-family:var(--display);font-weight:800;font-size:22px;padding:4px 10px;border-radius:6px;opacity:0;pointer-events:none;border:3px solid currentColor}
+.card{position:relative}
+/* --- Manos libres --- */
+.hf-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.hf-bar p{margin:0;font-size:14px;min-width:0}
+.hf-bar .state{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.hf-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:middle}
+.hf-dot.listen{background:var(--bad);animation:pulse 1s infinite}
+.hf-dot.speak{background:var(--accent)}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;cursor:pointer}
+.switch input{width:38px;height:22px;appearance:none;-webkit-appearance:none;border-radius:99px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--card);transition:left .15s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{left:19px}
 </style>
 </head><body>
 <style>
@@ -155,35 +230,261 @@ body.has-install{padding-bottom:230px}
 .rec{animation:pulse 1s infinite}
 @keyframes pulse{50%{opacity:.5}}
 .weak{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ================= Pro UI =================
+   Capa final: app limpia tipo producto. Tokens nuevos, superficies blancas,
+   barra superior, fichas sin renglones y controles consistentes. */
+:root{
+  --bg:#f4f6fa; --card:#ffffff; --ink:#111a2b; --muted:#5d6879; --line:#e2e7ef; --line-2:#d3dae5;
+  --accent:#3056e3; --accent-ink:#ffffff; --accent-soft:#e8edfd; --hl:#fff1a8; --hl-ink:#2a2300;
+  --good:#16834f; --warn:#b26a12; --bad:#c23b3b; --rule:#e2e7ef;
+  --radius:14px; --radius-sm:10px;
+  --shadow:0 1px 2px rgba(17,26,43,.05), 0 8px 24px -12px rgba(17,26,43,.18);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c111a; --card:#141b27; --ink:#e7ecf4; --muted:#97a3b6; --line:#232d3d; --line-2:#2e3a4d;
+  --accent:#7d9bff; --accent-ink:#0a1020; --accent-soft:#1b2540; --hl:#5c4f10; --hl-ink:#fff6c7;
+  --good:#4ac487; --warn:#e6a64a; --bad:#f07a7a; --rule:#232d3d;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c111a; --card:#141b27; --ink:#e7ecf4; --muted:#97a3b6; --line:#232d3d; --line-2:#2e3a4d;
+  --accent:#7d9bff; --accent-ink:#0a1020; --accent-soft:#1b2540; --hl:#5c4f10; --hl-ink:#fff6c7;
+  --good:#4ac487; --warn:#e6a64a; --bad:#f07a7a; --rule:#232d3d;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6); color-scheme:dark}
+
+[hidden]{display:none!important}
+body{padding-block:0 48px;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;gap:24px}
+
+/* Barra superior */
+.appbar{flex-wrap:nowrap!important;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:12px max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.logo svg{width:24px;height:24px}
+.brand h1{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.01em;line-height:1.1;margin:0}
+.brand h1 span{background:none;padding:0;color:inherit}
+.brand .sub{font-size:12.5px;margin:0;color:var(--muted)}
+.appbar-right{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex:none}
+.daypill{font-family:var(--body);font-size:13px;border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--card);color:var(--muted);text-transform:capitalize}
+.chip{font-family:var(--body);font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:inline-flex;align-items:center;gap:5px}
+.lvl-chip{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.streak-chip{color:var(--warn)}
+.streak-chip svg{width:14px;height:14px}
+@media (max-width:560px){ .brand .sub,.daypill{display:none} }
+
+/* Botones */
+button{border-radius:var(--radius-sm);padding:10px 16px;font-weight:600;border:1px solid var(--line-2);background:var(--card);transition:background .15s,border-color .15s,transform .08s,box-shadow .15s}
+button:hover{background:var(--bg);border-color:var(--line-2)}
+button.primary{box-shadow:0 1px 0 rgba(255,255,255,.15) inset, 0 6px 14px -8px color-mix(in srgb,var(--accent) 70%,transparent)}
+button.primary:hover{filter:none;background:color-mix(in srgb,var(--accent) 88%,#000)}
+button.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+button.ghost:hover{background:var(--card);border-color:var(--line)}
+.round{border-radius:50%}
+
+/* Ficha */
+.card{border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--card)}
+.card-top{display:none}
+.card-body{background-image:none;padding:28px clamp(18px,4vw,36px) 30px;gap:20px}
+.kind{font-family:var(--body);font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+.kind span:first-child{color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px;letter-spacing:.04em}
+.word{font-weight:700;font-size:clamp(48px,9vw,76px);letter-spacing:-.03em}
+.tr{font-size:22px;font-weight:700;color:var(--ink)}
+.ex{font-size:18px;line-height:1.6}
+.ex em{background:var(--hl);color:var(--hl-ink);border-radius:4px;padding:1px 5px}
+.ex-es{font-size:14.5px}
+.section{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;gap:12px}
+.section h3{font-family:var(--body);font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+textarea{border-radius:var(--radius-sm);background:var(--card);border-color:var(--line-2)}
+.warnbox{border-left-width:3px;border-radius:0 8px 8px 0}
+.gesture{border-style:solid;border-color:var(--line);background:var(--bg);border-radius:var(--radius-sm)}
+.swipe-legend span{border-style:solid;border-color:var(--line);background:var(--card);padding:10px 6px;border-radius:var(--radius-sm);transition:background .15s,border-color .15s}
+.swipe-legend span:hover{border-color:currentColor}
+.done h2{font-size:30px}
+
+/* Pestañas como control segmentado */
+.tabs{border-bottom:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;display:inline-flex;gap:4px;justify-self:start}
+.tabs button{border:none;border-radius:9px;padding:8px 16px;color:var(--muted);font-weight:700}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);border-bottom-color:transparent}
+.queue{font-size:13.5px}
+.chip.new{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.rev{background:color-mix(in srgb,var(--warn) 12%,var(--card));border-color:transparent;color:var(--warn)}
+
+/* Manos libres */
+.hf-bar{border:1px solid var(--line);background:var(--card);border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow)}
+.hf-bar .state{font-family:var(--body);font-size:13.5px;color:var(--muted)}
+
+/* Panel lateral */
+aside{gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}
+@media (max-width:820px){ aside{position:static} }
+.panel{border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;gap:14px}
+.panel h2{font-family:var(--body);font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+.stats{gap:10px}
+.stat{background:var(--bg);border-radius:var(--radius-sm);padding:10px 12px}
+.stat b{font-size:26px}
+.fc-row{grid-template-columns:58px minmax(0,1fr) 24px}
+.fc-row .lbl{font-family:var(--body);font-size:12.5px;text-transform:capitalize}
+.lvl-head .lvl-badge{background:var(--accent);color:var(--accent-ink);border-radius:12px;font-size:22px;padding:10px 12px}
+.bar{background:var(--bg);border:none;height:8px}
+.path li{border-bottom-style:solid;border-color:var(--line)}
+details summary{cursor:pointer}
+label.inl{padding:4px 0}
+input[type=number],input[type=time]{border-radius:8px;border-color:var(--line-2)}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.switch input[type=checkbox]{width:38px;height:22px}
+@media (max-width:560px){ .appbar .chip{padding:5px 9px} .brand h1{font-size:17px} }
+
+/* Prueba de nivel */
+.quiz .opts button{border-radius:var(--radius-sm);padding:14px 16px;font-weight:600}
+.quiz .opts button:hover{border-color:var(--accent);background:var(--accent-soft)}
+
+/* Login */
+#authView{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:48px;align-items:center;max-width:960px;margin:6vh auto 0;width:100%}
+@media (max-width:820px){ #authView{grid-template-columns:minmax(0,1fr);gap:24px;margin-top:24px} }
+.auth-intro .eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 8px;letter-spacing:.06em}
+.auth-intro h2{font-family:var(--display);font-size:clamp(30px,4.6vw,46px);line-height:1.05;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+.auth-intro p{color:var(--muted);font-size:17px;margin:0;max-width:44ch}
+.auth{margin:0;max-width:none}
+.auth .card-body{gap:14px}
+.auth h2.tr{font-family:var(--display);font-size:24px}
+.auth input{border-radius:var(--radius-sm);border-color:var(--line-2);background:var(--card);padding:12px}
+.auth input:focus{border-color:var(--accent)}
+.auth .row button{flex:1 1 auto}
+
+/* ================= Amigable ================= */
+.hello{display:grid;gap:10px;padding:16px 18px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--card)),var(--card))}
+.hello h2{margin:0;font-size:20px;line-height:1.25}
+.hello p{margin:0;color:var(--muted);font-size:15px}
+.goal{display:grid;gap:6px}
+.goal .bar{height:10px;border-radius:999px;background:color-mix(in srgb,var(--line) 70%,transparent);overflow:hidden}
+.goal .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--good));transition:width .5s ease}
+.goal small{display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
+.onboard{display:grid;gap:10px;padding:16px 18px;border-radius:16px;border:1px dashed var(--accent);background:var(--card)}
+.onboard ol{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
+.onboard button{justify-self:start}
+.stage{display:inline-flex;gap:6px;align-items:center}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:50;
+  padding:10px 16px;border-radius:999px;background:var(--ink);color:var(--card);font-weight:600;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .25s,transform .25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.card-body.done{text-align:center;display:grid;gap:12px;justify-items:center;padding:34px 22px}
+.card-body.done .big{font-size:52px;line-height:1}
+.card-body.done .today{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.card-body.done .today span{padding:8px 12px;border-radius:12px;border:1px solid var(--line);font-size:14px}
+.card-body.done .row{justify-content:center}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+details.advanced{margin-top:6px;font-size:14px;color:var(--muted)}
+details.advanced summary{cursor:pointer;padding:6px 0}
+details.advanced[open]{display:grid;gap:8px}
+
+/* ================= Modo enfoque (manos libres) ================= */
+body.focus .appbar, body.focus aside, body.focus #banners, body.focus #hello, body.focus .queue, body.focus #tabsBar, body.focus #installBar{display:none!important}
+body.focus .grid{grid-template-columns:1fr!important;max-width:760px;margin:0 auto}
+body.focus #main{min-height:calc(100dvh - 140px);display:flex;align-items:center;justify-content:center;padding:12px 0 120px}
+body.focus #hfBar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;max-width:736px;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.focus-card{width:100%;display:grid;gap:16px;justify-items:center;text-align:center;padding:30px 22px;border-radius:24px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
+.focus-top{display:flex;justify-content:space-between;width:100%;font-size:13px;color:var(--muted)}
+.focus-step{font-size:16px;font-weight:600;color:var(--accent);min-height:1.4em;display:flex;align-items:center;gap:8px;justify-content:center}
+.focus-card .fw{font-size:clamp(46px,13vw,88px);font-weight:800;letter-spacing:-.02em;line-height:1.05;margin:0;word-break:break-word}
+.focus-card .ftr{font-size:clamp(20px,5vw,26px);color:var(--ink);margin:0}
+.focus-card .ftr.hidden{color:var(--muted);font-size:17px}
+.focus-card .faid{width:100%;font-size:18px;line-height:1.5;padding:14px 16px;border-radius:16px;text-align:left;
+  background:color-mix(in srgb,var(--hl) 20%,transparent);border:1px solid color-mix(in srgb,var(--hl) 50%,transparent)}
+.focus-card .faid b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.focus-card .fex{font-size:clamp(18px,4.5vw,22px);line-height:1.45;margin:0}
+.focus-card .fex-es{font-size:15px;color:var(--muted);margin:-8px 0 0}
+.focus-card .heard, .focus-card #drill{width:100%;text-align:left}
+
+/* Familias */
+.fams{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.fam{display:grid;gap:2px;text-align:left;padding:9px 10px;border-radius:12px;min-height:0}
+.fam .fe{font-size:20px;line-height:1}.fam .fl{font-weight:600;font-size:13.5px}.fam small{color:var(--muted);font-size:11.5px}
+.fam .fb{height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}.fam .fb i{display:block;height:100%;background:var(--good)}
+.fam.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+.fam-chip{display:inline-block;margin-right:6px;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600}
+button.chip{cursor:pointer}
+/* Taller de pronunciación */
+.lab .tr{margin:6px 0}
+.how-lab{margin:6px 0 12px}.how-lab ol{margin:8px 0 0;padding-left:20px;display:grid;gap:4px;font-size:14px}
+.lab-list{list-style:none;padding:0;margin:12px 0;display:grid;gap:8px}
+.lab-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.lab-row.due{border-color:var(--accent)}
+.lab-row .ipa{font-size:22px;font-weight:700;min-width:48px;text-align:center}
+.lab-row b{display:block}.lab-row small{color:var(--muted);font-size:12px;display:block}
+.lab-act{display:grid;justify-items:end;gap:4px}
+.dots{display:flex;gap:4px;margin-top:4px}.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--good)}
+.lab-sep{font-size:12.5px;color:var(--muted);margin-top:6px}
+.lab-steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:8px 0}
+.lab-steps li{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--muted)}
+.lab-steps li.done{background:var(--good);color:#fff}.lab-steps li.cur{background:var(--accent);color:var(--accent-ink)}
+.lab-title{margin:8px 0 4px}
+.lab-word{font-size:clamp(34px,9vw,52px);font-weight:700;text-align:center;margin:14px 0}
+.lab-sentence{font-size:clamp(20px,5vw,26px);font-weight:600;text-align:center;margin:14px 0;line-height:1.35}
+.lab-how p{font-size:16px;line-height:1.5}.lab-how .pair{color:var(--muted)}
+.lab-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.lab-pair button{font-size:24px;font-weight:700;padding:20px 8px;border-radius:14px}
+.lab-pair button.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.lab-pair button.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.lab-target{font-size:18px;margin:0 0 6px}
+@media (max-width:520px){.lab-row{grid-template-columns:auto minmax(0,1fr)}.lab-act{grid-column:1/-1;grid-template-columns:1fr auto;align-items:center;justify-items:start}}
 </style>
 
 <div class="wrap">
-  <header>
-    <div>
-      <h1>Word to <span>Word</span></h1>
-      <p class="sub">Palabras nuevas cada día, repasos cuando tocan, y tu voz en cada ficha.</p>
+  <header class="appbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M6 9l4 14 4-10 4 10 4-14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="9" r="2.4" fill="currentColor"/></svg></span>
+      <div><h1>Word to Word</h1><p class="sub">Inglés de básico a fluido</p></div>
     </div>
-    <div class="row"><div class="daypill" id="daypill">Cargando…</div><button type="button" id="logoutBtn" hidden>Salir</button></div>
+    <div class="appbar-right">
+      <span class="chip lvl-chip" id="lvlChip" hidden></span>
+      <span class="chip streak-chip" id="streakChip" hidden></span>
+      <span class="daypill" id="daypill">Cargando…</span>
+      <button type="button" id="logoutBtn" class="ghost" hidden>Salir</button>
+    </div>
   </header>
 
   <section id="authView" hidden>
-    <form class="auth card" id="authForm"><div class="card-top"></div><div class="card-body">
+    <div class="auth-intro">
+      <p class="eyebrow">A1 → C1</p>
+      <h2>Aprende inglés todos los días, a tu ritmo.</h2>
+      <p>Palabras nuevas según tu nivel, repasos cuando tocan y práctica de pronunciación con tu voz.</p>
+    </div>
+    <form class="auth card" id="authForm"><div class="card-body">
       <h2 class="tr" id="authTitle">Entrar</h2>
       <label id="nameWrap" hidden for="aName">Nombre<input id="aName" autocomplete="name"></label>
       <label for="aEmail">Correo<input id="aEmail" type="email" required autocomplete="email"></label>
-      <label for="aPass">Contraseña<input id="aPass" type="password" required minlength="8" autocomplete="current-password"></label>
-      <p class="err" id="authErr"></p>
+      <p class="note" id="authHelp" hidden></p>
+      <label for="aPass" id="passWrap">Contraseña<input id="aPass" type="password" required minlength="8" autocomplete="current-password"></label>
+      <label for="aPass2" id="pass2Wrap" hidden>Repite la contraseña<input id="aPass2" type="password" minlength="8" autocomplete="new-password"></label>
+      <p class="err" id="authErr" role="alert"></p>
+      <p class="okmsg" id="authOk" role="status"></p>
       <div class="row"><button class="primary" type="submit" id="authSubmit">Entrar</button><button type="button" id="authSwitch">Crear cuenta</button></div>
+      <button type="button" class="linkish" id="forgotLink">¿Olvidaste tu contraseña?</button>
+      <div class="demo-cta"><span>¿Quieres verla primero?</span><button type="button" id="demoBtn">Probar la demo, sin registrarte</button></div>
     </div></form>
   </section>
 
   <section id="appView" hidden>
     <div class="grid">
       <div style="display:grid;gap:14px;min-width:0">
-        <div class="tabs" role="tablist">
+        <div id="banners" style="display:grid;gap:8px"></div>
+        <section id="quizView" hidden class="card quiz" aria-live="polite"><div class="card-top"></div><div class="card-body" id="quizBody"></div></section>
+        <section id="labView" hidden class="card quiz lab" aria-live="polite"><div class="card-top"></div><div class="card-body" id="labBody"></div></section>
+        <div class="tabs" role="tablist" id="tabsBar">
           <button type="button" role="tab" id="tabCards" aria-selected="true">Fichas</button>
           <button type="button" role="tab" id="tabChat" aria-selected="false">Conversación</button>
         </div>
+        <div class="hf-bar" id="hfBar">
+          <label class="switch" for="hfOn"><input type="checkbox" id="hfOn" role="switch"> Manos libres</label>
+          <select id="hfMode" aria-label="Cómo practicar" style="width:auto">
+            <option value="words">Palabras y escenas</option>
+            <option value="sentences">Frases: escucho, repito y sigo</option>
+          </select>
+          <p id="hfState" class="state" aria-live="polite">Te leo cada palabra y respondes hablando.</p>
+        </div>
+        <div id="hello"></div>
         <div class="queue" id="queue"></div>
         <main id="main" aria-live="polite"></main>
         <section id="chatView" hidden class="card"><div class="card-top"></div><div class="card-body chat">
@@ -199,6 +500,10 @@ body.has-install{padding-bottom:230px}
         </div></section>
       </div>
       <aside>
+        <div class="panel" id="levelPanel">
+          <h2>Tu nivel</h2>
+          <div id="levelBox"><p class="note">Cargando…</p></div>
+        </div>
         <div class="panel">
           <h2>Tu progreso</h2>
           <div class="stats">
@@ -212,19 +517,32 @@ body.has-install{padding-bottom:230px}
           <h2>Repasos próximos 7 días</h2>
           <div class="fc" id="forecast"></div>
         </div>
-        <div class="panel" id="weakPanel" hidden>
+        <div class="panel" id="weakPanel">
           <h2>Sonidos que te cuestan</h2>
           <div class="weak" id="weak"></div>
+          <p class="note" id="weakNote">Practica con el micrófono y aquí verás los sonidos que más te cuestan.</p>
+          <button type="button" class="primary" id="labBtn">🎯 Taller de pronunciación</button>
+        </div>
+        <div class="panel" id="famPanel" hidden>
+          <h2>Familias de palabras</h2>
+          <p class="note">Elige un tema y tus palabras nuevas serán de esa familia. Aprender palabras agrupadas ayuda a recordarlas.</p>
+          <div class="fams" id="fams"></div>
         </div>
         <div class="panel">
           <h2>Ajustes</h2>
           <label class="inl" for="dailyNew">Palabras nuevas por día <input type="number" id="dailyNew" min="1" max="50" value="10"></label>
+          <label class="inl" for="freelancePack">Vocabulario para clientes (freelance) <input type="checkbox" id="freelancePack"></label>
+          <label class="inl" for="remOn">Recordatorio diario <input type="checkbox" id="remOn"></label>
+          <label class="inl" for="remTime">Hora del recordatorio <input type="time" id="remTime" value="19:00"></label>
+          <p class="note" id="remMsg"></p>
           <button id="nextDay" type="button">Adelantar un día (para probar)</button>
+          <details class="advanced"><summary>Opciones avanzadas</summary>
           <button id="resetBtn" type="button">Reiniciar progreso</button>
           <div id="confirmBox" hidden class="confirm">
             <span>Se borra todo tu progreso. ¿Seguro?</span>
             <div class="row"><button id="resetYes" type="button" class="g-again">Sí, borrar</button><button id="resetNo" type="button">Cancelar</button></div>
           </div>
+          </details>
           <span class="sync" id="svc"></span>
         </div>
       </aside>
@@ -245,359 +563,5 @@ body.has-install{padding-bottom:230px}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script>
-// ===== Cliente de la API =====
-const API = "/api";
-let token = null; try { token = localStorage.getItem("wtw_token"); } catch (e) {}
-async function api(path, opts = {}) {
-  const headers = Object.assign({ Accept: "application/json" }, opts.headers || {});
-  if (token) headers.Authorization = "Bearer " + token;
-  let body = opts.body;
-  if (body && !(body instanceof FormData)) { headers["Content-Type"] = "application/json"; body = JSON.stringify(body); }
-  const res = await fetch(API + path, { method: opts.method || "GET", headers, body });
-  if (res.status === 401) { setToken(null); showAuth(); throw new Error("Tu sesión expiró. Entra otra vez."); }
-  if (res.status === 204) return null;
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const msg = data.errors ? Object.values(data.errors).flat()[0] : (data.message || ("Error " + res.status));
-    throw new Error(msg);
-  }
-  return data;
-}
-function setToken(t) { token = t; try { t ? localStorage.setItem("wtw_token", t) : localStorage.removeItem("wtw_token"); } catch (e) {} }
-
-// ===== Utilidades =====
-const $ = id => document.getElementById(id);
-function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
-function exHTML(ex) { return esc(ex).replace(/\*(.+?)\*/g, "<em>$1</em>"); }
-function plain(ex) { return String(ex || "").replace(/\*/g, ""); }
-function days(n) { return n === 1 ? "mañana" : "en " + n + " días"; }
-const ICON_SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-const ICON_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
-$("dictBtn").innerHTML = ICON_MIC;
-
-// ===== Voz (TTS del navegador) =====
-let voice = null;
-function pickVoice() { const vs = speechSynthesis.getVoices(); voice = vs.find(v => /en-US/i.test(v.lang) && /Samantha|Google US|Aria|Jenny/i.test(v.name)) || vs.find(v => /en-US/i.test(v.lang)) || null; }
-if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function say(text, slow) { if (!("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; if (voice) u.voice = voice; u.rate = slow ? 0.6 : 0.9; speechSynthesis.speak(u); }
-
-// ===== Grabación WAV 16 kHz (para Azure) =====
-let stopRecording = null;
-async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0) {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  if (ctx.state === "suspended") { try { await ctx.resume(); } catch (e) {} } // iPhone
-  const src = ctx.createMediaStreamSource(stream);
-  const proc = ctx.createScriptProcessor(4096, 1, 1);
-  const chunks = []; let silentFor = 0, heard = false;
-  src.connect(proc); proc.connect(ctx.destination);
-  onStart && onStart();
-  return new Promise(resolve => {
-    let done = false;
-    const stop = () => {
-      if (done) return; done = true; stopRecording = null;
-      proc.disconnect(); src.disconnect(); stream.getTracks().forEach(t => t.stop());
-      const rate = ctx.sampleRate; ctx.close();
-      resolve(encodeWav(downsample(flatten(chunks), rate, 16000), 16000));
-    };
-    const timer = setTimeout(stop, maxMs);
-    stopRecording = () => { clearTimeout(timer); stop(); };
-    proc.onaudioprocess = e => {
-      const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push(d);
-      let rms = 0; for (let i = 0; i < d.length; i++) rms += d[i] * d[i]; rms = Math.sqrt(rms / d.length);
-      if (rms > 0.02) { heard = true; silentFor = 0; } else if (heard) { silentFor += d.length / ctx.sampleRate; if (silentFor > silenceSec) { clearTimeout(timer); stop(); } }
-    };
-  });
-}
-function flatten(cs) { const n = cs.reduce((a, c) => a + c.length, 0), out = new Float32Array(n); let o = 0; cs.forEach(c => { out.set(c, o); o += c.length; }); return out; }
-function downsample(buf, from, to) { if (from === to) return buf; const r = from / to, n = Math.floor(buf.length / r), out = new Float32Array(n); for (let i = 0; i < n; i++) { const s = Math.floor(i * r), e = Math.floor((i + 1) * r); let sum = 0; for (let j = s; j < e; j++) sum += buf[j]; out[i] = sum / (e - s); } return out; }
-function encodeWav(samples, rate) {
-  const b = new ArrayBuffer(44 + samples.length * 2), v = new DataView(b);
-  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-  w(0, "RIFF"); v.setUint32(4, 36 + samples.length * 2, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, samples.length * 2, true);
-  for (let i = 0; i < samples.length; i++) { const s = Math.max(-1, Math.min(1, samples[i])); v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
-  return new Blob([b], { type: "audio/wav" });
-}
-
-// ===== Reconocimiento del navegador (modo sin Azure y dictado) =====
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-function norm(s) { return s.toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean); }
-function compare(target, heard) { const t = norm(target), pool = norm(heard); const toks = t.map(x => { const i = pool.indexOf(x); if (i > -1) { pool.splice(i, 1); return { x, ok: true }; } return { x, ok: false }; }); return { toks, pct: t.length ? Math.round(toks.filter(z => z.ok).length / t.length * 100) : 0 }; }
-function browserListen() {
-  return new Promise((resolve, reject) => {
-    if (!SR) return reject(new Error("Este navegador no reconoce voz. Usa Google Chrome."));
-    const r = new SR(); r.lang = "en-US"; r.maxAlternatives = 4; r.interimResults = false;
-    r.onresult = e => resolve([...e.results[0]].map(a => a.transcript));
-    r.onerror = e => reject(new Error((e.error === "service-not-allowed" || /iPhone|iPad/.test(navigator.userAgent)) && e.error !== "no-speech" ? "En el iPhone el reconocimiento del navegador no funciona. Hay que activar la evaluación en el servidor (AZURE_SPEECH_KEY)." : e.error === "not-allowed" ? "Permite el micrófono en el navegador." : e.error === "no-speech" ? "No oí nada. Habla más cerca." : "Error de voz: " + e.error));
-    r.start();
-  });
-}
-
-// ===== Estado =====
-let cfg = { ai: false, pronunciation: false, time_travel: false };
-let cards = [], revealed = false, showHint = false, stats = null;
-
-// ===== Auth =====
-let registering = false;
-function showAuth() { $("authView").hidden = false; $("appView").hidden = true; $("logoutBtn").hidden = true; $("daypill").textContent = "Sin sesión"; }
-$("authSwitch").onclick = () => { registering = !registering; $("nameWrap").hidden = !registering; $("authTitle").textContent = registering ? "Crear cuenta" : "Entrar"; $("authSubmit").textContent = registering ? "Crear cuenta" : "Entrar"; $("authSwitch").textContent = registering ? "Ya tengo cuenta" : "Crear cuenta"; $("authErr").textContent = ""; };
-$("authForm").onsubmit = async e => {
-  e.preventDefault(); $("authErr").textContent = "";
-  try {
-    const body = { email: $("aEmail").value, password: $("aPass").value };
-    if (registering) body.name = $("aName").value || "Estudiante";
-    const r = await api(registering ? "/auth/register" : "/auth/login", { method: "POST", body });
-    setToken(r.token); start();
-  } catch (err) { $("authErr").textContent = err.message; }
-};
-$("logoutBtn").onclick = async () => { try { await api("/auth/logout", { method: "POST" }); } catch (e) {} setToken(null); showAuth(); };
-
-// ===== Carga =====
-async function start() {
-  $("authView").hidden = true; $("appView").hidden = false; $("logoutBtn").hidden = false;
-  try { cfg = await api("/config"); } catch (e) {}
-  $("svc").textContent = "IA: " + (cfg.ai ? "activa" : "sin configurar") + " · Pronunciación: " + (cfg.pronunciation ? "Azure" : "navegador");
-  $("nextDay").hidden = !cfg.time_travel;
-  $("chatMode").textContent = cfg.ai ? "" : "Necesita ANTHROPIC_API_KEY";
-  await refresh();
-}
-async function refresh() {
-  try {
-    const [t, s] = await Promise.all([api("/today"), api("/stats")]);
-    cards = t.cards; stats = s; revealed = false; showHint = false;
-    $("dailyNew").value = t.daily_new;
-    render(); renderSide();
-  } catch (e) { $("main").innerHTML = '<p class="warnbox">' + esc(e.message) + "</p>"; }
-}
-
-// ===== Ficha =====
-function speakingBlock() {
-  return `<div class="section"><h3>Practica speaking ${cfg.pronunciation ? "· evaluado por Azure" : ""}</h3>
-    <div class="row">
-      <button type="button" class="icon" data-say="word">${ICON_MIC} Decir la palabra</button>
-      <button type="button" class="icon" data-say="sentence">${ICON_MIC} Decir la frase</button>
-      <button type="button" class="icon" data-slow="1">${ICON_SPK} Frase lenta</button>
-    </div>
-    <div class="heard" id="heard"><span class="note">Escucha primero, luego pulsa un micrófono y repite en voz alta.</span></div></div>`;
-}
-function aidBlock(c, nudge) {
-  return `<div class="section"><h3>Tu escena AID</h3>
-    ${nudge ? '<p class="warnbox">Fallaste esta palabra ' + c.fails + ' veces. Crea una escena absurda para fijarla.</p>' : ""}
-    <textarea id="aid" placeholder="Ej.: suena a “…”. Imagina una acción absurda, exagerada y con detalles…">${esc(c.aid || "")}</textarea>
-    <div class="row">${cfg.ai ? '<button type="button" id="suggBtn">Sugerir escenas con IA</button>' : ""}<span class="sync" id="aidState"></span></div>
-    <div class="sugg" id="sugg"></div></div>`;
-}
-function render() {
-  const nNew = cards.filter(c => c.mode === "new").length, nRev = cards.length - nNew;
-  $("queue").innerHTML = `<span>Hoy te quedan:</span><span class="chip rev">${nRev} repasos</span><span class="chip new">${nNew} nuevas</span>`;
-  if (stats) $("daypill").textContent = new Date(stats.today + "T12:00").toLocaleDateString("es", { weekday: "long", day: "numeric", month: "short" });
-  const main = $("main"), c = cards[0];
-  if (!c) {
-    const tm = stats ? stats.forecast[0].count : 0;
-    main.innerHTML = `<div class="card"><div class="card-top"></div><div class="card-body done">
-      <h2>Sesión de hoy completa</h2>
-      <p class="note">Mañana te esperan ${tm} repasos y tus palabras nuevas.</p>
-      <p class="note">Ahora practica en la pestaña Conversación usando las palabras de hoy.</p>
-      ${cfg.time_travel ? '<button type="button" class="primary" id="goNext">Simular mañana</button>' : ""}</div></div>`;
-    if ($("goNext")) $("goNext").onclick = nextDay;
-    return;
-  }
-  const isNew = c.mode === "new";
-  const front = `<div class="kind"><span>${isNew ? "Palabra nueva" : "Repaso · nivel " + c.level}</span><span>#${c.rank} en frecuencia${c.best_pron_score != null ? " · pronunciación " + c.best_pron_score + "%" : ""}</span></div>
-    <div class="word-row"><h2 class="word">${esc(c.word)}</h2><button type="button" class="round" id="spk" aria-label="Escuchar">${ICON_SPK}</button></div>`;
-  let body;
-  if (isNew) {
-    body = `<p class="tr">${esc(c.translation)}</p><div><p class="ex">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>
-      ${speakingBlock()}${aidBlock(c, false)}
-      <div class="row"><button type="button" class="primary" id="learn">Ya la tengo · repasar mañana</button></div>`;
-  } else if (!revealed) {
-    body = `<p class="hint">¿Qué significa? Dilo en voz alta antes de ver la respuesta.</p>
-      ${c.aid ? (showHint ? `<p class="warnbox">Pista AID: ${esc(c.aid)}</p>` : '<div class="row"><button type="button" id="hintBtn">Ver pista AID</button></div>') : ""}
-      <div class="row"><button type="button" class="primary" id="reveal">Mostrar respuesta</button></div>`;
-  } else {
-    const p = c.previews || { again: 1, hard: 1, good: 3, easy: 7 };
-    body = `<p class="tr">${esc(c.translation)}</p><div><p class="ex">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>
-      ${speakingBlock()}${aidBlock(c, c.fails >= 2 && !c.aid)}
-      <div class="grades">
-        <button type="button" class="g-again" data-g="again">Olvidé<small>${days(p.again)}</small></button>
-        <button type="button" class="g-hard" data-g="hard">Difícil<small>${days(p.hard)}</small></button>
-        <button type="button" class="g-good" data-g="good">Bien<small>${days(p.good)}</small></button>
-        <button type="button" class="g-easy" data-g="easy">Fácil<small>${days(p.easy)}</small></button>
-      </div>`;
-  }
-  main.innerHTML = `<div class="card"><div class="card-top"></div><div class="card-body">${front}${body}</div></div>`;
-  $("spk").onclick = () => say(c.word);
-  if ($("learn")) $("learn").onclick = () => act(() => api(`/words/${c.id}/learn`, { method: "POST" }));
-  if ($("reveal")) $("reveal").onclick = () => { revealed = true; render(); say(c.word); };
-  if ($("hintBtn")) $("hintBtn").onclick = () => { showHint = true; render(); };
-  if ($("aid")) { let t; $("aid").oninput = e => { c.aid = e.target.value; $("aidState").textContent = "Guardando…"; clearTimeout(t); t = setTimeout(() => api(`/words/${c.id}/aid`, { method: "PUT", body: { aid: c.aid } }).then(() => $("aidState").textContent = "Guardado").catch(err => $("aidState").textContent = err.message), 700); }; }
-  if ($("suggBtn")) $("suggBtn").onclick = () => suggest(c);
-  main.querySelectorAll("[data-g]").forEach(b => b.onclick = () => act(() => api(`/words/${c.id}/review`, { method: "POST", body: { grade: b.dataset.g } })));
-  main.querySelectorAll("[data-say]").forEach(b => b.onclick = () => practice(c, b.dataset.say));
-  main.querySelectorAll("[data-slow]").forEach(b => b.onclick = () => say(plain(c.example), true));
-}
-async function act(fn) {
-  document.querySelectorAll("#main button").forEach(b => b.disabled = true);
-  try { await fn(); cards.shift(); revealed = false; showHint = false; render(); stats = await api("/stats"); renderSide(); }
-  catch (e) { $("main").insertAdjacentHTML("afterbegin", '<p class="warnbox">' + esc(e.message) + "</p>"); document.querySelectorAll("#main button").forEach(b => b.disabled = false); }
-}
-async function suggest(c) {
-  $("sugg").innerHTML = '<p class="note">Pensando escenas absurdas…</p>';
-  try {
-    const r = await api(`/words/${c.id}/aid/suggest`, { method: "POST" });
-    $("sugg").innerHTML = r.suggestions.map((l, i) => `<button type="button" data-pick="${i}">${esc(l)}</button>`).join("") + '<p class="hint">Toca una para usarla. Mejor aún: edítala a tu manera.</p>';
-    $("sugg").querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { $("aid").value = r.suggestions[+b.dataset.pick]; $("aid").dispatchEvent(new Event("input")); });
-  } catch (e) { $("sugg").innerHTML = '<p class="note">' + esc(e.message) + "</p>"; }
-}
-
-// ===== Speaking =====
-async function practice(c, target) {
-  const ref = target === "word" ? c.word : plain(c.example), out = $("heard");
-  const btns = document.querySelectorAll("[data-say]"); btns.forEach(b => b.disabled = true);
-  try {
-    if (cfg.pronunciation) {
-      out.innerHTML = '<span class="score rec">Grabando… di:</span> <b>' + esc(ref) + '</b> <button type="button" id="stopRec">Listo</button>';
-      $("stopRec").onclick = () => stopRecording && stopRecording();
-      const wav = await recordWav(target === "word" ? 2500 : 7000, null, target === "word" ? 0.5 : 1.0);
-      out.innerHTML = '<span class="note">Evaluando tu pronunciación…</span>';
-      const fd = new FormData(); fd.append("target", target); fd.append("audio", wav, "voz.wav");
-      const r = await api(`/words/${c.id}/pronunciation`, { method: "POST", body: fd });
-      showAzure(r, out);
-      if (target === "word") c.best_pron_score = Math.max(c.best_pron_score || 0, r.score);
-    } else {
-      out.innerHTML = '<span class="score rec">Escuchando… di:</span> <b>' + esc(ref) + "</b>";
-      const alts = await browserListen(); let best = null, bt = "";
-      alts.forEach(a => { const r = compare(ref, a); if (!best || r.pct > best.pct) { best = r; bt = a; } });
-      verdict(out, best.pct, '<span class="note">Entendí: “' + esc(bt) + '”</span>', best.toks.map(z => `<span class="tok ${z.ok ? "ok" : "miss"}">${esc(z.x)}</span>`).join(""));
-      api(`/words/${c.id}/pronunciation`, { method: "POST", body: { target, score: best.pct } }).catch(() => {});
-    }
-  } catch (e) { out.innerHTML = '<p class="warnbox">' + esc(e.message || "No se pudo usar el micrófono.") + "</p>"; }
-  btns.forEach(b => b.disabled = false);
-}
-function verdict(out, pct, extra, tokens) {
-  const v = pct >= 90 ? "Excelente" : pct >= 70 ? "Casi" : "Otra vez", col = pct >= 90 ? "var(--good)" : pct >= 70 ? "var(--warn)" : "var(--bad)";
-  out.innerHTML = `<div class="row"><b class="score" style="color:${col}">${v} · ${pct}%</b>${extra}</div><div>${tokens}</div>` + (pct < 90 ? '<p class="hint">Lo marcado en rojo necesita práctica. Escucha el audio lento y repite.</p>' : "");
-}
-function showAzure(r, out) {
-  const a = r.assessment;
-  if (!a || a.status !== "Success") { out.innerHTML = '<p class="note">No se entendió el audio. Habla un poco más fuerte y cerca del micrófono.</p>'; return; }
-  const s = a.scores;
-  const toks = a.words.map(w => {
-    const ok = w.error === "None" && w.accuracy >= 80;
-    const ph = w.phonemes.length ? `<span class="ph">/${w.phonemes.map(p => `<i class="${p.accuracy < 60 ? "bad" : ""}" title="${p.accuracy}%">${esc(p.phoneme)}</i>`).join("")}/</span>` : "";
-    const tag = w.error === "Omission" ? " (omitida)" : w.error === "Insertion" ? " (de más)" : "";
-    return `<span class="tok ${ok ? "ok" : "miss"}">${esc(w.word)} ${w.accuracy}%${tag}</span>${ok ? "" : ph}`;
-  }).join(" ");
-  verdict(out, s.pron, `<span class="scores"><span>Precisión ${s.accuracy}</span><span>Fluidez ${s.fluency}</span><span>Completitud ${s.completeness}</span></span>`, toks);
-}
-
-// ===== Conversación =====
-let history = [];
-function renderChat(targets, used) {
-  if (targets) $("targets").innerHTML = targets.map(t => `<span class="chip ${used && used.has(t.toLowerCase()) ? "used" : ""}">${esc(t)}</span>`).join("");
-  $("msgs").innerHTML = history.map(m => `<div class="msg ${m.role === "user" ? "me" : "ai"}">${esc(m.content)}${m.feedback ? `<p class="fb">${esc(m.feedback)}</p>` : ""}</div>`).join("") || '<p class="note">Pulsa Enviar con el campo vacío para que la IA empiece.</p>';
-  $("msgs").scrollTop = $("msgs").scrollHeight;
-}
-const usedWords = new Set();
-async function sendChat() {
-  if (!cfg.ai) { $("msgs").innerHTML = '<p class="warnbox">La conversación necesita ANTHROPIC_API_KEY en el servidor.</p>'; return; }
-  const text = $("chatIn").value.trim();
-  if (text) history.push({ role: "user", content: text });
-  $("chatIn").value = ""; $("sendBtn").disabled = true; renderChat();
-  try {
-    const r = await api("/conversation", { method: "POST", body: { messages: history.map(({ role, content }) => ({ role, content })) } });
-    const lastUser = [...history].reverse().find(m => m.role === "user");
-    if (lastUser && r.feedback) lastUser.feedback = r.feedback;
-    (r.used || []).forEach(w => usedWords.add(w.toLowerCase()));
-    history.push({ role: "assistant", content: r.reply });
-    renderChat(r.targets, usedWords);
-    if ($("autoSpeak").checked) say(r.reply);
-  } catch (e) { $("msgs").insertAdjacentHTML("beforeend", '<p class="warnbox">' + esc(e.message) + "</p>"); }
-  $("sendBtn").disabled = false;
-}
-$("sendBtn").onclick = sendChat;
-$("chatIn").onkeydown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } };
-$("chatReset").onclick = () => { history = []; usedWords.clear(); renderChat([]); };
-$("dictBtn").onclick = async () => {
-  $("dictBtn").classList.add("rec");
-  try { const alts = await browserListen(); $("chatIn").value = ($("chatIn").value + " " + alts[0]).trim(); }
-  catch (e) { $("msgs").insertAdjacentHTML("beforeend", '<p class="warnbox">' + esc(e.message) + "</p>"); }
-  $("dictBtn").classList.remove("rec");
-};
-function showTab(chat) {
-  $("tabCards").setAttribute("aria-selected", !chat); $("tabChat").setAttribute("aria-selected", chat);
-  $("main").hidden = chat; $("queue").hidden = chat; $("chatView").hidden = !chat;
-  if (chat) renderChat();
-}
-$("tabCards").onclick = () => showTab(false);
-$("tabChat").onclick = () => showTab(true);
-
-// ===== Panel lateral y ajustes =====
-function renderSide() {
-  if (!stats) return;
-  $("sLearned").textContent = stats.learned; $("sMastered").textContent = stats.mastered; $("sStreak").textContent = stats.streak;
-  $("sLeft").textContent = `${stats.total_words - stats.learned} palabras por aprender de ${stats.total_words}.`;
-  const max = Math.max(1, ...stats.forecast.map(x => x.count));
-  $("forecast").innerHTML = stats.forecast.map((x, i) => { const d = new Date(x.date + "T12:00"); const lbl = i === 0 ? "mañana" : d.toLocaleDateString("es", { weekday: "short", day: "numeric" }); return `<div class="fc-row"><span class="lbl">${lbl}</span><span class="fc-bar"><i style="width:${x.count / max * 100}%"></i></span><span class="n">${x.count}</span></div>`; }).join("");
-  $("weakPanel").hidden = !stats.weak_sounds.length;
-  $("weak").innerHTML = stats.weak_sounds.map(w => `<span class="chip" title="Último: ${esc(w.last_word)}">/${esc(w.phoneme)}/ × ${w.count}</span>`).join("");
-}
-$("dailyNew").onchange = async e => { try { await api("/settings", { method: "PUT", body: { daily_new: +e.target.value } }); refresh(); } catch (err) { alertSide(err.message); } };
-async function nextDay() { try { await api("/debug/next-day", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } }
-$("nextDay").onclick = nextDay;
-$("resetBtn").onclick = () => $("confirmBox").hidden = false;
-$("resetNo").onclick = () => $("confirmBox").hidden = true;
-$("resetYes").onclick = async () => { $("confirmBox").hidden = true; try { await api("/reset", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } };
-function alertSide(m) { $("svc").textContent = m; }
-
-// ===== PWA: instalable en el iPhone =====
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
-
-// ===== Aviso para instalar la app =====
-(function () {
-  const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const isAndroid = /Android/i.test(ua);
-  const standalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
-  const inAppBrowser = /FBAN|FBAV|Instagram|Line\/|WhatsApp|GSA\//.test(ua);
-  const iosOtherBrowser = isIOS && /CriOS|FxiOS|EdgiOS/.test(ua);
-  const KEY = "wtw_install_later";
-  let snoozed = false; try { snoozed = Date.now() < +(localStorage.getItem(KEY) || 0); } catch (e) {}
-  if (standalone || snoozed || !(isIOS || isAndroid)) return;
-
-  const bar = $("installBar"), body = $("installBody"), btn = $("installBtn");
-  const SHARE = '<span class="sh" aria-label="Compartir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span>';
-  function show() { bar.hidden = false; document.body.classList.add("has-install"); }
-  function hide(days) { bar.hidden = true; document.body.classList.remove("has-install"); if (days) { try { localStorage.setItem(KEY, Date.now() + days * 864e5); } catch (e) {} } }
-  $("installLater").onclick = () => hide(3);
-
-  if (isIOS) {
-    if (inAppBrowser) {
-      body.innerHTML = '<p class="note">Estás dentro de otra app. Abre este enlace en <b>Safari</b> para poder instalarla.</p>';
-    } else {
-      body.innerHTML = '<ol>' +
-        '<li>Toca ' + SHARE + ' <b>Compartir</b> ' + (iosOtherBrowser ? "(arriba o en el menú)" : "en la barra de Safari") + '.</li>' +
-        '<li>Elige <b>Agregar a pantalla de inicio</b>. Si no aparece, desliza la lista hacia abajo.</li>' +
-        '<li>Toca <b>Agregar</b>. Ábrela siempre desde su ícono.</li></ol>';
-      if (!iosOtherBrowser) $("installArrow").hidden = false;
-    }
-    show();
-  } else {
-    // Android / Chrome: el navegador permite instalar con un botón
-    let deferred = null;
-    window.addEventListener("beforeinstallprompt", e => {
-      e.preventDefault(); deferred = e;
-      body.innerHTML = '<p class="note">Agrégala a tu pantalla de inicio para abrirla como una app.</p>';
-      btn.hidden = false; show();
-    });
-    btn.onclick = async () => { if (!deferred) return; deferred.prompt(); const r = await deferred.userChoice; deferred = null; hide(r.outcome === "accepted" ? 0 : 3); };
-    window.addEventListener("appinstalled", () => hide(0));
-  }
-})();
-
-// ===== Arranque =====
-token ? start() : showAuth();
-</script>
+<script src="app.js?v=1"></script>
 </body></html>

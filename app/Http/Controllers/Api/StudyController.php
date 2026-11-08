@@ -23,6 +23,8 @@ class StudyController extends Controller
             'ai' => $claude->enabled(),
             'pronunciation' => $pron->enabled(),
             'time_travel' => config('vocab.allow_time_travel'),
+            'push' => filled(config('webpush.vapid.public_key')),
+            'tts' => app(\App\Services\TtsService::class)->enabled(),
         ];
     }
 
@@ -32,7 +34,10 @@ class StudyController extends Controller
         $user = $request->user();
         $q = $this->srs->queue($user);
 
-        $cards = $q['reviews']->map(fn (UserWord $uw) => $this->card($uw->word, $uw, 'review'))
+        // Repasos agrupados por familia: las palabras del mismo tema van seguidas.
+        $reviews = $q['reviews']->groupBy(fn (UserWord $uw) => $uw->word->category ?? '')->flatten(1);
+
+        $cards = $reviews->map(fn (UserWord $uw) => $this->card($uw->word, $uw, 'review'))
             ->concat($q['new']->map(fn (Word $w) => $this->card($w, null, 'new')))
             ->values();
 
@@ -51,10 +56,37 @@ class StudyController extends Controller
 
     public function settings(Request $request)
     {
-        $data = $request->validate(['daily_new' => ['required', 'integer', 'min:1', 'max:50']]);
+        $data = $request->validate([
+            'daily_new' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'freelance_pack' => ['sometimes', 'boolean'],
+            'family' => ['sometimes', 'nullable', Rule::in(array_keys(config('vocab.families')))],
+        ]);
         $request->user()->update($data);
 
-        return ['daily_new' => $request->user()->daily_new];
+        return $request->user()->profile();
+    }
+
+    /** Familias de palabras con el progreso del usuario en cada una. */
+    public function families(Request $request)
+    {
+        $user = $request->user();
+        $levels = app(\App\Services\LevelService::class);
+        $totals = $levels->ready(Word::query()->whereNotNull('category'))
+            ->selectRaw('category, count(*) as n')->groupBy('category')->pluck('n', 'category');
+        $mine = DB::table('user_words')->join('words', 'words.id', '=', 'user_words.word_id')
+            ->where('user_words.user_id', $user->id)->whereNotNull('user_words.introduced_at')->whereNotNull('words.category')
+            ->selectRaw('words.category, count(*) as learned, sum(case when user_words.level >= ? then 1 else 0 end) as mastered', [config('vocab.mastered_level')])
+            ->groupBy('words.category')->get()->keyBy('category');
+
+        return [
+            'current' => $user->family,
+            'families' => collect(config('vocab.families'))->map(fn ($f, $key) => [
+                'key' => $key, 'label' => $f['label'], 'emoji' => $f['emoji'],
+                'total' => (int) ($totals[$key] ?? 0),
+                'learned' => (int) ($mine[$key]->learned ?? 0),
+                'mastered' => (int) ($mine[$key]->mastered ?? 0),
+            ])->filter(fn ($f) => $f['total'] > 0)->values(),
+        ];
     }
 
     public function learn(Request $request, Word $word)
@@ -89,7 +121,8 @@ class StudyController extends Controller
             UserWord::where('user_id', $user->id)->delete();
             DB::table('study_days')->where('user_id', $user->id)->delete();
             DB::table('phoneme_errors')->where('user_id', $user->id)->delete();
-            $user->forceFill(['day_offset' => 0, 'streak' => 0, 'last_study_day' => null])->save();
+            DB::table('level_results')->where('user_id', $user->id)->delete();
+            $user->forceFill(['day_offset' => 0, 'streak' => 0, 'last_study_day' => null, 'cefr_level' => null])->save();
         });
 
         return response()->noContent();
@@ -106,6 +139,8 @@ class StudyController extends Controller
             'translation' => $word->translation,
             'example' => $word->example,
             'example_es' => $word->example_es,
+            'category' => $word->category,
+            'family' => $word->family(),
             'mode' => $mode,
             'level' => $uw?->level ?? 0,
             'fails' => $uw?->fails ?? 0,

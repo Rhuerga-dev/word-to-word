@@ -16,19 +16,23 @@ class PronunciationController extends Controller
      * Dos formas de uso:
      *  - con archivo "audio" (WAV 16 kHz): se califica en el servidor con Azure.
      *  - con "score" (0-100): el navegador ya calificó (modo sin Azure) y solo se guarda.
-     * "target" = word | sentence
+     * "target" = word | sentence | text
+     *  - text: una palabra suelta de la frase (repaso de palabras mal pronunciadas), enviada en "text".
      */
     public function store(Request $request, Word $word, PronunciationService $pron)
     {
         $data = $request->validate([
-            'target' => ['required', 'in:word,sentence'],
+            'target' => ['required', 'in:word,sentence,text'],
+            'text' => ['required_if:target,text', 'nullable', 'string', 'max:64', "regex:/^[A-Za-z][A-Za-z'’\\- ]*$/u"],
             'audio' => ['nullable', 'file', 'max:2048'],
             'score' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);
 
-        $reference = $data['target'] === 'word'
-            ? $word->word
-            : str_replace('*', '', (string) $word->example);
+        $reference = match ($data['target']) {
+            'word' => $word->word,
+            'text' => trim($data['text']),
+            default => str_replace('*', '', (string) $word->example),
+        };
 
         if ($request->hasFile('audio')) {
             abort_unless($pron->enabled(), 503, 'La evaluación de pronunciación no está configurada (AZURE_SPEECH_KEY).');

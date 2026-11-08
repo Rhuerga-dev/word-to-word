@@ -1,111 +1,82 @@
-# Word to Word — versión con API (Laravel)
+# Word to Word
 
-App para aprender inglés: cada día **X palabras nuevas**, **repasos espaciados** de las anteriores, **escenas AID** (acción irracional detallada) y **práctica de speaking** con calificación de pronunciación y conversación con IA.
+A web app for learning English from beginner to fluent. It follows the CEFR levels (A1 to C1): a placement test puts you at the right level, each level has its own vocabulary and goals, and an exam unlocks the next one. Every day you get new words plus spaced-repetition reviews, memory scenes, speaking practice with pronunciation scoring, AI conversation, and a daily push reminder.
 
-Estos archivos van **encima de un proyecto Laravel nuevo** (Laravel 11 o 12, PHP 8.2+).
+> Documentación en español: [README.es.md](README.es.md)
 
-## Instalación
+## Features
+
+- **CEFR learning path (A1 → C1):** placement test, words grouped by level, can-do goals per level, progress bar, and a level-up exam (80% to pass).
+- **Accounts:** sign up, sign in, email verification and password reset by email.
+- **Daily queue:** reviews first, then new words from your level (daily amount is configurable).
+- **Freelance pack:** optional vocabulary for client calls, studied first.
+- **Spaced repetition:** intervals of 1, 3, 7, 15, 30, 60 and 120 days; grade each review as again / hard / good / easy.
+- **Memory scenes (AID):** write your own scene for each word, or get 3 suggestions from AI.
+- **Pronunciation practice:** per-word and per-sound scoring (Azure Speech) or a browser fallback; mispronounced words are drilled one by one with mouth-position tips for Spanish speakers.
+- **AI conversation:** chat in English and get feedback on your mistakes.
+- **Daily reminder:** web push notification at the time you choose, only if you haven't studied yet.
+- **Stats:** words learned and mastered, streak, 7-day forecast, weak sounds, and level history.
+- **Installable on iPhone** as a PWA.
+
+## Tech stack
+
+- **Backend:** Laravel 13, PHP 8.4, MySQL, REST API with Laravel Sanctum, rate limiting, scheduled commands
+- **Frontend:** single-page app in `public/app/` with a service worker
+- **Push:** `laravel-notification-channels/webpush` (VAPID)
+- **AI:** Claude API (scenes, word enrichment, conversation)
+- **Speech:** Azure Pronunciation Assessment (optional)
+
+## Getting started
 
 ```bash
-# 1. Proyecto Laravel nuevo + API con Sanctum
-composer create-project laravel/laravel word-to-word-app
-cd word-to-word-app
-php artisan install:api          # crea routes/api.php e instala Sanctum
-
-# 2. Copia el contenido de esta carpeta sobre el proyecto
-#    (reemplaza routes/api.php y app/Models/User.php)
-cp -R /ruta/a/word-to-word/{app,config,database,routes,public} .
-
-# 3. Variables de entorno
-cat /ruta/a/word-to-word/env.additions >> .env
-#    y llena ANTHROPIC_API_KEY (y AZURE_SPEECH_KEY si la tienes)
-
-# 4. Base de datos y palabras iniciales (156, ya traducidas)
+composer install
+composer require laravel-notification-channels/webpush
+php artisan vendor:publish --provider="NotificationChannels\WebPush\WebPushServiceProvider" --tag="migrations"
+cp .env.example .env              # set DB_*, MAIL_*, VAPID_SUBJECT
+php artisan key:generate
+php artisan webpush:vapid         # writes VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY
 php artisan migrate
-php artisan db:seed --class=WordSeeder
-
-# 5. Arrancar
+php artisan db:seed --class=WordSeeder            # 156 starter words
+php artisan db:seed --class=FreelanceWordSeeder   # client-call vocabulary
+php artisan test
 php artisan serve
 ```
 
-Abre **http://localhost:8000/app/** en Google Chrome, crea tu cuenta y empieza.
+Open `http://localhost:8000/app/`, create an account and take the placement test.
 
-## Cargar la lista NGSL (~2.800 palabras)
+### More words for higher levels
 
-1. Descarga la NGSL desde **newgeneralservicelist.com** (es gratis, licencia CC BY-SA). Sirve el CSV o un .txt con una palabra por línea, en orden de frecuencia.
-2. Guárdala en `storage/app/ngsl.csv` y corre:
+The starter list covers A1. Import the NGSL (about 2,800 words, free, CC BY-SA) to fill A2 to B2, then enrich it with translations and examples:
 
 ```bash
 php artisan words:import storage/app/ngsl.csv
-php artisan words:enrich --limit=100   # prueba con 100 primero
-php artisan words:enrich               # luego todas las pendientes
+php artisan words:enrich
 ```
 
-`words:enrich` usa Claude para poner traducción, ejemplo y traducción del ejemplo. Una palabra solo aparece como "nueva" en la app cuando ya está enriquecida. Las 156 iniciales se respetan y la NGSL se agrega después de ellas.
+Level ranges are set in `config/vocab.php` (`levels`). C1 needs a longer word list.
 
-## Qué usa cada servicio
+### Server
 
-| Función | Sin claves | Con ANTHROPIC_API_KEY | Con AZURE_SPEECH_KEY |
-|---|---|---|---|
-| Palabras diarias y repasos | ✔ | ✔ | ✔ |
-| Escena AID escrita a mano | ✔ | ✔ | ✔ |
-| Sugerir escenas AID con IA | — | ✔ | ✔ |
-| Enriquecer NGSL | — | ✔ | ✔ |
-| Conversación con IA | — | ✔ | ✔ |
-| Pronunciación | Chrome compara lo que entendió | igual | Azure: puntaje por palabra y por sonido (IPA), fluidez, completitud |
-| "Sonidos que te cuestan" | — | — | ✔ |
+- **Database:** MySQL. Create the database and user, then set `DB_*` in `.env`.
+- **Email:** SMTP settings in `MAIL_*` (verification and password reset emails).
+- **Scheduler** (daily reminders), in the server's crontab:
+  ```
+  * * * * * cd /path/to/word-to-word && php artisan schedule:run >> /dev/null 2>&1
+  ```
+- **Push on iPhone:** needs HTTPS, the app added to the Home Screen (iOS 16.4+), and a valid `VAPID_SUBJECT`.
+- Set `VOCAB_ALLOW_TIME_TRAVEL=false` in production.
 
-Las claves solo viven en el servidor; el navegador nunca las ve.
-
-## Endpoints (`/api`, autenticación Bearer de Sanctum)
-
-| Método | Ruta | Qué hace |
-|---|---|---|
-| POST | `/auth/register` · `/auth/login` | Devuelve `token` |
-| POST | `/auth/logout` | Cierra la sesión |
-| GET | `/config` | Qué servicios están activos |
-| GET | `/today` | Cola del día: repasos primero, luego nuevas |
-| GET | `/stats` | Aprendidas, dominadas, racha, pronóstico 7 días, sonidos débiles |
-| PUT | `/settings` | `{daily_new}` |
-| POST | `/words/{id}/learn` | Marca una palabra nueva como aprendida (repaso mañana) |
-| POST | `/words/{id}/review` | `{grade: again\|hard\|good\|easy}` |
-| PUT | `/words/{id}/aid` | Guarda tu escena AID |
-| POST | `/words/{id}/aid/suggest` | 3 escenas con IA |
-| POST | `/words/{id}/pronunciation` | `target=word\|sentence` + `audio` (WAV 16 kHz) o `score` |
-| POST | `/conversation` | `{messages:[{role,content}]}` → `reply`, `feedback` (en español), `used` |
-| POST | `/debug/next-day` | Adelanta un día (solo pruebas) |
-| POST | `/reset` | Borra tu progreso |
-
-## Cómo funciona el repaso
-
-Intervalos por nivel: 1, 3, 7, 15, 30, 60, 120 días (`config/vocab.php`).
-
-- **Olvidé:** vuelve a nivel 0 y aparece mañana.
-- **Difícil:** se queda en su nivel, con la mitad del intervalo.
-- **Bien:** sube 1 nivel.
-- **Fácil:** sube 2 niveles.
-
-Una palabra es "dominada" desde el nivel 4.
-
-## Archivos
+## Project structure
 
 ```
-app/Services/SrsService.php            lógica de días, cola y repasos
-app/Services/ClaudeService.php         AID, enriquecer, conversación
-app/Services/PronunciationService.php  Azure Pronunciation Assessment
-app/Http/Controllers/Api/*             endpoints
-app/Console/Commands/*                 words:import, words:enrich
-database/migrations/*                  words, user_words, study_days, phoneme_errors, campos en users
-database/seeders/WordSeeder.php        156 palabras iniciales
-public/app/index.html                  frontend (consume la API)
+app/Services/SrsService.php              spaced repetition, daily queue and reviews
+app/Services/LevelService.php            CEFR levels, placement test and level-up exam
+app/Services/ClaudeService.php           AI scenes, word enrichment, conversation
+app/Services/PronunciationService.php    Azure pronunciation assessment
+app/Console/Commands/SendStudyReminders  daily push reminders (runs every 5 minutes)
+app/Notifications/StudyReminder.php      reminder message
+app/Http/Controllers/Api/                API endpoints
+tests/Feature/                           account, level and reminder tests
+public/app/index.html                    frontend
+public/app/sw.js                         service worker (offline shell and push)
 ```
-
-## Instalar en el iPhone (PWA)
-
-1. En la Mac, dentro de la carpeta: `bash tunnel.sh` (arranca Laravel en el puerto 8002 y abre un túnel HTTPS de Cloudflare).
-2. Copia la dirección `https://….trycloudflare.com` que aparece y ábrela en **Safari** del iPhone agregando `/app/` al final.
-3. Toca **Compartir → Agregar a pantalla de inicio**.
-
-La app queda con su ícono y se abre a pantalla completa. El micrófono funciona porque la conexión es HTTPS.
-
-La dirección del túnel rápido cambia cada vez que lo abres, y el ícono guardado apunta a la dirección vieja. Para algo fijo, usa un túnel con nombre de Cloudflare con tu propio dominio, o sube la app a un servidor.

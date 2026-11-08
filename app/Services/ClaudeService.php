@@ -34,6 +34,9 @@ class ClaudeService
             ->post('https://api.anthropic.com/v1/messages', [
                 'model' => config('vocab.anthropic.model'),
                 'max_tokens' => $maxTokens,
+                // Sin "pensar" antes de responder: estas tareas son cortas, y el pensamiento
+                // se comía todos los tokens (respuesta vacía en las escenas AID).
+                'thinking' => ['type' => 'disabled'],
                 'system' => $system,
                 'messages' => $messages,
             ]);
@@ -42,10 +45,21 @@ class ClaudeService
             throw new RuntimeException('Error de la API de Claude: '.$response->status().' '.$response->json('error.message', ''));
         }
 
-        return collect($response->json('content', []))
+        $text = collect($response->json('content', []))
             ->where('type', 'text')
             ->pluck('text')
             ->implode("\n");
+
+        if (trim($text) === '') {
+            // Para diagnosticar respuestas vacías (p. ej. se acabaron los tokens antes del texto).
+            \Illuminate\Support\Facades\Log::warning('Claude devolvió texto vacío', [
+                'stop_reason' => $response->json('stop_reason'),
+                'types' => collect($response->json('content', []))->pluck('type')->all(),
+                'usage' => $response->json('usage'),
+            ]);
+        }
+
+        return $text;
     }
 
     /** 3 escenas AID (acción irracional detallada) para una palabra. */
@@ -56,14 +70,17 @@ class ClaudeService
 
         $prompt = <<<TXT
 Palabra en inglés: "{$word}" (significa: {$translation}).
-Crea 3 escenas distintas, cada una en UNA línea en español, de máximo 30 palabras:
-1) empieza con una palabra o frase en español que SUENE parecido a "{$word}", entre comillas;
-2) describe una acción absurda, exagerada y con detalles visuales (colores, ruido, movimiento)
-   que una ese sonido con el significado "{$translation}".
+Crea 3 escenas AID MUY CORTAS en español para memorizarla de una sola vez.
+Reglas para cada escena:
+- Máximo 12 palabras en total.
+- Empieza con una palabra en español que SUENE parecido a "{$word}", entre comillas, y dos puntos.
+- Después, UNA sola imagen absurda y visual que una ese sonido con "{$translation}".
+- Nada de listas de detalles ni frases largas: una imagen que se vea en un segundo.
+Ejemplo para "clothes" (ropa): "Clocs": zuecos gigantes escupiendo ropa.
 Responde solo con las 3 líneas, sin numeración ni texto extra.
 TXT;
 
-        $text = $this->message($system, [['role' => 'user', 'content' => $prompt]], 400);
+        $text = $this->message($system, [['role' => 'user', 'content' => $prompt]], 300);
 
         return collect(preg_split('/\R/', $text))
             ->map(fn ($l) => trim(preg_replace('/^\s*[-*\d.)]+\s*/', '', $l)))

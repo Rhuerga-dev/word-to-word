@@ -1,8 +1,9 @@
 // Service worker de Word to Word: guarda la "cáscara" de la app para que abra rápido.
 // La API (/api/...) nunca se guarda en caché: siempre va a la red.
-const CACHE = "wtw-shell-v2";
+const CACHE = "wtw-shell-v4";
 const SHELL = [
   "/app/",
+  "/app/app.js?v=1",
   "/app/manifest.webmanifest",
   "/app/icons/apple-touch-icon.png",
   "/app/icons/icon-192.png",
@@ -39,4 +40,29 @@ self.addEventListener("fetch", (e) => {
   if (url.origin === location.origin) {
     e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
   }
+});
+
+// ===== Recordatorios (notificaciones push) =====
+self.addEventListener("push", (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch (err) { data = { title: "Word to Word", body: e.data ? e.data.text() : "" }; }
+  const title = data.title || "Hora de practicar inglés";
+  e.waitUntil(self.registration.showNotification(title, {
+    body: data.body || "Abre Word to Word y practica unos minutos.",
+    icon: data.icon || "/app/icons/icon-192.png",
+    badge: data.badge || "/app/icons/icon-192.png",
+    tag: data.tag || "daily-reminder",
+    data: data.data || { url: "/app/" },
+  }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/app/";
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      const open = wins.find((w) => new URL(w.url).pathname.startsWith("/app"));
+      return open ? open.focus() : self.clients.openWindow(url);
+    })
+  );
 });

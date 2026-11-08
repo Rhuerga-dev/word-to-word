@@ -25,3 +25,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+/_to_delete/
+*.bak*
+*.new
+
+/storage/tmp-share/

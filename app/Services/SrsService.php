@@ -47,14 +47,45 @@ class SrsService
             ->whereNotNull('introduced_at')
             ->pluck('word_id');
 
-        $new = Word::whereNotIn('id', $introducedIds)
-            ->whereNotNull('translation')
-            ->whereNotNull('example')
-            ->orderBy('rank')
-            ->limit($remaining)
-            ->get();
+        $new = $this->newWords($user, $introducedIds, $remaining);
 
         return ['reviews' => $reviews, 'new' => $new, 'new_done' => $newDone];
+    }
+
+    /**
+     * Palabras nuevas de hoy: primero el paquete de freelance (si está activo),
+     * luego la lista general desde el inicio del nivel del usuario.
+     */
+    private function newWords(User $user, Collection $introducedIds, int $limit): Collection
+    {
+        if ($limit <= 0) {
+            return new Collection;
+        }
+        $levels = app(LevelService::class);
+        $pick = fn ($q, int $n) => $levels->ready($q)->whereNotIn('id', $introducedIds)->orderBy('rank')->limit($n)->get();
+
+        // Familia elegida (cuerpo, frutas…): sus palabras van primero.
+        $new = $user->family
+            ? $pick(Word::where('category', $user->family), $limit)
+            : new Collection;
+
+        if ($user->freelance_pack && $new->count() < $limit) {
+            $new = $new->concat($pick(Word::where('source', LevelService::FREELANCE)->whereNotIn('id', $new->pluck('id')), $limit - $new->count()));
+        }
+
+        if ($new->count() < $limit) {
+            $general = $levels->general();
+            if ($user->cefr_level) {
+                $min = $levels->range($user->cefr_level)['min'];
+                // Sin palabras importadas para su nivel: seguimos con lo que haya.
+                if ($min !== null) {
+                    $general->where('rank', '>=', $min);
+                }
+            }
+            $new = $new->concat($pick($general->whereNotIn('id', $new->pluck('id')), $limit - $new->count()));
+        }
+
+        return $new->values();
     }
 
     public function learn(User $user, Word $word): UserWord
@@ -138,7 +169,7 @@ class SrsService
             ];
         }
 
-        $last = $user->last_study_day ? CarbonImmutable::parse($user->last_study_day) : null;
+        $last = $this->lastStudyDay($user);
         $streakAlive = $last && $last->greaterThanOrEqualTo($today->subDay());
 
         return [
@@ -175,9 +206,24 @@ class SrsService
             ->increment($column);
     }
 
+    /**
+     * Último día de estudio en la zona horaria de la app de vocabulario.
+     * (La fecha se guarda sin hora; leerla en UTC la corría 4 horas y la racha
+     * de quien estudió ayer salía en 0.)
+     */
+    private function lastStudyDay(User $user): ?CarbonImmutable
+    {
+        if (! $user->last_study_day) {
+            return null;
+        }
+        $date = $user->last_study_day instanceof \DateTimeInterface ? $user->last_study_day->format('Y-m-d') : (string) $user->last_study_day;
+
+        return CarbonImmutable::parse(substr($date, 0, 10), config('vocab.timezone'));
+    }
+
     private function markStudied(User $user, CarbonImmutable $today): void
     {
-        $last = $user->last_study_day ? CarbonImmutable::parse($user->last_study_day) : null;
+        $last = $this->lastStudyDay($user);
         if ($last && $last->isSameDay($today)) {
             return;
         }
