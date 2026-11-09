@@ -1,6 +1,6 @@
 // Service worker de Word to Word: guarda la "cáscara" de la app para que abra rápido.
 // La API (/api/...) nunca se guarda en caché: siempre va a la red.
-const CACHE = "wtw-shell-v4";
+const CACHE = "wtw-shell-v5";
 const SHELL = [
   "/app/",
   "/app/app.js?v=1",
@@ -30,16 +30,27 @@ self.addEventListener("fetch", (e) => {
   if (e.request.mode === "navigate") {
     e.respondWith(
       fetch(e.request)
-        .then((res) => { caches.open(CACHE).then((c) => c.put("/app/", res.clone())); return res; })
+        .then((res) => { if (res.ok && url.pathname.startsWith("/app")) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put("/app/", copy)); } return res; })
         .catch(() => caches.match("/app/"))
     );
     return;
   }
 
-  // Íconos y archivos fijos: primero la caché.
-  if (url.origin === location.origin) {
-    e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
+  if (url.origin !== location.origin) return;
+
+  // El código de la app (app.js, manifest): primero la red, para que nunca se mezcle una página nueva
+  // con un app.js viejo; sin conexión, la copia guardada.
+  if (/\.(js|webmanifest)$/.test(url.pathname)) {
+    e.respondWith(
+      fetch(e.request)
+        .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); } return res; })
+        .catch(() => caches.match(e.request))
+    );
+    return;
   }
+
+  // Íconos y demás archivos fijos: primero la caché.
+  e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request)));
 });
 
 // ===== Recordatorios (notificaciones push) =====
