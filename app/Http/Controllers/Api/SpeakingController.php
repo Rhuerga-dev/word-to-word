@@ -179,11 +179,13 @@ class SpeakingController extends Controller
     public function finish(Request $request, SpeakingSession $session)
     {
         abort_unless($session->user_id === $request->user()->id, 404);
+        $gained = 0;
         if (! $session->ended_at) {
             $session->update(['ended_at' => now()]);
+            $gained = app(\App\Services\XpService::class)->speak($request->user(), $session->speech_ms, $session->words);
         }
 
-        return $this->speaking->summary($session) + ['stats' => $this->speaking->stats($request->user())];
+        return $this->speaking->summary($session) + ['xp_gained' => $gained, 'stats' => $this->speaking->stats($request->user())];
     }
 
     /** Errores que tocan repasar hoy. */

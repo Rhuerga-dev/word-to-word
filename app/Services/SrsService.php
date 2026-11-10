@@ -221,7 +221,7 @@ class SrsService
         return CarbonImmutable::parse(substr($date, 0, 10), config('vocab.timezone'));
     }
 
-    private function markStudied(User $user, CarbonImmutable $today): void
+    public function markStudied(User $user, CarbonImmutable $today): void
     {
         $last = $this->lastStudyDay($user);
         if ($last && $last->isSameDay($today)) {

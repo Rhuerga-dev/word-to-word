@@ -19,7 +19,7 @@ class PronunciationController extends Controller
      * "target" = word | sentence | text
      *  - text: una palabra suelta de la frase (repaso de palabras mal pronunciadas), enviada en "text".
      */
-    public function store(Request $request, Word $word, PronunciationService $pron)
+    public function store(Request $request, Word $word, PronunciationService $pron, \App\Services\XpService $xp)
     {
         $data = $request->validate([
             'target' => ['required', 'in:word,sentence,text'],
@@ -56,6 +56,8 @@ class PronunciationController extends Controller
             $uw->best_pron_score = max((int) $uw->best_pron_score, $score);
             $uw->save();
         }
+
+        $xp->add($request->user(), 'pronunciation');
 
         return ['reference' => $reference, 'score' => $score, 'assessment' => $result];
     }

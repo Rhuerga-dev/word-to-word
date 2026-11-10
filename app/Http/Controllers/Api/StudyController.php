@@ -9,6 +9,7 @@ use App\Services\ClaudeService;
 use App\Services\PronunciationService;
 use App\Services\LevelService;
 use App\Services\SrsService;
+use App\Services\XpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -64,6 +65,7 @@ class StudyController extends Controller
             'daily_new' => ['sometimes', 'integer', 'min:1', 'max:50'],
             'freelance_pack' => ['sometimes', 'boolean'],
             'family' => ['sometimes', 'nullable', Rule::in(array_keys(config('vocab.families')))],
+            'xp_goal' => ['sometimes', 'integer', 'min:20', 'max:500'],
         ]);
         $request->user()->update($data);
 
@@ -124,20 +126,24 @@ class StudyController extends Controller
         ];
     }
 
-    public function learn(Request $request, Word $word)
+    public function learn(Request $request, Word $word, XpService $xp)
     {
-        $uw = $this->srs->learn($request->user(), $word);
+        $user = $request->user();
+        $before = UserWord::where('user_id', $user->id)->where('word_id', $word->id)->whereNotNull('introduced_at')->exists();
+        $uw = $this->srs->learn($user, $word);
+        $gained = $before ? 0 : $xp->add($user, 'learn');
 
-        return $this->card($word, $uw, 'review');
+        return $this->card($word, $uw, 'review') + ['xp_gained' => $gained];
     }
 
-    public function review(Request $request, Word $word)
+    public function review(Request $request, Word $word, XpService $xp)
     {
         $data = $request->validate(['grade' => ['required', Rule::in(SrsService::GRADES)]]);
         $uw = $this->userWord($request, $word, mustBeIntroduced: true);
         $uw = $this->srs->review($request->user(), $uw, $data['grade']);
+        $gained = $xp->add($request->user(), $data['grade'] === 'again' ? 'review_again' : 'review');
 
-        return $this->card($word, $uw, 'review');
+        return $this->card($word, $uw, 'review') + ['xp_gained' => $gained];
     }
 
     /** Solo para probar: adelanta el "hoy" del usuario un día. */
@@ -157,9 +163,10 @@ class StudyController extends Controller
             DB::table('study_days')->where('user_id', $user->id)->delete();
             DB::table('phoneme_errors')->where('user_id', $user->id)->delete();
             DB::table('level_results')->where('user_id', $user->id)->delete();
+            DB::table('xp_days')->where('user_id', $user->id)->delete();
             DB::table('speaking_mistakes')->where('user_id', $user->id)->delete();
             DB::table('speaking_sessions')->where('user_id', $user->id)->delete();
-            $user->forceFill(['day_offset' => 0, 'streak' => 0, 'last_study_day' => null, 'cefr_level' => null])->save();
+            $user->forceFill(['xp_total' => 0, 'day_offset' => 0, 'streak' => 0, 'last_study_day' => null, 'cefr_level' => null])->save();
         });
 
         return response()->noContent();

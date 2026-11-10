@@ -77,6 +77,8 @@ class PronunciationLabController extends Controller
             abort(502, 'No se pudo evaluar el audio ahora. Intenta otra vez.');
         }
 
+        app(\App\Services\XpService::class)->add($request->user(), 'pronunciation');
+
         return [
             'score' => $result['scores']['pron'],
             'target_score' => self::targetScore($result['words'], $data['phoneme'] ?? null),
@@ -137,7 +139,10 @@ class PronunciationLabController extends Controller
             DB::table('phoneme_errors')->insert($where + $values + ['count' => 0, 'created_at' => now()]);
         }
 
+        $gained = $data['passed'] ? app(\App\Services\XpService::class)->add($user, 'lab') : 0;
+
         return [
+            'xp_gained' => $gained,
             'phoneme' => $data['phoneme'],
             'stage' => $stage,
             'tier' => $tier,

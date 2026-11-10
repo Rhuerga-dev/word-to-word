@@ -10,7 +10,7 @@ use Carbon\CarbonImmutable;
 /** Práctica hablada: tiempo y ritmo al hablar, meta diaria y errores para repasar. */
 class SpeakingService
 {
-    public function __construct(private SrsService $srs) {}
+    public function __construct(private SrsService $srs, private XpService $xp) {}
 
     /** Suma lo que se habló en un turno a la sesión. */
     public function addTurn(SpeakingSession $session, array $fluency, ?int $reactionMs = null): void
@@ -91,7 +91,9 @@ class SpeakingService
             'mastered_on' => $stage >= count($spacing) ? ($mistake->mastered_on ?? $today->toDateString()) : null,
         ]);
 
-        return $mistake->toCard() + ['days' => $days, 'next_review' => $mistake->next_review->toDateString()];
+        $gained = $this->xp->add(User::find($mistake->user_id), $passed ? 'mistake' : 'mistake_fail');
+
+        return $mistake->toCard() + ['days' => $days, 'next_review' => $mistake->next_review->toDateString(), 'xp_gained' => $gained];
     }
 
     public function goal(User $user): int
