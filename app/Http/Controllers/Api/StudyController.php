@@ -165,6 +165,7 @@ class StudyController extends Controller
             DB::table('level_results')->where('user_id', $user->id)->delete();
             DB::table('xp_days')->where('user_id', $user->id)->delete();
             DB::table('unit_progress')->where('user_id', $user->id)->delete();
+            DB::table('achievements')->where('user_id', $user->id)->delete();
             DB::table('speaking_mistakes')->where('user_id', $user->id)->delete();
             DB::table('speaking_sessions')->where('user_id', $user->id)->delete();
             $user->forceFill(['xp_total' => 0, 'day_offset' => 0, 'streak' => 0, 'last_study_day' => null, 'cefr_level' => null])->save();

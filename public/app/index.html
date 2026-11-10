@@ -642,6 +642,20 @@ body[data-nav="progress"] .wrap{max-width:1040px}
 .pth-sdot svg{width:16px;height:16px}
 .pth-step.ok .pth-sdot{background:var(--good);border-color:var(--good);color:#fff}
 .pth-step.ok b{text-decoration:line-through;opacity:.7}
+
+/* Liga y logros */
+.pg-league{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pg-league li{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:12px}
+.pg-league li.me{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.pg-league .r{font-family:var(--display);font-weight:800;text-align:center}
+.pg-league li:nth-child(1) .r{color:#c89400}.pg-league li:nth-child(2) .r{color:#7d8794}.pg-league li:nth-child(3) .r{color:#b06a2c}
+.pg-ach{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.pg-a{display:grid;gap:3px;justify-items:start;padding:12px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+.pg-a .i{width:40px;height:40px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.pg-a .i svg{width:22px;height:22px}
+.pg-a small{font-size:12px}
+.pg-a.on{border-style:solid;color:var(--ink)}
+.pg-a.on .i{background:var(--hl);color:var(--hl-ink)}
 </style>
 
 <div class="wrap">
@@ -806,6 +820,6 @@ body[data-nav="progress"] .wrap{max-width:1040px}
 
 <script src="/app/app.js?v=12"></script>
 <script src="/app/speak.js?v=9"></script>
-<script src="/app/progress.js?v=1"></script>
-<script src="/app/today.js?v=2"></script>
+<script src="/app/progress.js?v=2"></script>
+<script src="/app/today.js?v=3"></script>
 </body></html>

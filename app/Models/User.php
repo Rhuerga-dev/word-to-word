@@ -52,6 +52,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'freelance_pack' => (bool) $this->freelance_pack,
             'family' => $this->family,
             'xp_goal' => (int) ($this->xp_goal ?: 100),
+            'league_visible' => (bool) ($this->league_visible ?? true),
             'xp_total' => (int) $this->xp_total,
             'speaking_goal' => (int) ($this->speaking_goal ?: config('speaking.default_goal', 5)),
             'reminder' => [

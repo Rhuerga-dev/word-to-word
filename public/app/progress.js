@@ -1,13 +1,24 @@
 /* Word to Word · Panel de progreso: qué hacer hoy, nivel, vocabulario, hablar, pronunciación y errores. */
 "use strict";
 
-const pg = { data: null, error: "" };
+const pg = { data: null, error: "", ach: null, league: null };
+const ACH_ICON = {
+  flag: '<path d="M5 21V4h11l-2 4 2 4H5"/>', fire: '<path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5.2.2 1.8 1 3 2.2 3.4C11 8.6 11 5 12 2z"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>', book: '<path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-6"/><path d="M20 4v14h-6"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>', ear: '<path d="M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-6 0"/>', check: '<path d="m5 12 5 5 9-10"/>',
+  map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/>', trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/>',
+};
+const achIcon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ACH_ICON[k] || ACH_ICON.check}</svg>`;
 const pgNum = n => String(n ?? "—").replace(".", ",");
 
 async function pgOpen() {
   const el = $("progressBody"); if (!el) return;
   if (!pg.data) el.innerHTML = '<p class="note">Cargando tu progreso…</p>';
-  try { pg.data = await api("/progress"); pg.error = ""; } catch (e) { pg.error = e.message; }
+  try {
+    const [d, a, l] = await Promise.all([api("/progress"), api("/achievements").catch(() => null), api("/league").catch(() => null)]);
+    pg.data = d; pg.ach = a; pg.league = l; pg.error = "";
+  } catch (e) { pg.error = e.message; }
   pgRender();
 }
 
@@ -40,6 +51,20 @@ function pgRender() {
   html += d.todo.length ? `<ul class="pg-todo">${d.todo.map((t, i) => `<li><span class="pg-ic">${t.icon}</span><span>${esc(t.text)}</span>${t.action ? `<button type="button" data-pg="${i}">Ir</button>` : ""}</li>`).join("")}</ul>`
     : '<p class="banner ok">¡Todo hecho por hoy! 🎉 Vuelve mañana.</p>';
   html += `</section>`;
+
+  // Logros nuevos, liga y logros
+  const A = pg.ach, L = pg.league;
+  if (A && A.new.length) html += `<div class="banner ok" style="display:grid;gap:6px"><b>🏅 ¡${A.new.length === 1 ? "Nuevo logro" : "Nuevos logros"}!</b>${A.new.map(x => `<span>${esc(x.title)} · ${esc(x.desc)}</span>`).join("")}</div>`;
+  if (L) {
+    html += `<section class="pg-sec"><h3>Liga de la semana</h3>
+      <p class="note">${L.me.rank ? `Vas <b>${L.me.rank}.º</b> de ${Math.max(L.players, 1)} con <b>${L.me.xp} XP</b>` : "Gana puntos esta semana para entrar en la liga"} · termina en ${L.days_left} ${L.days_left === 1 ? "día" : "días"}.</p>
+      ${L.top.length ? `<ol class="pg-league">${L.top.map(p => `<li class="${p.me ? "me" : ""}"><span class="r">${p.rank}</span><span class="n">${esc(p.name)}${p.me ? " (tú)" : ""}</span><b>${p.xp} XP</b></li>`).join("")}</ol>` : ""}
+      <label class="inl" for="pgLeagueVis">Aparecer en la liga (solo nombre e inicial) <input type="checkbox" id="pgLeagueVis"${L.visible ? " checked" : ""}></label></section>`;
+  }
+  if (A) {
+    html += `<section class="pg-sec"><h3>Logros · ${A.unlocked} de ${A.total}</h3>
+      <div class="pg-ach">${A.achievements.map(x => `<div class="pg-a${x.unlocked_at ? " on" : ""}" title="${esc(x.desc)}"><span class="i">${achIcon(x.icon)}</span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></div>`).join("")}</div></section>`;
+  }
 
   // Nivel
   if (lv.level) {
@@ -84,6 +109,7 @@ function pgRender() {
 
   el.innerHTML = html;
   el.querySelectorAll("[data-pg]").forEach(b => b.onclick = () => pgAction(d.todo[+b.dataset.pg]));
+  const lv2 = $("pgLeagueVis"); if (lv2) lv2.onchange = async e => { try { pg.league = await api("/league/visibility", { method: "PUT", body: { visible: e.target.checked } }); } catch (er) {} pgRender(); };
   el.querySelectorAll("[data-pg-lab]").forEach(b => b.onclick = () => { unlockAudio(); openLab(b.dataset.pgLab); });
 }
 

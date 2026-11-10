@@ -83,7 +83,13 @@ class SessionController extends Controller
         $mistakesOk = SpeakingMistake::where('user_id', $user->id)->whereDate('reviewed_on', $today)->where('stage', '>', 0)->count();
         $tierUps = DB::table('phoneme_errors')->where('user_id', $user->id)->whereDate('practiced_on', $today)->whereIn('tier', ['p', 'd'])->pluck('phoneme');
 
+        $new = app(\App\Services\AchievementService::class)->check($user->fresh());
+        if ($new) {
+            DB::table('achievements')->where('user_id', $user->id)->whereIn('code', array_column($new, 'code'))->update(['seen' => true]);
+        }
+
         return [
+            'achievements' => $new,
             'xp_gained' => $bonus,
             'xp' => $this->xp->today($user->fresh()),
             'streak' => $this->srs->stats($user->fresh())['streak'],

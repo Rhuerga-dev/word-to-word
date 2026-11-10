@@ -412,6 +412,7 @@ async function sessEnd() {
     ${r ? `<p style="margin:0;font-family:var(--display);font-size:20px;font-weight:800">🔥 ${r.streak} ${r.streak === 1 ? "día" : "días"} seguidos</p>
       <div class="sess-week">${week.map(w => `<div><i class="${w.xp > 0 ? "on" : ""}"></i>${wd[new Date(w.day + "T12:00").getDay()]}</div>`).join("")}</div>` : ""}
     ${better.length ? `<div class="sess-improve"><b>Hoy</b>${better.map(b => `<span>✓ ${esc(b)}</span>`).join("")}</div>` : ""}
+    ${r && r.achievements && r.achievements.length ? `<div class="banner ok" style="display:grid;gap:4px;width:100%;text-align:left"><b>🏅 ¡${r.achievements.length === 1 ? "Nuevo logro" : "Nuevos logros"}!</b>${r.achievements.map(a => `<span>${esc(a.title)} · ${esc(a.desc)}</span>`).join("")}</div>` : ""}
   </div>`);
   if (typeof confetti === "function") confetti();
   sessActions(`<button type="button" class="primary sess-big" id="sessDone">Continuar</button><button type="button" id="sessAgain">Otra ronda</button>`);
