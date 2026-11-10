@@ -260,6 +260,31 @@ TXT;
     }
 
     /**
+     * Califica una conversación de prueba (0–10) según el nivel del alumno. Devuelve [nota, explicación en español].
+     *
+     * @return array{0: int, 1: string}
+     */
+    public function gradeConversation(array $messages, string $situation, ?string $level = null): array
+    {
+        $level = $level ?: 'A2-B1';
+        $transcript = collect($messages)->map(fn ($m) => ($m['role'] === 'user' ? 'STUDENT' : 'PARTNER').': '.$m['content'])->implode("\n");
+        $system = <<<TXT
+You grade a speaking test of a Spanish-speaking adult learner of English, level {$level} (CEFR).
+Situation: {$situation}. The student's lines are speech-to-text transcripts: ignore punctuation, capitalization and spelling.
+Grade ONLY the student's lines from 0 to 10 for THEIR level: could they handle the situation, answer what was asked,
+and be understood? Grammar mistakes matter only when they block understanding. 6 = handled it well enough for their level.
+Answer with exactly two lines:
+SCORE: <0-10>
+FEEDBACK: <in Spanish, max 3 short sentences: what went well and the one thing to improve>
+TXT;
+        $text = $this->message($system, [['role' => 'user', 'content' => "Transcript:\n".$transcript]], 300);
+        $score = preg_match('/SCORE:\s*(\d+)/i', $text, $m) ? max(0, min(10, (int) $m[1])) : 0;
+        $feedback = preg_match('/FEEDBACK:\s*(.+)$/mis', $text, $m) ? trim($m[1]) : trim($text);
+
+        return [$score, $feedback];
+    }
+
+    /**
      * Conversación de práctica que obliga a usar las palabras del día.
      *
      * @param  array<int, array{role: string, content: string}>  $history

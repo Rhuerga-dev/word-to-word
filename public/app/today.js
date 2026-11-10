@@ -18,7 +18,10 @@ const SPEAK_LABEL = { narrate: ["Hablar 1 min", "narración del día"], picture:
 async function tdOpen() {
   const el = $("todayView"); if (!el) return;
   if (!td.data) el.innerHTML = '<p class="note">Cargando tu día…</p>';
-  try { td.data = await api("/session/today"); td.error = ""; } catch (e) { td.error = e.message; }
+  try {
+    const [t, p] = await Promise.all([api("/session/today"), api("/path").catch(() => null)]);
+    td.data = t; if (p) pth.data = p; td.error = "";
+  } catch (e) { td.error = e.message; }
   tdRender();
 }
 
@@ -56,14 +59,23 @@ function tdRender() {
       </div>
       <button type="button" class="td-go" id="tdGo">${SVG.play}${x.sessions ? "Otra ronda" : "Empezar"}</button>
     </section>
-    <button type="button" class="td-link" id="tdPath"><span class="ic">${SVG.map}</span><span style="flex:1;display:grid;gap:2px"><small class="note">Camino · ${esc((profile && profile.cefr_level) || "")}</small><b>Tu camino por unidades</b><small class="note">Llega en la próxima fase</small></span></button>
+    ${tdPathLink()}
     <div class="td-row">
       <div class="td-mini"><span>Hablaste hoy</span><b>${String(d.minutes).replace(".", ",")} min</b></div>
       <div class="td-mini"><span>Esta semana</span><b>${x.week.reduce((a, w) => a + w.xp, 0)} XP</b></div>
     </div>`;
   $("tdGo").onclick = () => sessStart();
-  $("tdPath").onclick = () => showTab("path");
+  if ($("tdPath")) $("tdPath").onclick = () => showTab("path");
   if (empty) $("tdGo").title = "Hoy no hay pendientes: la sesión será de pronunciación y hablar.";
+}
+
+function tdPathLink() {
+  const d = pth.data; if (!d || !d.units || !d.units.length) return "";
+  const u = d.units.find(x => x.id === d.current);
+  const n = u ? ["words", "sound", "shadow", "test"].filter(k => u.steps[k]).length : 4;
+  return `<button type="button" class="td-link" id="tdPath"><span class="ic">${u ? uIcon(u.icon) : SVG.check}</span>
+    <span style="flex:1;display:grid;gap:4px"><small class="note">Camino ${esc(d.level)} · ${u ? "Unidad " + u.number : "completo"}</small><b>${u ? esc(u.title) : "¡Todas las unidades hechas!"}</b>
+    <span class="sp-bar"><i style="width:${Math.round(n / 4 * 100)}%"></i></span></span></button>`;
 }
 
 // ---------- Practicar ----------
@@ -81,27 +93,109 @@ function prOpen() {
     </div>`;
   $("prSpeak").onclick = () => showTab("speak");
   $("prCards").onclick = () => showTab("cards");
-  $("prLab").onclick = () => { unlockAudio(); openLab(); };
+  $("prLab").onclick = () => { unlockAudio(); lab.returnTo = null; openLab(); };
   $("prChat").onclick = () => showTab("chat");
 }
 
-// ---------- Camino (fase 2) ----------
-function pathOpen() {
+// ---------- Camino ----------
+const pth = { data: null, error: "" };
+const UNIT_ICON = {
+  briefcase: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  heart: '<path d="M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/>',
+  plane: '<path d="M10 14 3 11l2-2 7 1 5-5a2 2 0 0 1 3 3l-5 5 1 7-2 2-3-7-3 3v3l-2 1-1-4-4-1 1-2h3z"/>',
+  card: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>',
+  rocket: '<path d="M5 15c-1 1-1 4-1 4s3 0 4-1M9 15l-3-3c1-4 5-9 12-9 0 7-5 11-9 12z"/><circle cx="14.5" cy="9.5" r="1.5"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  code: '<path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/>',
+  phone: '<path d="M5 3h4l2 5-3 2a11 11 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/>',
+  home: '<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+};
+const uIcon = k => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${UNIT_ICON[k] || UNIT_ICON.chat}</svg>`;
+const LOCK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
+async function pathOpen() {
   const el = $("pathBody"); if (!el) return;
-  el.innerHTML = `<div class="kind"><span>Camino</span><span>${esc((profile && profile.cefr_level) || "")}</span></div>
-    <h2 class="tr" style="margin:0">Unidades por tema, muy pronto</h2>
-    <p class="note">Cada unidad juntará sus palabras, sus sonidos y una situación real, y terminará con una prueba: una llamada con la IA. Mientras tanto, «Hoy» ya te prepara cada día lo que toca.</p>
-    <div class="row"><button type="button" class="primary" id="pathToday">Ir a Hoy</button><button type="button" id="pathLevel">Ver mi nivel</button></div>`;
-  $("pathToday").onclick = () => showTab("today");
-  $("pathLevel").onclick = () => showTab("progress");
+  if (!pth.data) el.innerHTML = '<p class="note">Cargando tu camino…</p>';
+  try { pth.data = await api("/path"); pth.error = ""; } catch (e) { pth.error = e.message; }
+  pathRender();
+}
+
+function pathRender() {
+  const el = $("pathBody"); if (!el) return;
+  const d = pth.data;
+  if (!d) { el.innerHTML = `<p class="warnbox">${esc(pth.error || "No se pudo cargar el camino.")}</p>`; return; }
+  if (!d.units.length) { el.innerHTML = `<div class="kind"><span>Camino</span></div><p class="note">Todavía no hay unidades para tu nivel.</p>`; return; }
+  const cur = d.units.find(u => u.id === d.current);
+  let html = `<div class="kind"><span>Tu camino · ${esc(d.level)} ${esc(d.level_name || "")}</span><span>${d.completed} de ${d.units.length}</span></div>`;
+  if (pth.error) html += `<p class="warnbox">${esc(pth.error)}</p>`;
+  if (!cur) html += `<p class="banner ok">🏆 ¡Completaste todas las unidades de ${esc(d.level)}! Es buen momento para el examen de nivel (en Progreso).</p>`;
+  html += `<div class="pth-list">${d.units.map(u => u.id === d.current ? pathCurrent(u) : pathRow(u)).join("")}</div>`;
+  el.innerHTML = html;
+  el.querySelectorAll("[data-pth]").forEach(b => b.onclick = () => pathAction(b.dataset.pth, b.dataset.unit));
+}
+
+function pathRow(u) {
+  const done = u.state === "done";
+  return `<div class="pth-row ${u.state}">
+    <span class="pth-dot">${done ? SVG.check : u.state === "locked" ? LOCK : uIcon(u.icon)}</span>
+    <span style="flex:1;display:grid;gap:1px"><b>${u.number} · ${esc(u.title)}</b><small class="note">${done ? `Completada${u.test.score != null ? " · prueba " + u.test.score + "/10" : ""}` : u.state === "locked" ? "Se abre al pasar la unidad anterior" : "Abierta"}</small></span>
+  </div>`;
+}
+
+function pathCurrent(u) {
+  const st = u.steps, k = (key, ok, title, sub, btn, locked) => `<div class="pth-step${ok ? " ok" : ""}${locked ? " locked" : ""}">
+      <span class="pth-sdot">${ok ? SVG.check : locked ? LOCK : ""}</span>
+      <span style="flex:1;display:grid;gap:1px"><b>${title}</b><small class="note">${sub}</small></span>
+      ${!ok && !locked && btn ? `<button type="button" class="${key === "test" ? "primary" : ""}" data-pth="${key}" data-unit="${esc(u.id)}">${btn}</button>` : ""}</div>`;
+  const doneN = ["words", "sound", "shadow", "test"].filter(x => st[x]).length;
+  return `<section class="pth-cur" aria-label="Unidad actual">
+    <div class="pth-head"><span class="pth-dot cur">${uIcon(u.icon)}</span><span style="flex:1"><small class="note">Unidad ${u.number}</small><h3>${esc(u.title)}</h3></span><span class="chip">${doneN} de 4</span></div>
+    ${k("words", st.words, "Palabras", `${u.words.learned} de ${u.words.need} · ${esc(u.words.preview.join(", "))}`, "Aprender")}
+    ${k("sound", st.sound, `Sonido /${esc(u.sound)}/`, "un taller aprobado", "Taller")}
+    ${k("shadow", st.shadow, "Shadowing", "repite un diálogo del tema", "Empezar")}
+    ${k("test", st.test, "Prueba: " + esc(u.scenario_title || "conversación"), u.test_ready ? (u.test.tries ? `Mejor nota ${u.test.score ?? "—"}/10 · aprueba con 6` : "una conversación real con la IA, aprueba con 6/10") : "se abre al terminar los otros 3 pasos", "Hacer la prueba", !u.test_ready)}
+    ${u.test.feedback && !st.test ? `<p class="note">Última prueba: ${esc(u.test.feedback)}</p>` : ""}
+  </section>`;
+}
+
+async function pathAction(step, unitId) {
+  unlockAudio();
+  const u = pth.data.units.find(x => x.id === unitId); if (!u) return;
+  if (step === "words") {
+    let cards = [];
+    try { cards = (await api(`/path/units/${unitId}/words`)).cards; } catch (e) { pth.error = e.message; return pathRender(); }
+    if (!cards.length) { pth.error = "No hay palabras nuevas listas para esta unidad todavía."; return pathRender(); }
+    return sessRun(cards.map(c => ({ type: "new", card: c })), { title: u.title, onEnd: () => showTab("path") });
+  }
+  if (step === "sound") { lab.returnTo = "path"; return openLab(u.sound); }
+  if (step === "shadow") return sessRun([{ type: "speak", mode: "shadowing", unit: unitId }], { title: u.title, onEnd: () => showTab("path") });
+  if (step === "test") {
+    showTab("speak");
+    sp.unitTest = unitId;
+    if (!sp.scenarios) { try { sp.scenarios = (await api("/speaking/scenarios")).scenarios; } catch (e) {} }
+    spStart(u.scenario);
+  }
 }
 
 // ---------- Sesión guiada ----------
 const sess = { steps: [], i: 0, total: 0, done: 0, xp0: 0, gained: 0, right: 0, graded: 0, t0: 0 };
 
+// Sesión con pasos dados (p. ej. las palabras de una unidad del Camino). onEnd: a dónde volver.
+function sessRun(steps, opts) {
+  unlockAudio();
+  if (hf.on) stopHF(true);
+  Object.assign(sess, { steps, i: -1, total: steps.length, done: 0, xp0: 0, gained: 0, right: 0, graded: 0, t0: Date.now(), custom: opts || {} });
+  $("speakBody").innerHTML = "";
+  $("sessionView").hidden = false; document.body.style.overflow = "hidden";
+  $("sessClose").onclick = sessQuit;
+  sessNext();
+}
+
 async function sessStart() {
   unlockAudio();
   if (hf.on) stopHF(true);
+  sess.custom = null;
   let d = td.data;
   try { d = td.data = await api("/session/today"); } catch (e) { if (!d) { td.error = e.message; return tdRender(); } }
   const p = d.plan, steps = [];
@@ -138,7 +232,7 @@ function sessNext() {
   sess.i++;
   sessProgress();
   const st = sess.steps[sess.i];
-  if (!st) return sessEnd();
+  if (!st) return sess.custom ? sessEndCustom() : sessEnd();
   ({ review: sessReview, new: sessNew, sound: sessSoundStep, speak: sessSpeak, mistakes: sessMistakes })[st.type](st);
 }
 
@@ -149,7 +243,18 @@ function sessQuit() {
   if (stopRecording) stopRecording();
   $("sessionView").hidden = true; document.body.style.overflow = "";
   sp.inSession = false; sp.root = null;
-  tdOpen(); refresh();
+  const back = sess.custom && sess.custom.onEnd; sess.custom = null;
+  if (back) back(); else tdOpen();
+  refresh();
+}
+
+function sessEndCustom() {
+  sessActions(""); sp.inSession = false; sp.root = null;
+  sess.done = sess.total; sessProgress();
+  sessStage(`<div class="sess-end"><div class="sess-check">${SVG.check}</div><h2>¡Listo!</h2>
+    <p class="note">${esc(sess.custom.title || "")}${sess.gained ? ` · +${sess.gained} XP` : ""}</p></div>`);
+  sessActions(`<button type="button" class="primary sess-big" id="sessDone">Continuar</button>`);
+  $("sessDone").onclick = sessQuit;
 }
 
 const sessStage = html => { const s = $("sessStage"); s.innerHTML = html; s.scrollTop = 0; return s; };
@@ -263,7 +368,7 @@ function sessSpeak(st) {
   sp.root = stage.querySelector("#sessSpeakRoot"); sp.inSession = true;
   const before = sess.gained;
   if (st.mode === "picture" && cfg.pictures) spPicStart();
-  else if (st.mode === "shadowing") spShStart(0);
+  else if (st.mode === "shadowing") spShStart(0, st.unit);
   else { sp.stats = sp.stats || null; spNarrStart(0); }
   // Los puntos de hablar los da el servidor al terminar; se ven en el resumen final.
   sess.gained = before;

@@ -118,13 +118,19 @@ class SpeakingController extends Controller
     public function shadowing(Request $request, ClaudeService $claude)
     {
         abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
-        $data = $request->validate(['skip' => ['sometimes', 'integer', 'min:0', 'max:50']]);
+        $data = $request->validate(['skip' => ['sometimes', 'integer', 'min:0', 'max:50'], 'unit' => ['sometimes', 'string', 'max:40']]);
         $user = $request->user();
         $level = $user->cefr_level ?: 'A2';
         $themes = config('speaking.shadowing_themes');
         $day = $this->srs->today($user);
         $i = ((int) $day->format('z') + (int) ($data['skip'] ?? 0)) % count($themes);
-        $theme = $themes[$i];
+        // Shadowing de una unidad del Camino: su tema (y su propio texto en caché).
+        $unit = isset($data['unit']) ? app(\App\Services\UnitService::class)->find($data['unit']) : null;
+        abort_if(isset($data['unit']) && ! $unit, 404, 'Esa unidad no existe.');
+        if ($unit) {
+            $i = 'u-'.$unit['id'].'-'.(int) ($data['skip'] ?? 0);
+        }
+        $theme = $unit['shadow'] ?? $themes[$i];
 
         try {
             $text = Cache::remember("shadowing:{$level}:{$day->toDateString()}:{$i}", now()->addDays(2), fn () => $claude->shadowingText($level, $theme));

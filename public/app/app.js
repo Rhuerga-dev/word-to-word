@@ -1560,7 +1560,7 @@ const labEs = t => labSay(t, "es");
 function labStep(text, mode) { const s = $("labStep"); if (s) s.innerHTML = `<span class="hf-dot ${mode || ""}"></span>${esc(text)}`; }
 
 function showLab(on) {
-  if (!on) { lab.on = false; if (stopRecording) stopRecording(); $("labView").hidden = true; showTab("practice"); return; }
+  if (!on) { lab.on = false; if (stopRecording) stopRecording(); $("labView").hidden = true; const back = lab.returnTo || "practice"; lab.returnTo = null; showTab(back); return; }
   if (hf.on) stopHF();
   ["queue", "main", "hfBar", "hello", "chatView", "quizView", "speakView", "progressView", "todayView", "pathView", "practiceView"].forEach(id => { if ($(id)) $(id).hidden = true; });
   $("labView").hidden = false;

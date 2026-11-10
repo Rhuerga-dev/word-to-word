@@ -10,6 +10,9 @@ Schedule::command('reminders:send')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('tts:prune')->daily()->withoutOverlapping();
 
 // Definiciones en inglés para las fichas avanzadas (sin español) de lo que los alumnos ya estudian.
+// Palabras de las unidades del Camino que falten.
+Schedule::command('units:sync')->dailyAt('04:00')->withoutOverlapping();
+
 Schedule::command('words:define --limit=200')->dailyAt('04:10')->withoutOverlapping();
 
 // Borra de la base de datos los tokens de la API ya caducados.

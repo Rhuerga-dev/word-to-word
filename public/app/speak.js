@@ -177,6 +177,12 @@ async function spFinish(quiet) {
   try { sp.wake && sp.wake.release(); } catch (e) {} sp.wake = null;
   try {
     const r = await api(`/speaking/sessions/${id}/finish`, { method: "POST" });
+    // Prueba de una unidad del Camino: la IA califica la conversación.
+    if (sp.unitTest && !quiet) {
+      try { r.unitTest = await api(`/path/units/${sp.unitTest}/test`, { method: "POST", body: { session_id: id, messages: sp.history.map(({ role, content }) => ({ role, content })) } }); }
+      catch (e) { r.unitTest = { error: e.message }; }
+    }
+    sp.unitTest = null;
     sp.stats = r.stats;
     if (!quiet) { sp.summary = r; sp.view = "summary"; renderSpeak(); }
   } catch (e) { if (!quiet) { sp.view = "home"; sp.status = e.message; renderSpeak(); } }
@@ -276,13 +282,14 @@ function renderSpeak() {
   on("spGoTalk", () => { sp.view = "scenarios"; sp.status = ""; renderSpeak(); });
   on("spGoNarr", () => { sp.view = "narrPick"; sp.status = ""; renderSpeak(); });
   on("spToProgress", () => showTab("progress"));
+  on("spToPath", () => showTab("path"));
   on("spSh", () => spShStart(0));
   on("spShOther", () => spShStart((sp.sh && sp.sh.skip || 0) + 1));
   on("spShListen", () => { unlockAudio(); spShPlay(false); });
   on("spShSlow", () => { unlockAudio(); spShPlay(true); });
   on("spShRec", () => spShTry());
   on("spShHide", () => { sp.sh.hide = !sp.sh.hide; renderSpeak(); });
-  on("spShNext", () => { const n = sp.sh; n.i++; n.result = null; n.tries = 0; renderSpeak(); if (n.i < n.sentences.length) spShPlay(false); });
+  on("spShNext", () => { const n = sp.sh; n.i++; n.result = null; n.tries = 0; renderSpeak(); if (n.i < n.sentences.length) spShPlay(false); else if (n.unit) spShUnitDone(); });
   on("spPicGo", () => spPicGo());
   on("spPicOther", () => spPicStart());
   on("spPicListen", () => { unlockAudio(); spSay(sp.pic && sp.pic.fb && sp.pic.fb.better); });
@@ -380,7 +387,11 @@ function renderControls() {
 
 function summaryHTML() {
   const s = sp.summary, st = sp.stats;
-  let html = `<div class="kind"><span>Resumen de la conversación</span><span>${esc((sp.scenario || {}).title || "")}</span></div>
+  const ut = s.unitTest;
+  let html = `<div class="kind"><span>${ut ? "Prueba de la unidad" : "Resumen de la conversación"}</span><span>${esc((sp.scenario || {}).title || "")}</span></div>
+    ${ut ? (ut.error ? `<p class="warnbox">${esc(ut.error)}</p>`
+      : `<div class="${ut.passed ? "banner ok" : "warnbox"}" style="display:grid;gap:6px"><b style="font-size:18px">${ut.passed ? "🏆 ¡Unidad completada!" : "Todavía no"}${ut.score != null ? ` · ${ut.score}/10` : ""}${ut.xp_gained ? ` · +${ut.xp_gained} XP` : ""}</b><span>${esc(ut.feedback || "")}</span></div>`)
+      + `<button type="button" class="primary" id="spToPath">Ver el camino</button>` : ""}
     <div class="stats">
       <div class="stat"><b>${esc(spMin(s.minutes))}</b><span>min hablando</span></div>
       <div class="stat"><b>${s.wpm ?? "—"}</b><span>palabras/min</span></div>
@@ -619,14 +630,15 @@ function picHTML() {
 }
 
 // ---------- shadowing ----------
-async function spShStart(skip) {
+async function spShStart(skip, unit) {
   unlockAudio();
   if (hf.on) stopHF(true);
   if (!cfg.ai) { sp.status = "Necesita la IA activada en el servidor (ANTHROPIC_API_KEY)."; return renderSpeak(); }
   if (!cfg.pronunciation && !SR) { sp.status = "Para evaluar tu voz hace falta Azure Speech en el servidor o Google Chrome."; return renderSpeak(); }
-  sp.view = "shadow"; sp.sh = { phase: "loading", skip, i: 0, tries: 0, result: null, hide: false, scores: [] };
+  sp.view = "shadow"; sp.sh = { phase: "loading", skip, unit: unit || null, i: 0, tries: 0, result: null, hide: false, scores: [] };
   renderSpeak();
-  try { Object.assign(sp.sh, await api("/speaking/shadowing" + (skip ? "?skip=" + skip : "")), { phase: "go" }); }
+  const q = new URLSearchParams(); if (skip) q.set("skip", skip); if (unit) q.set("unit", unit);
+  try { Object.assign(sp.sh, await api("/speaking/shadowing" + (q.toString() ? "?" + q : "")), { phase: "go" }); }
   catch (e) { sp.sh.phase = "error"; sp.sh.error = e.message; }
   renderSpeak();
   if (sp.sh.phase === "go") spShPlay(false);
@@ -673,7 +685,7 @@ function shHTML() {
   if (n.phase === "error") return html + `<p class="warnbox">${esc(n.error)}</p><div class="row"><button type="button" class="primary" id="spShOther">Intentar con otro</button><button type="button" id="spHome">Volver</button></div>`;
   if (n.i >= n.sentences.length) {
     const sc = n.scores.filter(x => x != null), avg = sc.length ? Math.round(sc.reduce((a, b) => a + b, 0) / sc.length) : 0;
-    return html + `<p class="banner ok">¡Terminaste! Promedio: <b>${avg}%</b>. Repetir el mismo texto mañana, ya sin mirarlo, es lo que más fija el ritmo.</p>
+    return html + (n.unitMsg ? `<p class="${/✓/.test(n.unitMsg) ? "banner ok" : "warnbox"}">${esc(n.unitMsg)}</p>` : "") + `<p class="banner ok">¡Terminaste! Promedio: <b>${avg}%</b>. Repetir el mismo texto mañana, ya sin mirarlo, es lo que más fija el ritmo.</p>
       <div class="row"><button type="button" class="primary" id="spShOther">Otro texto</button><button type="button" id="spHome">Volver</button></div>`;
   }
   const t = n.sentences[n.i], r = n.result;
@@ -692,4 +704,14 @@ function shHTML() {
   html += `<div class="row">${!done ? `<button type="button" class="primary" id="spShRec"${n.busy ? " disabled" : ""}>🎙️ ${n.tries ? "Otra vez" : "Repetir"}</button>` : ""}
     ${done || n.tries ? `<button type="button" class="${done ? "primary" : ""}" id="spShNext">Siguiente</button>` : ""}<button type="button" id="spHome">Salir</button></div>`;
   return html;
+}
+
+// Shadowing de una unidad del Camino: al terminar se marca el paso (con el promedio).
+async function spShUnitDone() {
+  const n = sp.sh; if (!n || !n.unit || n.unitSent) return;
+  const sc = n.scores.filter(x => x != null), avg = sc.length ? Math.round(sc.reduce((a, b) => a + b, 0) / sc.length) : 0;
+  n.unitSent = true;
+  try { await api(`/path/units/${n.unit}/shadow`, { method: "POST", body: { score: avg } }); n.unitMsg = "✓ Paso de shadowing de la unidad completado."; }
+  catch (e) { n.unitMsg = e.message; }
+  renderSpeak();
 }

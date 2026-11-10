@@ -42,7 +42,7 @@ class LevelService
     /** Palabras generales (sin el paquete de freelance ni las agregadas solo por familia). */
     public function general(): Builder
     {
-        return Word::query()->whereNotIn('source', [self::FREELANCE, self::FAMILY, self::PERSONAL]);
+        return Word::query()->whereNotIn('source', [self::FREELANCE, self::FAMILY, self::PERSONAL, UnitService::SOURCE]);
     }
 
     /** Palabras listas para estudiar (con traducción y ejemplo). */

@@ -624,6 +624,24 @@ body[data-nav="progress"] .wrap{max-width:1040px}
 .sess-week i{width:28px;height:28px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
 .sess-week i.on{background:#e8790c;border-color:#e8790c}
 .sess-improve{display:grid;gap:6px;text-align:left;width:100%}
+
+/* Camino */
+.pth-list{display:grid;gap:10px}
+.pth-row{display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.pth-row.locked{border-style:dashed;color:var(--muted);background:var(--bg)}
+.pth-dot{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--muted)}
+.pth-dot svg{width:20px;height:20px}
+.pth-row.done .pth-dot{background:var(--good);color:#fff}
+.pth-dot.cur{background:var(--accent);color:var(--accent-ink);width:46px;height:46px}
+.pth-cur{border:2px solid var(--accent);border-radius:18px;padding:16px;display:grid;gap:10px;background:var(--card)}
+.pth-head{display:flex;align-items:center;gap:12px;text-align:left}
+.pth-head h3{margin:0;font-family:var(--display);font-size:21px}
+.pth-step{display:flex;align-items:center;gap:12px;text-align:left;border-top:1px solid var(--line);padding-top:10px}
+.pth-step.locked{color:var(--muted)}
+.pth-sdot{width:30px;height:30px;border-radius:9px;flex:none;border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
+.pth-sdot svg{width:16px;height:16px}
+.pth-step.ok .pth-sdot{background:var(--good);border-color:var(--good);color:#fff}
+.pth-step.ok b{text-decoration:line-through;opacity:.7}
 </style>
 
 <div class="wrap">
@@ -786,8 +804,8 @@ body[data-nav="progress"] .wrap{max-width:1040px}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script src="/app/app.js?v=11"></script>
-<script src="/app/speak.js?v=8"></script>
+<script src="/app/app.js?v=12"></script>
+<script src="/app/speak.js?v=9"></script>
 <script src="/app/progress.js?v=1"></script>
-<script src="/app/today.js?v=1"></script>
+<script src="/app/today.js?v=2"></script>
 </body></html>

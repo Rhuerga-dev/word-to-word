@@ -65,6 +65,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/conversation', [ConversationController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/progress', \App\Http\Controllers\Api\ProgressController::class);
+    Route::get('/path', [\App\Http\Controllers\Api\PathController::class, 'index']);
+    Route::get('/path/units/{unit}/words', [\App\Http\Controllers\Api\PathController::class, 'words'])->where('unit', '[a-z0-9-]+');
+    Route::post('/path/units/{unit}/shadow', [\App\Http\Controllers\Api\PathController::class, 'shadow'])->where('unit', '[a-z0-9-]+');
+    Route::post('/path/units/{unit}/test', [\App\Http\Controllers\Api\PathController::class, 'test'])->where('unit', '[a-z0-9-]+')->middleware('throttle:10,1');
     Route::get('/session/today', [\App\Http\Controllers\Api\SessionController::class, 'today']);
     Route::post('/session/complete', [\App\Http\Controllers\Api\SessionController::class, 'complete'])->middleware('throttle:10,1');
     Route::get('/speaking/scenarios', [SpeakingController::class, 'scenarios']);
