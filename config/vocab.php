@@ -13,6 +13,9 @@ return [
     // Nivel a partir del cual una palabra cuenta como "dominada".
     'mastered_level' => 4,
 
+    // Desde este nivel de repaso la ficha se estudia sin español: definición en inglés y frase con hueco.
+    'english_only_level' => 3,
+
     // Familias de palabras (temas). La clave se guarda en words.category.
     'families' => [
         'body' => ['label' => 'Partes del cuerpo', 'emoji' => '🖐️'],

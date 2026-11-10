@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Word extends Model
 {
-    protected $fillable = ['word', 'rank', 'source', 'translation', 'example', 'example_es', 'category'];
+    protected $fillable = ['word', 'rank', 'source', 'translation', 'example', 'example_es', 'category', 'definition'];
 
     /** Etiqueta y emoji de su familia, o null. */
     public function family(): ?array

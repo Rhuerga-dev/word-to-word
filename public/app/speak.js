@@ -8,6 +8,7 @@ const sp = {
   view: "home", on: false, paused: false, busy: false, session: null, scenario: null, history: [],
   stats: null, scenarios: null, summary: null, review: null, status: "", mode: "",
   pause: (() => { try { return +localStorage.getItem("wtw_sp_pause") || 2.5; } catch (e) { return 2.5; } })(),
+  quick: (() => { try { return localStorage.getItem("wtw_sp_quick") === "1"; } catch (e) { return false; } })(),
   reviewHf: (() => { try { return localStorage.getItem("wtw_rev_hf") === "1"; } catch (e) { return false; } })(),
 };
 const SP_STOP = /^(stop|end|finish|terminar|termina|para|pausa|basta)( (please|the conversation|ya|por favor))?$/;
@@ -25,7 +26,10 @@ async function spOpen() {
 }
 async function spRefreshStats() { try { sp.stats = await api("/speaking/stats"); if (sp.view === "home") renderSpeak(); } catch (e) {} }
 // Al cambiar de pestaña a mitad de una conversación, se cierra y se guarda lo hablado.
-function spLeave() { if (sp.on) spFinish(true); }
+function spLeave() {
+  if (sp.on) spFinish(true);
+  if (sp.view === "narrate") { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.abort(); } catch (e) {} sp.view = "home"; }
+}
 
 // ---------- voz de la IA ----------
 function spSay(text) {
@@ -118,12 +122,16 @@ async function spListen() {
   sp.mode = "listen"; spStatus("Te escucho… habla con calma"); renderControls();
   if (cfg.pronunciation) {
     sp.recording = true; renderControls();
-    const wav = await recordWav(45000, null, sp.pause);
+    const t0 = Date.now(); let reaction = null;
+    spQuickStart();
+    const wav = await recordWav(45000, null, sp.pause, () => { reaction = Date.now() - t0; spQuickStop(true); });
+    spQuickStop(false);
     sp.recording = false; renderControls();
     if (sp.abortRec) { sp.abortRec = false; return { aborted: true }; }
     if (!wav.heard) return { text: "" };
     sp.mode = ""; spStatus("Entendiendo lo que dijiste…");
     const fd = new FormData(); fd.append("audio", wav, "voz.wav");
+    if (reaction != null) fd.append("reaction_ms", String(Math.min(60000, reaction)));
     return await api(`/speaking/sessions/${sp.session}/turns`, { method: "POST", body: fd });
   }
   const t0 = Date.now();
@@ -133,6 +141,22 @@ async function spListen() {
   const text = (alts[0] || "").trim();
   if (!text) return { text: "" };
   return await api(`/speaking/sessions/${sp.session}/turns`, { method: "POST", body: { text, ms: Math.min(60000, Math.max(0, Date.now() - t0 - 800)) } });
+}
+
+// Respuesta rápida: cuenta de 3 s para empezar a hablar (sin tiempo para traducir).
+const SP_QUICK_MS = 3000;
+function spQuickStart() {
+  const el = $("spQuick"); if (!el) return;
+  clearTimeout(sp.quickTimer);
+  if (!sp.quick) { el.innerHTML = ""; return; }
+  el.innerHTML = '<div class="sp-qbar"><i></i></div><span>Arranca en 3 s, sin traducir</span>';
+  requestAnimationFrame(() => { const i = el.querySelector("i"); if (i) { i.style.transition = `width ${SP_QUICK_MS}ms linear`; i.style.width = "0%"; } });
+  sp.quickTimer = setTimeout(() => { el.innerHTML = '<span class="sp-qlate">⏱ ¡Arranca! Di lo primero que se te ocurra, aunque sea simple.</span>'; }, SP_QUICK_MS);
+}
+function spQuickStop(spoke) {
+  clearTimeout(sp.quickTimer);
+  const el = $("spQuick"); if (!el) return;
+  el.innerHTML = spoke && sp.quick ? '<span class="sp-qok">✓ Arrancaste</span>' : "";
 }
 
 function spPause() {
@@ -231,7 +255,8 @@ const spMin = n => (Math.round((n || 0) * 10) / 10).toLocaleString("es", { maxim
 function renderSpeak() {
   const el = $("speakBody"); if (!el) return;
   if (sp.view === "talk") return renderTalk();
-  if (sp.view === "summary") el.innerHTML = summaryHTML();
+  if (sp.view === "narrate") el.innerHTML = narrHTML();
+  else if (sp.view === "summary") el.innerHTML = summaryHTML();
   else if (sp.view === "review") el.innerHTML = reviewHTML();
   else el.innerHTML = homeHTML();
   el.querySelectorAll("[data-sc]").forEach(b => b.onclick = () => spStart(b.dataset.sc));
@@ -242,6 +267,12 @@ function renderSpeak() {
   on("spShow", () => { sp.review.shown = true; renderSpeak(); spSay(sp.review.list[sp.review.i].correct); });
   on("spListen", () => { unlockAudio(); spSay(sp.review.list[sp.review.i].correct); });
   on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.shown = false; renderSpeak(); });
+  on("spNarr", () => spNarrStart(0));
+  on("spNarrOther", () => { sp.narrSkip = (sp.narrSkip || 0) + 1; spNarrStart(sp.narrSkip); });
+  on("spNarrAgain", () => spNarrStart(sp.narrSkip || 0));
+  on("spNarrListen", () => { unlockAudio(); spSay(sp.narr && sp.narr.fb && sp.narr.fb.better); });
+  on("spNarrDone", () => { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.stop(); } catch (e) {} });
+  const qo = $("spQuickOn"); if (qo) qo.onchange = e => { sp.quick = e.target.checked; try { localStorage.setItem("wtw_sp_quick", sp.quick ? "1" : "0"); } catch (er) {} };
   const rh = $("spRevHf"); if (rh) rh.onchange = e => { sp.reviewHf = e.target.checked; spSaveRevHf(); if (sp.reviewHf) { unlockAudio(); spReviewLoop(); } else spHush(); };
   const pz = $("spPauseSel"); if (pz) pz.onchange = e => { sp.pause = +e.target.value; try { localStorage.setItem("wtw_sp_pause", sp.pause); } catch (er) {} };
 }
@@ -268,13 +299,21 @@ function homeHTML() {
     <div class="stats">
       <div class="stat"><b>${lastW ?? "—"}</b><span>palabras/min${firstW && lastW ? (lastW > firstW ? " ↑" : lastW < firstW ? " ↓" : "") : ""}</span></div>
       <div class="stat"><b>${st.pauses_per_min ?? "—"}</b><span>pausas largas/min</span></div>
-      <div class="stat"><b>${st.mistakes_mastered}</b><span>errores superados</span></div>
+      <div class="stat"><b>${st.reaction != null ? String(st.reaction).replace(".", ",") + " s" : "—"}</b><span>para arrancar${st.reaction_trend && st.reaction_trend.length > 1 ? (st.reaction_trend[st.reaction_trend.length - 1] < st.reaction_trend[0] ? " ↓" : st.reaction_trend[st.reaction_trend.length - 1] > st.reaction_trend[0] ? " ↑" : "") : ""}</span></div>
     </div>
+    <p class="note">«Para arrancar» es lo que tardas en empezar a contestar. Si baja, estás traduciendo menos. ${st.mistakes_mastered ? `Errores superados: <b>${st.mistakes_mastered}</b>.` : ""}</p>
     <p class="note">Referencia: en una charla normal un nativo dice unas 120–160 palabras por minuto. Que suba tu ritmo y bajen las pausas es fluidez.</p>`;
     if (st.mistakes_due) html += `<button type="button" class="primary" id="spReview">Repasar ${st.mistakes_due} ${st.mistakes_due === 1 ? "error" : "errores"} de tus conversaciones</button>`;
   }
+  if (st && st.topic) html += `<div class="sp-narr">
+      <div><b>🗣️ Narración del día · 1 minuto</b> ${st.narrated_today ? '<span class="chip sp-ok">✓ Hecha hoy</span>' : ""}</div>
+      <p class="sp-topic">${esc(st.topic.en)}</p><p class="note">${esc(st.topic.es)}</p>
+      <p class="note">Hablas un minuto sin parar, sin preparar nada. Luego ves una versión más natural y tus errores.</p>
+      <div class="row"><button type="button" class="${st.narrated_today ? "" : "primary"}" id="spNarr"${sp.busy ? " disabled" : ""}>Empezar</button><button type="button" id="spNarrOther"${sp.busy ? " disabled" : ""}>Otro tema</button></div></div>`;
   html += `<h3 class="sp-h">Elige una situación</h3>`;
   html += sp.scenarios ? `<div class="sp-scen">${sp.scenarios.map(s => `<button type="button" data-sc="${esc(s.id)}"${sp.busy ? " disabled" : ""}><span class="sp-e" aria-hidden="true">${esc(s.emoji)}</span><b>${esc(s.title)}</b><small>${esc(s.desc)}</small></button>`).join("")}</div>` : '<p class="note">Cargando…</p>';
+  html += `<label class="switch" for="spQuickOn"><input type="checkbox" id="spQuickOn" role="switch"${sp.quick ? " checked" : ""}> ⚡ Respuesta rápida</label>
+    <p class="note">Tienes 3 segundos para empezar a contestar: no da tiempo a traducir, y así el cerebro aprende a ir directo al inglés.</p>`;
   html += `<label class="inl" for="spPauseSel">Cuánto espero cuando haces una pausa
     <select id="spPauseSel" style="width:auto">${[[1.8, "Poco (1,8 s)"], [2.5, "Normal (2,5 s)"], [3.5, "Mucho (3,5 s)"]].map(([v, l]) => `<option value="${v}"${sp.pause === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
     <p class="note">La IA te habla y te escucha sola, sin botones. Para terminar di <b>«stop»</b> o pulsa Terminar. Al final verás tus errores para repasarlos.</p>`;
@@ -286,6 +325,7 @@ function renderTalk() {
   if (!$("spMsgs")) {
     el.innerHTML = `<div class="kind"><span>${esc(sp.scenario.emoji)} ${esc(sp.scenario.title)}</span><span id="spToday"></span></div>
       <p class="sp-status" id="spStatus" aria-live="polite"></p>
+      <div class="sp-quick" id="spQuick" aria-live="polite"></div>
       <div class="msgs sp-msgs" id="spMsgs"></div>
       <div class="row" id="spCtl"></div>`;
   }
@@ -313,6 +353,7 @@ function summaryHTML() {
       <div class="stat"><b>${esc(spMin(s.minutes))}</b><span>min hablando</span></div>
       <div class="stat"><b>${s.wpm ?? "—"}</b><span>palabras/min</span></div>
       <div class="stat"><b>${s.pauses_per_min ?? "—"}</b><span>pausas largas/min</span></div>
+      ${s.reaction != null ? `<div class="stat"><b>${String(s.reaction).replace(".", ",")} s</b><span>para arrancar</span></div>` : ""}
     </div>`;
   if (st) html += `<p class="note">Hoy llevas <b>${esc(spMin(st.today))}</b> de ${st.goal} min. ${st.today >= st.goal ? "¡Meta del día cumplida! 🎉" : "Una conversación más y la cumples."}</p>`;
   html += s.mistakes.length
@@ -348,5 +389,104 @@ function reviewHTML() {
     ${!rv.shown ? '<button type="button" id="spShow">Ver la frase correcta</button>' : ""}
     ${answered ? '<button type="button" id="spNext">Siguiente</button>' : ""}
     <button type="button" id="spHome">Salir</button></div>`;
+  return html;
+}
+
+// ---------- narración diaria (1 minuto) ----------
+// Con el navegador (sin Azure): reconocimiento continuo hasta que pulses "Terminé" o pase el tiempo.
+function spListenLong(ms) {
+  return new Promise((resolve, reject) => {
+    if (!SR) return reject(new Error("Este navegador no reconoce voz. Usa Google Chrome."));
+    const r = new SR(); sp.narrRec = r; r.lang = "en-US"; r.continuous = true; r.interimResults = false;
+    const parts = []; const t = setTimeout(() => { try { r.stop(); } catch (e) {} }, ms);
+    r.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) parts.push(e.results[i][0].transcript); };
+    r.onerror = e => { if (e.error !== "no-speech" && e.error !== "aborted") { clearTimeout(t); reject(new Error("Error de voz: " + e.error)); } };
+    r.onend = () => { clearTimeout(t); sp.narrRec = null; resolve(parts.join(" ").trim()); };
+    r.start();
+  });
+}
+
+async function spNarrStart(skip) {
+  unlockAudio();
+  if (hf.on) stopHF(true);
+  if (!cfg.ai) { sp.status = "La narración necesita la IA activada en el servidor (ANTHROPIC_API_KEY)."; return renderSpeak(); }
+  if (!cfg.pronunciation && !SR) { sp.status = "Para hablar hace falta el reconocimiento de voz (AZURE_SPEECH_KEY en el servidor, o Google Chrome)."; return renderSpeak(); }
+  sp.busy = true; sp.status = ""; renderSpeak();
+  let r;
+  try { r = await api("/speaking/sessions", { method: "POST", body: { scenario: "narrate", skip } }); }
+  catch (e) { sp.busy = false; sp.status = e.message; return renderSpeak(); }
+  sp.busy = false;
+  sp.narr = { id: r.id, topic: r.topic, seconds: r.seconds || 60, phase: "intro", left: r.seconds || 60, text: "", fb: null, summary: null };
+  sp.scenario = { id: "narrate", title: "Narración del día", emoji: "🗣️" };
+  sp.view = "narrate"; renderSpeak();
+  try {
+    await spSay(r.topic.en);
+    if (sp.view !== "narrate") return;
+    await spSayEs("Habla un minuto. Empieza ya.");
+    await spNarrRecord();
+  } catch (e) { sp.narr.phase = "error"; sp.narr.error = e.message; renderSpeak(); }
+}
+
+async function spNarrRecord() {
+  const n = sp.narr; n.phase = "rec"; n.left = n.seconds; renderSpeak();
+  const t0 = Date.now(); let reaction = null;
+  clearInterval(n.tick);
+  n.tick = setInterval(() => { n.left = Math.max(0, n.seconds - Math.round((Date.now() - t0) / 1000)); const el = $("spNarrLeft"); if (el) el.textContent = n.left; }, 500);
+  let turn;
+  try {
+    if (cfg.pronunciation) {
+      sp.recording = true;
+      // Azure acepta hasta 60 s por audio; se corta solo tras 4 s de silencio.
+      const wav = await recordWav(Math.min(58000, n.seconds * 1000), null, 4.0, () => { reaction = Date.now() - t0; });
+      sp.recording = false;
+      if (sp.view !== "narrate") return;
+      if (!wav.heard) throw new Error("No te oí. Acércate al micrófono y prueba otra vez.");
+      n.phase = "wait"; renderSpeak();
+      const fd = new FormData(); fd.append("audio", wav, "voz.wav");
+      if (reaction != null) fd.append("reaction_ms", String(Math.min(60000, reaction)));
+      turn = await api(`/speaking/sessions/${n.id}/turns`, { method: "POST", body: fd });
+    } else {
+      const text = await spListenLong(n.seconds * 1000);
+      if (sp.view !== "narrate") return;
+      if (!text) throw new Error("No te oí. Acércate al micrófono y prueba otra vez.");
+      n.phase = "wait"; renderSpeak();
+      turn = await api(`/speaking/sessions/${n.id}/turns`, { method: "POST", body: { text, ms: Math.min(60000, Date.now() - t0) } });
+    }
+  } finally { clearInterval(n.tick); sp.recording = false; }
+  if (!turn.text) throw new Error("No se entendió lo que dijiste. Prueba otra vez, un poco más alto.");
+  n.text = turn.text;
+  n.fb = await api(`/speaking/sessions/${n.id}/narration`, { method: "POST", body: { text: turn.text } });
+  n.summary = await api(`/speaking/sessions/${n.id}/finish`, { method: "POST" });
+  sp.stats = n.summary.stats;
+  n.phase = "done"; renderSpeak();
+  if (n.fb.comment) await spSay(n.fb.comment);
+}
+
+function narrHTML() {
+  const n = sp.narr; if (!n) return "";
+  let html = `<div class="kind"><span>🗣️ Narración del día</span><span>${n.phase === "rec" ? `<b id="spNarrLeft">${n.left}</b> s` : ""}</span></div>
+    <p class="sp-topic">${esc(n.topic.en)}</p><p class="note">${esc(n.topic.es)}</p>`;
+  if (n.phase === "intro") html += '<p class="sp-status"><span class="hf-dot speak"></span>Escucha el tema…</p>';
+  if (n.phase === "rec") html += `<p class="sp-status"><span class="hf-dot listen"></span>Te escucho: habla sin parar, aunque te equivoques.</p>
+    <p class="note">Si te quedas en blanco, describe lo que ves o di <i>"what I mean is…"</i> y sigue.</p>
+    <div class="row"><button type="button" class="primary" id="spNarrDone">Terminé</button></div>`;
+  if (n.phase === "wait") html += '<p class="sp-status"><span class="hf-dot"></span>Revisando lo que dijiste…</p>';
+  if (n.phase === "error") html += `<p class="warnbox">${esc(n.error)}</p><div class="row"><button type="button" class="primary" id="spNarrAgain">Intentar otra vez</button><button type="button" id="spHome">Volver</button></div>`;
+  if (n.phase === "done") {
+    const s = n.summary || {}, fb = n.fb || {};
+    html += `<div class="stats">
+        <div class="stat"><b>${esc(spMin(s.minutes))}</b><span>min hablando</span></div>
+        <div class="stat"><b>${s.wpm ?? "—"}</b><span>palabras/min</span></div>
+        <div class="stat"><b>${s.reaction != null ? String(s.reaction).replace(".", ",") + " s" : "—"}</b><span>para arrancar</span></div>
+      </div>
+      ${fb.comment ? `<p class="msg ai">${esc(fb.comment)}</p>` : ""}
+      ${fb.feedback ? `<p class="note">${esc(fb.feedback)}</p>` : ""}
+      <details class="sp-said-all"><summary>Lo que dijiste</summary><p>${esc(n.text)}</p></details>
+      ${fb.better ? `<h3 class="sp-h">Así sonaría más natural</h3><p class="sp-better">${esc(fb.better)} <button type="button" class="round" id="spNarrListen" aria-label="Escuchar">${ICON_SPK}</button></p>
+        <p class="note">Léela en voz alta una vez: copiar el ritmo de una versión natural de <b>tus propias ideas</b> es de lo que más ayuda.</p>` : ""}
+      ${(fb.mistakes || []).length ? `<h3 class="sp-h">Para mejorar (${fb.mistakes.length})</h3>${fb.mistakes.map(f => `<p class="sp-fix"><s>${esc(f.said)}</s> → <b>${esc(f.correct)}</b>${f.why ? `<br><span class="note">${esc(f.why)}</span>` : ""}</p>`).join("")}
+        <button type="button" class="primary" id="spReview">Repasar mis errores ahora</button>` : '<p class="banner ok">Sin errores importantes. ¡Muy bien!</p>'}
+      <div class="row"><button type="button" id="spHome">Volver</button></div>`;
+  }
   return html;
 }

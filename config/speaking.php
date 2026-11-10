@@ -15,6 +15,41 @@ return [
     // Días hasta el próximo repaso de un error según los repasos aprobados seguidos; el último lo da por dominado.
     'mistake_spacing' => [1, 3, 7, 14, 30],
 
+    // Narración diaria: un minuto hablando sin parar sobre un tema (uno distinto cada día).
+    'narration_seconds' => 60,
+    'narration_topics' => [
+        ['Describe what you did this morning, step by step.', 'Describe lo que hiciste esta mañana, paso a paso.'],
+        ['Explain what you are building right now and why.', 'Explica qué estás construyendo ahora y por qué.'],
+        ['Talk about your plans for this weekend.', 'Habla de tus planes para el fin de semana.'],
+        ['Describe your neighborhood to someone who has never been there.', 'Describe tu barrio a alguien que nunca ha ido.'],
+        ['Tell the story of how you learned to code.', 'Cuenta cómo aprendiste a programar.'],
+        ['Describe your perfect working day.', 'Describe tu día de trabajo perfecto.'],
+        ['Explain a bug you fixed and how you found it.', 'Explica un error que arreglaste y cómo lo encontraste.'],
+        ['Talk about a place you would love to travel to.', 'Habla de un lugar al que te encantaría viajar.'],
+        ['Describe your favorite food and how to make it.', 'Describe tu comida favorita y cómo se prepara.'],
+        ['Explain what a client should expect when they hire you.', 'Explica qué puede esperar un cliente cuando te contrata.'],
+        ['Talk about something that was hard for you this week.', 'Habla de algo que te costó esta semana.'],
+        ['Describe one of your apps as if you were selling it.', 'Describe una de tus apps como si la vendieras.'],
+        ['Talk about a person who has influenced you.', 'Habla de una persona que te ha influido.'],
+        ['Explain how you organize your day.', 'Explica cómo organizas tu día.'],
+        ['Describe the weather today and how it changes your plans.', 'Describe el clima de hoy y cómo cambia tus planes.'],
+        ['Talk about your goals for the next six months.', 'Habla de tus metas para los próximos seis meses.'],
+        ['Explain what cybersecurity is to a friend.', 'Explica qué es la ciberseguridad a un amigo.'],
+        ['Describe the last movie or series you watched.', 'Describe la última película o serie que viste.'],
+        ['Talk about the differences between your home country and the US.', 'Habla de las diferencias entre tu país y Estados Unidos.'],
+        ['Explain how to do something you are good at.', 'Explica cómo hacer algo que sabes hacer bien.'],
+        ['Describe your ideal home.', 'Describe tu casa ideal.'],
+        ['Talk about a mistake you learned from.', 'Habla de un error del que aprendiste.'],
+        ['Explain why you want to speak English fluently.', 'Explica por qué quieres hablar inglés con fluidez.'],
+        ['Describe what you see around you right now.', 'Describe lo que ves a tu alrededor ahora mismo.'],
+        ['Talk about a tool or app you use every day.', 'Habla de una herramienta o app que usas todos los días.'],
+        ['Tell a funny thing that happened to you.', 'Cuenta algo gracioso que te pasó.'],
+        ['Explain how you would plan a small web project.', 'Explica cómo planearías un proyecto web pequeño.'],
+        ['Talk about your family.', 'Habla de tu familia.'],
+        ['Describe a typical day in your city.', 'Describe un día típico en tu ciudad.'],
+        ['Talk about what you would do with an extra free day every week.', 'Habla de qué harías con un día libre extra cada semana.'],
+    ],
+
     'scenarios' => [
         'free' => [
             'title' => 'Charla libre',

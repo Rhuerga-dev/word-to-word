@@ -9,6 +9,9 @@ Schedule::command('reminders:send')->everyFiveMinutes()->withoutOverlapping();
 // Caché de voces: borra audios viejos y no deja que pase de 500 MB.
 Schedule::command('tts:prune')->daily()->withoutOverlapping();
 
+// Definiciones en inglés para las fichas avanzadas (sin español) de lo que los alumnos ya estudian.
+Schedule::command('words:define --limit=200')->dailyAt('04:10')->withoutOverlapping();
+
 // Borra de la base de datos los tokens de la API ya caducados.
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
 

@@ -73,7 +73,8 @@ function sayBrowser(text, slow) { if (!("speechSynthesis" in window)) return; sp
 // ===== Grabación WAV 16 kHz (para Azure) =====
 let stopRecording = null;
 let hfAudioCtx = null;
-async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0) {
+// onVoice: se llama una vez cuando empieza a oírse tu voz (para medir cuánto tardas en arrancar).
+async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0, onVoice) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
   // En manos libres se reusa el contexto de audio que se desbloqueó con el toque (iPhone).
   const shared = hfAudioCtx && hfAudioCtx.state !== "closed";
@@ -99,7 +100,7 @@ async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0) {
     proc.onaudioprocess = e => {
       const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push(d);
       let rms = 0; for (let i = 0; i < d.length; i++) rms += d[i] * d[i]; rms = Math.sqrt(rms / d.length);
-      if (rms > 0.02) { heard = true; silentFor = 0; } else if (heard) { silentFor += d.length / ctx.sampleRate; if (silentFor > silenceSec) { clearTimeout(timer); stop(); } }
+      if (rms > 0.02) { if (!heard && onVoice) { try { onVoice(); } catch (er) {} } heard = true; silentFor = 0; } else if (heard) { silentFor += d.length / ctx.sampleRate; if (silentFor > silenceSec) { clearTimeout(timer); stop(); } }
     };
   });
 }
@@ -328,20 +329,30 @@ function render() {
     return;
   }
   const isNew = c.mode === "new";
-  const front = `<div class="kind"><span class="stage">${stageLabel(c)}</span><span>${famChip(c)}${commonness(c.rank)}${c.best_pron_score != null ? " · 🎙️ " + c.best_pron_score + "%" : ""}</span></div>
+  // Ficha avanzada sin español: recuerdas la palabra desde la definición en inglés y una frase con hueco.
+  const enOnly = !isNew && c.english_only && !hf.on;
+  const cloze = enOnly ? esc(c.example).replace(/\*(.+?)\*/g, '<span class="cloze">_____</span>') : "";
+  const front = enOnly && !revealed ? `<div class="kind"><span class="stage">🇺🇸 Solo inglés</span><span>${famChip(c)}${commonness(c.rank)}</span></div>` : `<div class="kind"><span class="stage">${stageLabel(c)}</span><span>${famChip(c)}${commonness(c.rank)}${c.best_pron_score != null ? " · 🎙️ " + c.best_pron_score + "%" : ""}</span></div>
     <div class="word-row"><h2 class="word tappable" id="spk" role="button" tabindex="0" title="Toca para escuchar">${esc(c.word)}</h2></div>`;
   let body;
   if (isNew) {
     body = `<p class="tr">${esc(c.translation)}</p><div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>
       ${speakingBlock()}${aidBlock(c, false)}
       <p class="gesture">Desliza la ficha a la derecha → cuando la tengas<span class="keys"> · o pulsa <kbd>Enter</kbd></span></p>`;
+  } else if (enOnly && !revealed) {
+    body = `${c.definition ? `<p class="def">${esc(c.definition)}</p>` : ""}<p class="ex">${cloze}</p>
+      <p class="hint">¿Qué palabra falta? Dila en inglés, sin pasar por el español.</p>
+      <p class="gesture">Toca la ficha para ver la respuesta<span class="keys"> · o pulsa <kbd>Espacio</kbd></span></p>`;
   } else if (!revealed) {
     body = `<p class="hint">¿Qué significa? Dilo en voz alta antes de ver la respuesta.</p>
       ${c.aid ? (showHint ? `<p class="warnbox">Pista AID: ${esc(c.aid)}</p>` : '<p class="note tappable" id="hintBtn" role="button" tabindex="0">¿Necesitas una pista? Toca aquí (o <kbd>H</kbd>).</p>') : ""}
       <p class="gesture">Toca la ficha para ver la respuesta<span class="keys"> · o pulsa <kbd>Espacio</kbd></span></p>`;
   } else {
     const p = c.previews || { again: 1, hard: 1, good: 3, easy: 7 };
-    body = `<p class="tr">${esc(c.translation)}</p><div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>
+    body = (enOnly
+      ? `${c.definition ? `<p class="def">${esc(c.definition)}</p>` : ""}<div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p></div>
+        <details class="es-peek"><summary>Ver en español</summary><p class="tr">${esc(c.translation)}</p><p class="ex-es">${esc(c.example_es)}</p></details>`
+      : `<p class="tr">${esc(c.translation)}</p><div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>`) + `
       ${speakingBlock()}${aidBlock(c, c.fails >= 2 && !c.aid)}
       <div class="swipe-legend" aria-label="Califica deslizando la ficha">
         <span class="l tappable" role="button" tabindex="0" data-grade="again"><b>← Olvidé</b><small>${days(p.again)}</small></span>
@@ -352,7 +363,7 @@ function render() {
       <p class="keys">Teclado: <kbd>1</kbd> Olvidé · <kbd>2</kbd> Difícil · <kbd>3</kbd> Bien · <kbd>4</kbd> Fácil · <kbd>R</kbd> escuchar · <kbd>M</kbd> decir la frase</p>`;
   }
   main.innerHTML = `<div class="card swipeable" id="theCard"><span class="swipe-hint" id="swipeHint"></span><div class="card-top"></div><div class="card-body">${front}${body}</div></div>`;
-  $("spk").onclick = () => say(c.word);
+  if ($("spk")) $("spk").onclick = () => say(c.word);
   if ($("hintBtn")) $("hintBtn").onclick = e => { e.stopPropagation(); showHint = true; render(); };
   bindCardGestures(c, isNew);
   if (isNew && !hf.on && autoSpoken !== c.id) { autoSpoken = c.id; say(c.word); }

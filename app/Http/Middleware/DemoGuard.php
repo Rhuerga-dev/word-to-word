@@ -28,6 +28,7 @@ class DemoGuard
         'api/conversation' => 25,
         'api/speaking/sessions/*/turns' => 40,
         'api/speaking/mistakes/*/review' => 40,
+        'api/speaking/sessions/*/narration' => 5,
         'api/words/*/aid/suggest' => 10,
         'api/words/*/pronunciation' => 40,
         'api/pronunciation/assess' => 60,
@@ -39,6 +40,7 @@ class DemoGuard
         'api/conversation' => 150,              // ~2 conversaciones por voz largas al día
         'api/speaking/sessions/*/turns' => 300,
         'api/speaking/mistakes/*/review' => 300,
+        'api/speaking/sessions/*/narration' => 20,
         'api/words/*/aid/suggest' => 40,
         'api/words/*/pronunciation' => 200,
         'api/pronunciation/assess' => 300,
@@ -50,6 +52,7 @@ class DemoGuard
         'api/conversation' => 1500,
         'api/speaking/sessions/*/turns' => 3000,
         'api/speaking/mistakes/*/review' => 3000,
+        'api/speaking/sessions/*/narration' => 300,
         'api/words/*/aid/suggest' => 400,
         'api/words/*/pronunciation' => 3000,
         'api/pronunciation/assess' => 3000,

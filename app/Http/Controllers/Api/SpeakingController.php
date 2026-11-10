@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SpeakingMistake;
 use App\Models\SpeakingSession;
+use App\Services\ClaudeService;
 use App\Services\PronunciationService;
 use App\Services\SpeakingService;
 use App\Services\SrsService;
@@ -31,15 +32,20 @@ class SpeakingController extends Controller
 
     public function start(Request $request)
     {
-        $data = $request->validate(['scenario' => ['required', 'string', Rule::in(array_keys(config('speaking.scenarios')))]]);
+        $data = $request->validate([
+            'scenario' => ['required', 'string', Rule::in([...array_keys(config('speaking.scenarios')), 'narrate'])],
+            'skip' => ['sometimes', 'integer', 'min:0', 'max:100'],   // narración: otro tema
+        ]);
         $user = $request->user();
+        $topic = $data['scenario'] === 'narrate' ? $this->speaking->topic($user, (int) ($data['skip'] ?? 0)) : null;
         $session = SpeakingSession::create([
             'user_id' => $user->id,
             'scenario' => $data['scenario'],
             'day' => $this->srs->today($user)->toDateString(),
+            'topic' => $topic['en'] ?? null,
         ]);
 
-        return response()->json(['id' => $session->id, 'scenario' => $session->scenario], 201);
+        return response()->json(['id' => $session->id, 'scenario' => $session->scenario, 'topic' => $topic, 'seconds' => config('speaking.narration_seconds')], 201);
     }
 
     /**
@@ -51,9 +57,12 @@ class SpeakingController extends Controller
         abort_unless($session->user_id === $request->user()->id, 404);
         abort_if($session->ended_at !== null, 409, 'Esta conversación ya terminó. Empieza otra.');
 
+        // Cuánto tardó en empezar a hablar desde que terminó la pregunta (lo mide la app).
+        $reaction = $request->validate(['reaction_ms' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:60000']])['reaction_ms'] ?? null;
+
         if ($request->hasFile('audio')) {
             abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
-            $request->validate(['audio' => ['required', 'file', 'max:3072']]);   // ~45 s de WAV 16 kHz mono
+            $request->validate(['audio' => ['required', 'file', 'max:4096']]);   // ~60 s de WAV 16 kHz mono
             try {
                 $out = $pron->transcribe($request->file('audio')->get());
             } catch (Throwable $e) {
@@ -72,10 +81,30 @@ class SpeakingController extends Controller
         }
 
         if ($out['words'] > 0) {
-            $this->speaking->addTurn($session, $out);
+            $this->speaking->addTurn($session, $out, $reaction !== null ? (int) $reaction : null);
         }
 
         return $out + ['today' => $this->speaking->stats($request->user())['today']];
+    }
+
+    /** Correcciones de la narración de un minuto: comentario, versión más natural y errores para repasar. */
+    public function narration(Request $request, ClaudeService $claude, SpeakingSession $session)
+    {
+        abort_unless($session->user_id === $request->user()->id, 404);
+        abort_unless($session->scenario === 'narrate', 422, 'Esta sesión no es una narración.');
+        abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
+        $data = $request->validate(['text' => ['required', 'string', 'min:3', 'max:4000']]);
+        $user = $request->user();
+
+        try {
+            $out = $claude->narration($session->topic ?? 'free topic', $data['text'], $user->cefr_level);
+        } catch (Throwable $e) {
+            report($e);
+            abort(502, 'La IA no respondió. Intenta otra vez.');
+        }
+        $mistakes = $this->speaking->saveMistakes($user, $out['mistakes'], $session, $this->srs->today($user));
+
+        return ['comment' => $out['reply'], 'better' => $out['better'], 'feedback' => $out['feedback'], 'mistakes' => $mistakes];
     }
 
     public function finish(Request $request, SpeakingSession $session)

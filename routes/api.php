@@ -69,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/speaking/goal', [SpeakingController::class, 'goal']);
     Route::post('/speaking/sessions', [SpeakingController::class, 'start'])->middleware('throttle:20,1');
     Route::post('/speaking/sessions/{session}/turns', [SpeakingController::class, 'turn'])->middleware('throttle:40,1');
+    Route::post('/speaking/sessions/{session}/narration', [SpeakingController::class, 'narration'])->middleware('throttle:10,1');
     Route::post('/speaking/sessions/{session}/finish', [SpeakingController::class, 'finish']);
     Route::get('/speaking/mistakes', [SpeakingController::class, 'mistakes']);
     Route::post('/speaking/mistakes/{mistake}/review', [SpeakingController::class, 'review'])->middleware('throttle:60,1');

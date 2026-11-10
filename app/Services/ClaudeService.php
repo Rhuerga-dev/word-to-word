@@ -128,6 +128,61 @@ TXT;
     }
 
     /**
+     * Definiciones sencillas en inglés (de diccionario para estudiantes), sin usar la propia palabra.
+     *
+     * @param  string[]  $words
+     * @return array<string, string>
+     */
+    public function define(array $words): array
+    {
+        $list = implode("\n", $words);
+        $prompt = <<<TXT
+For each English word below, write a short learner's dictionary definition in simple English (max 12 words).
+Do NOT use the word itself or any form of it. Use the most common meaning.
+Answer ONLY with a JSON object: {"word": "definition", ...}, keys exactly as given.
+Example: {"borrow": "to take something from someone and give it back later"}
+
+Words:
+{$list}
+TXT;
+        $text = $this->message('You write clear, simple definitions for English learners.', [['role' => 'user', 'content' => $prompt]], 3000);
+        $start = strpos($text, '{');
+        $end = strrpos($text, '}');
+        $data = $start !== false && $end !== false ? json_decode(substr($text, $start, $end - $start + 1), true) : null;
+        if (! is_array($data)) {
+            throw new RuntimeException('La respuesta no traía JSON válido.');
+        }
+
+        return array_filter(array_map(fn ($d) => is_string($d) ? trim($d) : null, $data));
+    }
+
+    /**
+     * Correcciones de una narración de un minuto: comentario, versión más natural y errores (máx. 5).
+     *
+     * @return array{reply: string, better: ?string, feedback: ?string, used: array, mistakes: array}
+     */
+    public function narration(string $topic, string $text, ?string $level = null): array
+    {
+        $level = $level ?: 'A2-B1';
+        $system = <<<TXT
+You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
+The student spoke for about one minute about: "{$topic}". What you get is a speech-to-text transcript: ignore punctuation, capitalization and spelling.
+Answer with exactly these lines:
+- A line starting with "COMMENT:" in simple English: 1-2 friendly sentences reacting to WHAT they said (not the grammar).
+- A line starting with "BETTER:" with a more natural version of what they said, same ideas, same level, max 70 words.
+- A line starting with "FEEDBACK:" in Spanish: one encouraging sentence about how they did.
+- For each real mistake (max 5, the most useful ones), a line exactly like:
+  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words>
+TXT;
+        $out = self::parseTurn($this->message($system, [['role' => 'user', 'content' => $text]], 900), 5);
+        $raw = $out['reply'];
+        $comment = preg_match('/^COMMENT:\s*(.+)$/mi', $raw, $m) ? trim($m[1]) : trim(preg_replace('/^BETTER:.*$/mi', '', $raw));
+        $better = preg_match('/^BETTER:\s*(.+)$/mi', $raw, $m) ? trim($m[1]) : null;
+
+        return ['reply' => $comment, 'better' => $better] + $out;
+    }
+
+    /**
      * Conversación de práctica que obliga a usar las palabras del día.
      *
      * @param  array<int, array{role: string, content: string}>  $history
@@ -173,7 +228,7 @@ TXT;
     }
 
     /** Separa la respuesta de la IA en: lo que dice, la nota en español, errores y palabras usadas. */
-    public static function parseTurn(string $text): array
+    public static function parseTurn(string $text, int $maxFixes = 2): array
     {
         $feedback = null;
         $used = [];
@@ -185,7 +240,7 @@ TXT;
             $used = strtolower(trim($m[1])) === 'none' ? [] : array_values(array_filter(array_map('trim', explode(',', $m[1]))));
         }
         if (preg_match_all('/^FIX:\s*(.+?)\s*=>\s*(.+?)\s*(?:\|\s*(.+))?$/mi', $text, $all, PREG_SET_ORDER)) {
-            foreach (array_slice($all, 0, 2) as $m) {
+            foreach (array_slice($all, 0, $maxFixes) as $m) {
                 $said = trim($m[1], " \t\"'“”");
                 $correct = trim($m[2], " \t\"'“”");
                 if ($said !== '' && $correct !== '' && mb_strtolower($said) !== mb_strtolower($correct)) {

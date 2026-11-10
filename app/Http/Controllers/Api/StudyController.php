@@ -141,6 +141,10 @@ class StudyController extends Controller
             'translation' => $word->translation,
             'example' => $word->example,
             'example_es' => $word->example_es,
+            'definition' => $word->definition,
+            // Ficha avanzada: se recuerda la palabra desde el inglés (definición + frase con hueco), sin traducir.
+            'english_only' => $mode === 'review' && ($uw?->level ?? 0) >= config('vocab.english_only_level', 3)
+                && str_contains((string) $word->example, '*'),
             'category' => $word->category,
             'family' => $word->family(),
             'mode' => $mode,

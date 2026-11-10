@@ -13,13 +13,27 @@ class SpeakingService
     public function __construct(private SrsService $srs) {}
 
     /** Suma lo que se habló en un turno a la sesión. */
-    public function addTurn(SpeakingSession $session, array $fluency): void
+    public function addTurn(SpeakingSession $session, array $fluency, ?int $reactionMs = null): void
     {
-        $session->increment('turns', 1, [
+        $extra = [
             'words' => $session->words + (int) $fluency['words'],
             'speech_ms' => $session->speech_ms + (int) $fluency['speech_ms'],
             'long_pauses' => $session->long_pauses + (int) $fluency['long_pauses'],
-        ]);
+        ];
+        if ($reactionMs !== null) {
+            $extra['reaction_ms'] = $session->reaction_ms + $reactionMs;
+            $extra['reaction_turns'] = $session->reaction_turns + 1;
+        }
+        $session->increment('turns', 1, $extra);
+    }
+
+    /** Tema de la narración de hoy (cambia cada día; "$skip" pasa a los siguientes). */
+    public function topic(User $user, int $skip = 0): array
+    {
+        $topics = config('speaking.narration_topics');
+        $i = ((int) $this->srs->today($user)->format('z') + $user->id + $skip) % count($topics);
+
+        return ['en' => $topics[$i][0], 'es' => $topics[$i][1], 'index' => $i];
     }
 
     /**
@@ -121,8 +135,18 @@ class SpeakingService
         $last7 = SpeakingSession::where('user_id', $user->id)->whereDate('day', '>=', $today->subDays(6)->toDateString())->get();
         $min7 = $last7->sum('speech_ms') / 60000;
 
+        $reacted = $last7->sum('reaction_turns');
+        $narrated = SpeakingSession::where('user_id', $user->id)->where('scenario', 'narrate')->where('words', '>', 0)
+            ->whereDate('day', $today->toDateString())->exists();
+
         return [
             'goal' => $goal,
+            // Segundos de media en empezar a contestar (últimos 7 días) y por sesión, para ver si baja.
+            'reaction' => $reacted ? round($last7->sum('reaction_ms') / $reacted / 1000, 1) : null,
+            'reaction_trend' => $recent->filter(fn (SpeakingSession $s) => $s->reaction_turns > 0)
+                ->map(fn (SpeakingSession $s) => $s->reaction())->values()->all(),
+            'narrated_today' => $narrated,
+            'topic' => $this->topic($user),
             'today' => (float) ($byDay[$today->toDateString()] ?? 0),
             'streak' => $streak,
             'week' => $week,
@@ -149,6 +173,8 @@ class SpeakingService
             'minutes' => round($min, 1),
             'wpm' => $session->wpm(),
             'pauses_per_min' => $min >= 0.5 ? round($session->long_pauses / $min, 1) : null,
+            'reaction' => $session->reaction(),
+            'topic' => $session->topic,
             'mistakes' => $session->mistakes()->get()->map->toCard()->all(),
         ];
     }

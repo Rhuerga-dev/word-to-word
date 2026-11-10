@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Una conversación por voz y cómo fue el ritmo al hablar. */
 class SpeakingSession extends Model
 {
-    protected $fillable = ['user_id', 'scenario', 'day', 'turns', 'words', 'speech_ms', 'long_pauses', 'ended_at'];
+    protected $fillable = ['user_id', 'scenario', 'day', 'turns', 'words', 'speech_ms', 'long_pauses', 'ended_at', 'reaction_ms', 'reaction_turns', 'topic'];
 
     protected function casts(): array
     {
@@ -18,6 +18,12 @@ class SpeakingSession extends Model
     public function mistakes(): HasMany
     {
         return $this->hasMany(SpeakingMistake::class);
+    }
+
+    /** Segundos que tardas, de media, en empezar a contestar (null si no se midió). */
+    public function reaction(): ?float
+    {
+        return $this->reaction_turns ? round($this->reaction_ms / $this->reaction_turns / 1000, 1) : null;
     }
 
     /** Palabras por minuto mientras hablabas (null si aún no hay suficiente). */
