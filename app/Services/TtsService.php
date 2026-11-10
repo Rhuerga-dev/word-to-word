@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -24,13 +25,54 @@ class TtsService
 
     public function enabled(): bool
     {
-        return (bool) config('vocab.tts.enabled', true) && filled(config('vocab.azure_speech.key'));
+        return (bool) config('vocab.tts.enabled', true) && (filled(config('vocab.azure_speech.key')) || $this->localUp());
+    }
+
+    /** ¿Está encendida la voz local? (se recuerda 1 min para no preguntar en cada frase) */
+    public function localUp(): bool
+    {
+        $url = config('vocab.tts.local_url');
+        if (blank($url)) {
+            return false;
+        }
+
+        return Cache::remember('tts:local-up', 60, function () use ($url) {
+            try {
+                return Http::connectTimeout(1)->timeout(2)->get(rtrim($url, '/').'/health')->successful();
+            } catch (\Throwable) {
+                return false;
+            }
+        });
+    }
+
+    /** Proveedor para esta frase: "kokoro" (local) si está encendido, si no "azure". */
+    public function provider(?string $wanted = null): string
+    {
+        $azure = filled(config('vocab.azure_speech.key'));
+        if ($wanted === 'azure' && $azure) {
+            return 'azure';
+        }
+        if ($wanted === 'kokoro' || ! $azure) {
+            return 'kokoro';
+        }
+
+        return $this->localUp() ? 'kokoro' : 'azure';
     }
 
     /** @return string ruta del mp3 dentro del disco "local" */
-    public function audio(string $text, string $lang, bool $slow = false): string
+    public function audio(string $text, string $lang, bool $slow = false, ?string $provider = null): string
     {
         $lang = $lang === 'es' ? 'es' : 'en';
+        if ($this->provider($provider) === 'kokoro') {
+            try {
+                return $this->local($text, $lang, $slow);
+            } catch (\Throwable $e) {
+                Cache::put('tts:local-up', false, 60);   // se apagó: un minuto con Azure
+                if ($provider === 'kokoro' || blank(config('vocab.azure_speech.key'))) {
+                    throw $e;
+                }
+            }
+        }
         $voice = $this->voices()[$lang];
         // Lento: inglés -30%; español -20% con pausas en comas y puntos (para las escenas AID).
         $rate = $slow ? ($lang === 'en' ? '-30%' : '-20%') : ($lang === 'en' ? '-5%' : '0%');
@@ -59,6 +101,24 @@ class TtsService
         }
 
         Storage::disk('local')->put($path, $response->body());
+
+        return $path;
+    }
+
+    /** Voz local Kokoro (tts-local/server.py en este Mac). */
+    private function local(string $text, string $lang, bool $slow): string
+    {
+        $path = 'tts/'.hash('sha256', 'kokoro|'.$lang.'|'.($slow ? 1 : 0).'|'.$text).'.mp3';
+        if (Storage::disk('local')->exists($path)) {
+            @touch(Storage::disk('local')->path($path));
+
+            return $path;
+        }
+        $res = Http::connectTimeout(1)->timeout(20)->post(rtrim(config('vocab.tts.local_url'), '/').'/tts', compact('text', 'lang', 'slow'));
+        if (! $res->successful() || $res->body() === '') {
+            throw new RuntimeException('La voz local respondió '.$res->status());
+        }
+        Storage::disk('local')->put($path, $res->body());
 
         return $path;
     }

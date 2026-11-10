@@ -732,6 +732,18 @@ function renderSide() {
   $("weak").innerHTML = stats.weak_sounds.map(w => `<button type="button" class="chip" data-ph="${esc(w.phoneme)}" title="Practicar · último: ${esc(w.last_word)}">/${esc(w.phoneme)}/ × ${w.count}</button>`).join("");
   $("weak").querySelectorAll("[data-ph]").forEach(b => b.onclick = () => { unlockAudio(); openLab(b.dataset.ph); });
 }
+// Comparar la voz de Azure con la voz local (Kokoro): la misma frase con cada una.
+async function compareVoice(provider) {
+  unlockAudio();
+  const st = $("voiceCmpState"); st.textContent = "Generando…";
+  try {
+    const res = await fetch(API + "/tts?" + new URLSearchParams({ text: "Hi! I'm your English partner. How was your day today?", lang: "en", provider }), { headers: { Accept: "audio/mpeg", Authorization: "Bearer " + token } });
+    if (!res.ok) throw new Error(provider === "kokoro" ? "La voz local no está encendida (tts-local/Arrancar voz local.command)." : "Azure no respondió.");
+    ttsAudio.src = URL.createObjectURL(await res.blob()); await ttsAudio.play(); st.textContent = "";
+  } catch (e) { st.textContent = e.message; }
+}
+$("cmpAzure").onclick = () => compareVoice("azure");
+$("cmpKokoro").onclick = () => compareVoice("kokoro");
 // Elegir micrófono (p. ej. el del iPhone aunque tengas AirPods puestos).
 async function renderMicSelect() {
   const sel = $("micSel"); if (!sel) return;

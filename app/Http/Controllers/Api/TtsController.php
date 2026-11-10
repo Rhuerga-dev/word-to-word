@@ -17,11 +17,12 @@ class TtsController extends Controller
             'text' => ['required', 'string', 'max:400'],
             'lang' => ['required', 'in:en,es'],
             'slow' => ['nullable', 'boolean'],
+            'provider' => ['nullable', 'in:azure,kokoro'],   // para comparar voces en Ajustes
         ]);
         abort_unless($tts->enabled(), 503, 'Voces naturales no configuradas.');
 
         try {
-            $path = $tts->audio(trim($data['text']), $data['lang'], (bool) ($data['slow'] ?? false));
+            $path = $tts->audio(trim($data['text']), $data['lang'], (bool) ($data['slow'] ?? false), $data['provider'] ?? null);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'No se pudo generar la voz ahora.');
