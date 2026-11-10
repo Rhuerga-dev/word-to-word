@@ -28,6 +28,16 @@ return [
         'other' => 'Otros',
     ],
 
+    // Describe la imagen: temas de fotos con gente y cosas que nombrar (búsqueda en Unsplash).
+    'picture_seconds' => 45,
+    'picture_themes' => [
+        'busy kitchen cooking', 'city street people', 'office meeting', 'park family picnic', 'restaurant waiter',
+        'supermarket aisle shopping', 'airport travelers', 'beach summer', 'gym workout', 'classroom students',
+        'family dinner table', 'construction workers', 'doctor patient clinic', 'coffee shop barista', 'city traffic',
+        'birthday party', 'farmers market', 'living room home', 'train station', 'kids playing soccer',
+        'mechanic garage car', 'laundry room', 'hardware store', 'concert crowd', 'rainy street umbrella',
+    ],
+
     // Narración diaria: un minuto hablando sin parar sobre un tema (uno distinto cada día).
     'narration_seconds' => 60,
     'narration_topics' => [

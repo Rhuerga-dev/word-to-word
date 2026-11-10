@@ -28,7 +28,7 @@ async function spRefreshStats() { try { sp.stats = await api("/speaking/stats");
 // Al cambiar de pestaña a mitad de una conversación, se cierra y se guarda lo hablado.
 function spLeave() {
   if (sp.on) spFinish(true);
-  if (sp.view === "narrate") { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.abort(); } catch (e) {} sp.view = "home"; }
+  if (sp.view === "narrate" || sp.view === "picture") { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.abort(); } catch (e) {} sp.view = "home"; }
 }
 
 // ---------- voz de la IA ----------
@@ -256,6 +256,7 @@ function renderSpeak() {
   const el = $("speakBody"); if (!el) return;
   if (sp.view === "talk") return renderTalk();
   if (sp.view === "narrate") el.innerHTML = narrHTML();
+  else if (sp.view === "picture") el.innerHTML = picHTML();
   else if (sp.view === "summary") el.innerHTML = summaryHTML();
   else if (sp.view === "review") el.innerHTML = reviewHTML();
   else el.innerHTML = homeHTML();
@@ -268,6 +269,12 @@ function renderSpeak() {
   on("spListen", () => { unlockAudio(); spSay(sp.review.list[sp.review.i].correct); });
   on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.shown = false; renderSpeak(); });
   on("spNarr", () => spNarrStart(0));
+  on("spPic", () => spPicStart());
+  on("spPicGo", () => spPicGo());
+  on("spPicOther", () => spPicStart());
+  on("spPicListen", () => { unlockAudio(); spSay(sp.pic && sp.pic.fb && sp.pic.fb.better); });
+  on("spPicDone", () => { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.stop(); } catch (e) {} });
+  document.querySelectorAll("[data-addw]").forEach(b => b.onclick = () => spAddWord(+b.dataset.addw, b));
   on("spNarrOther", () => { sp.narrSkip = (sp.narrSkip || 0) + 1; spNarrStart(sp.narrSkip); });
   on("spNarrAgain", () => spNarrStart(sp.narrSkip || 0));
   on("spNarrListen", () => { unlockAudio(); spSay(sp.narr && sp.narr.fb && sp.narr.fb.better); });
@@ -310,6 +317,10 @@ function homeHTML() {
       <p class="sp-topic">${esc(st.topic.en)}</p><p class="note">${esc(st.topic.es)}</p>
       <p class="note">Hablas un minuto sin parar, sin preparar nada. Luego ves una versión más natural y tus errores.</p>
       <div class="row"><button type="button" class="${st.narrated_today ? "" : "primary"}" id="spNarr"${sp.busy ? " disabled" : ""}>Empezar</button><button type="button" id="spNarrOther"${sp.busy ? " disabled" : ""}>Otro tema</button></div></div>`;
+  html += `<div class="sp-narr sp-pic-card">
+      <div><b>🖼️ Describe la imagen · 45 s</b></div>
+      <p class="note">Te muestro una foto y dices en inglés lo que ves. Luego la IA mira la misma foto y te dice qué palabras te faltaron.</p>
+      ${cfg.pictures ? `<div class="row"><button type="button" class="primary" id="spPic"${sp.busy ? " disabled" : ""}>Ver una foto</button></div>` : '<p class="note"><i>Falta configurar las fotos en el servidor (UNSPLASH_ACCESS_KEY).</i></p>'}</div>`;
   html += `<h3 class="sp-h">Elige una situación</h3>`;
   html += sp.scenarios ? `<div class="sp-scen">${sp.scenarios.map(s => `<button type="button" data-sc="${esc(s.id)}"${sp.busy ? " disabled" : ""}><span class="sp-e" aria-hidden="true">${esc(s.emoji)}</span><b>${esc(s.title)}</b><small>${esc(s.desc)}</small></button>`).join("")}</div>` : '<p class="note">Cargando…</p>';
   html += `<label class="switch" for="spQuickOn"><input type="checkbox" id="spQuickOn" role="switch"${sp.quick ? " checked" : ""}> ⚡ Respuesta rápida</label>
@@ -487,6 +498,101 @@ function narrHTML() {
       ${(fb.mistakes || []).length ? `<h3 class="sp-h">Para mejorar (${fb.mistakes.length})</h3>${fb.mistakes.map(f => `<p class="sp-fix"><s>${esc(f.said)}</s> → <b>${esc(f.correct)}</b>${f.why ? `<br><span class="note">${esc(f.why)}</span>` : ""}</p>`).join("")}
         <button type="button" class="primary" id="spReview">Repasar mis errores ahora</button>` : '<p class="banner ok">Sin errores importantes. ¡Muy bien!</p>'}
       <div class="row"><button type="button" id="spHome">Volver</button></div>`;
+  }
+  return html;
+}
+
+// ---------- describe la imagen ----------
+async function spPicStart() {
+  unlockAudio();
+  if (hf.on) stopHF(true);
+  if (!cfg.ai) { sp.status = "Necesita la IA activada en el servidor (ANTHROPIC_API_KEY)."; return renderSpeak(); }
+  if (!cfg.pronunciation && !SR) { sp.status = "Para hablar hace falta el reconocimiento de voz (AZURE_SPEECH_KEY en el servidor, o Google Chrome)."; return renderSpeak(); }
+  sp.view = "picture"; sp.pic = { phase: "loading", photo: null }; sp.scenario = { id: "picture", title: "Describe la imagen", emoji: "🖼️" };
+  renderSpeak();
+  try { sp.pic.photo = await api("/speaking/picture"); sp.pic.phase = "look"; }
+  catch (e) { sp.pic.phase = "error"; sp.pic.error = e.message; }
+  renderSpeak();
+}
+
+async function spPicGo() {
+  unlockAudio();
+  const n = sp.pic; if (!n || !n.photo) return;
+  try {
+    const r = await api("/speaking/sessions", { method: "POST", body: { scenario: "picture" } });
+    n.id = r.id; n.seconds = r.seconds || 45;
+    await spSayEs("Describe la foto. Empieza ya.");
+    if (sp.view !== "picture") return;
+    n.phase = "rec"; n.left = n.seconds; renderSpeak();
+    const t0 = Date.now(); let reaction = null, turn;
+    clearInterval(n.tick);
+    n.tick = setInterval(() => { n.left = Math.max(0, n.seconds - Math.round((Date.now() - t0) / 1000)); const el = $("spPicLeft"); if (el) el.textContent = n.left; }, 500);
+    try {
+      if (cfg.pronunciation) {
+        sp.recording = true;
+        const wav = await recordWav(n.seconds * 1000, null, 4.0, () => { reaction = Date.now() - t0; });
+        sp.recording = false;
+        if (sp.view !== "picture") return;
+        if (!wav.heard) throw new Error("No te oí. Acércate al micrófono y prueba otra vez.");
+        n.phase = "wait"; renderSpeak();
+        const fd = new FormData(); fd.append("audio", wav, "voz.wav");
+        if (reaction != null) fd.append("reaction_ms", String(Math.min(60000, reaction)));
+        turn = await api(`/speaking/sessions/${n.id}/turns`, { method: "POST", body: fd });
+      } else {
+        const text = await spListenLong(n.seconds * 1000);
+        if (sp.view !== "picture") return;
+        if (!text) throw new Error("No te oí. Acércate al micrófono y prueba otra vez.");
+        n.phase = "wait"; renderSpeak();
+        turn = await api(`/speaking/sessions/${n.id}/turns`, { method: "POST", body: { text, ms: Math.min(60000, Date.now() - t0) } });
+      }
+    } finally { clearInterval(n.tick); sp.recording = false; }
+    if (!turn.text) throw new Error("No se entendió lo que dijiste. Prueba otra vez, un poco más alto.");
+    n.text = turn.text;
+    n.fb = await api(`/speaking/sessions/${n.id}/picture`, { method: "POST", body: { text: turn.text, image_url: n.photo.url } });
+    n.summary = await api(`/speaking/sessions/${n.id}/finish`, { method: "POST" });
+    sp.stats = n.summary.stats;
+    n.phase = "done"; renderSpeak();
+    if (n.fb.comment) await spSay(n.fb.comment);
+  } catch (e) { n.phase = "error"; n.error = e.message; renderSpeak(); }
+}
+
+async function spAddWord(i, btn) {
+  const w = sp.pic && sp.pic.fb && sp.pic.fb.missed[i]; if (!w) return;
+  btn.disabled = true;
+  try { const r = await api("/words/personal", { method: "POST", body: w }); btn.textContent = r.added ? "✓ En tus fichas" : "✓ Ya la tenías"; w.added = true; }
+  catch (e) { btn.disabled = false; btn.textContent = "Reintentar"; sp.pic.error = e.message; }
+}
+
+function picHTML() {
+  const n = sp.pic; if (!n) return "";
+  const ph = n.photo;
+  let html = `<div class="kind"><span>🖼️ Describe la imagen</span><span>${n.phase === "rec" ? `<b id="spPicLeft">${n.left}</b> s` : ""}</span></div>`;
+  if (ph) html += `<figure class="sp-photo"><img src="${esc(ph.url)}" alt="${esc(ph.alt || "Foto para describir")}" referrerpolicy="no-referrer">
+      <figcaption>Foto de <a href="${esc(ph.author_url)}" target="_blank" rel="noopener">${esc(ph.author)}</a> en <a href="${esc(ph.unsplash_url)}" target="_blank" rel="noopener">Unsplash</a></figcaption></figure>`;
+  if (n.phase === "loading") html += '<p class="note">Buscando una foto…</p>';
+  if (n.phase === "look") html += `<p class="note">Mírala unos segundos. Di qué hay, qué hace la gente, dónde están, colores, cómo crees que se sienten…</p>
+    <div class="row"><button type="button" class="primary" id="spPicGo">🎙️ Empezar a describir</button><button type="button" id="spPicOther">Otra foto</button><button type="button" id="spHome">Volver</button></div>`;
+  if (n.phase === "rec") html += `<p class="sp-status"><span class="hf-dot listen"></span>Te escucho: describe todo lo que ves.</p>
+    <p class="note">¿No sabes una palabra? Descríbela con otras (<i>"the thing you use to…"</i>) y sigue.</p>
+    <div class="row"><button type="button" class="primary" id="spPicDone">Terminé</button></div>`;
+  if (n.phase === "wait") html += '<p class="sp-status"><span class="hf-dot"></span>La IA está mirando la foto y lo que dijiste…</p>';
+  if (n.phase === "error") html += `<p class="warnbox">${esc(n.error)}</p><div class="row">${ph ? '<button type="button" class="primary" id="spPicGo">Intentar otra vez</button>' : ""}<button type="button" id="spPicOther">Otra foto</button><button type="button" id="spHome">Volver</button></div>`;
+  if (n.phase === "done") {
+    const s = n.summary || {}, fb = n.fb || {};
+    html += `<div class="stats">
+        <div class="stat"><b>${esc(spMin(s.minutes))}</b><span>min hablando</span></div>
+        <div class="stat"><b>${s.wpm ?? "—"}</b><span>palabras/min</span></div>
+        <div class="stat"><b>${s.reaction != null ? String(s.reaction).replace(".", ",") + " s" : "—"}</b><span>para arrancar</span></div>
+      </div>
+      ${fb.comment ? `<p class="msg ai">${esc(fb.comment)}</p>` : ""}
+      ${fb.feedback ? `<p class="note">${esc(fb.feedback)}</p>` : ""}
+      <details class="sp-said-all"><summary>Lo que dijiste</summary><p>${esc(n.text)}</p></details>
+      ${(fb.missed || []).length ? `<h3 class="sp-h">Palabras que te faltaron</h3><div class="sp-missed">${fb.missed.map((w, i) => `<div class="sp-mw"><div><b>${esc(w.word)}</b> <span class="note">${esc(w.translation)}</span><br><span class="ex">${exHTML(w.example)}</span></div>
+          <button type="button" data-addw="${i}"${w.added ? " disabled" : ""}>${w.added ? "✓ En tus fichas" : "+ A mis fichas"}</button></div>`).join("")}</div>` : ""}
+      ${fb.better ? `<h3 class="sp-h">Una descripción más natural</h3><p class="sp-better">${esc(fb.better)} <button type="button" class="round" id="spPicListen" aria-label="Escuchar">${ICON_SPK}</button></p>` : ""}
+      ${(fb.mistakes || []).length ? `<h3 class="sp-h">Para mejorar (${fb.mistakes.length})</h3>${fb.mistakes.map(f => `<p class="sp-fix"><s>${esc(f.said)}</s> → <b>${esc(f.correct)}</b>${f.why ? `<br><span class="note">${esc(f.why)}</span>` : ""}</p>`).join("")}
+        <button type="button" class="primary" id="spReview">Repasar mis errores ahora</button>` : ""}
+      <div class="row"><button type="button" class="primary" id="spPicOther">Otra foto</button><button type="button" id="spHome">Volver</button></div>`;
   }
   return html;
 }

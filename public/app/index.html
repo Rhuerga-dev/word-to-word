@@ -510,6 +510,15 @@ button.chip{cursor:pointer}
 .pg-cbar i{display:block;height:100%;background:var(--bad);opacity:.75}
 .pg-cat b{text-align:right;font-family:var(--mono)}
 @media (max-width:520px){.tabs{display:flex;flex-wrap:wrap;justify-self:stretch;max-width:100%}.tabs button{flex:1 1 auto;padding:8px 10px}}
+
+/* Describe la imagen */
+.sp-photo{margin:0;display:grid;gap:4px}
+.sp-photo img{width:100%;max-height:380px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.sp-photo figcaption{font-size:12px;color:var(--muted)}
+.sp-photo a{color:inherit}
+.sp-missed{display:grid;gap:8px}
+.sp-mw{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.sp-mw .ex{font-size:14px}
 </style>
 
 <div class="wrap">
@@ -649,7 +658,7 @@ button.chip{cursor:pointer}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script src="/app/app.js?v=6"></script>
-<script src="/app/speak.js?v=3"></script>
+<script src="/app/app.js?v=7"></script>
+<script src="/app/speak.js?v=4"></script>
 <script src="/app/progress.js?v=1"></script>
 </body></html>

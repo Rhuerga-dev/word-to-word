@@ -19,6 +19,9 @@ class LevelService
 
     public const FAMILY = 'family';
 
+    /** Palabras que un alumno agregó (p. ej. las que le faltaron al describir una foto): solo son suyas. */
+    public const PERSONAL = 'personal';
+
     /** @var array<string, array{min:int|null, max:int|null}> */
     private array $rangeCache = [];
 
@@ -39,7 +42,7 @@ class LevelService
     /** Palabras generales (sin el paquete de freelance ni las agregadas solo por familia). */
     public function general(): Builder
     {
-        return Word::query()->whereNotIn('source', [self::FREELANCE, self::FAMILY]);
+        return Word::query()->whereNotIn('source', [self::FREELANCE, self::FAMILY, self::PERSONAL]);
     }
 
     /** Palabras listas para estudiar (con traducción y ejemplo). */

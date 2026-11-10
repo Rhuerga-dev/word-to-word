@@ -7,6 +7,7 @@ use App\Models\UserWord;
 use App\Models\Word;
 use App\Services\ClaudeService;
 use App\Services\PronunciationService;
+use App\Services\LevelService;
 use App\Services\SrsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class StudyController extends Controller
             'push' => filled(config('webpush.vapid.public_key')),
             'tts' => app(\App\Services\TtsService::class)->enabled(),
             'intervals' => config('vocab.intervals'),
+            'pictures' => app(\App\Services\PictureService::class)->enabled(),
         ];
     }
 
@@ -65,6 +67,37 @@ class StudyController extends Controller
         $request->user()->update($data);
 
         return $request->user()->profile();
+    }
+
+    /**
+     * Agrega una palabra a tus fichas (p. ej. una que te faltó al describir una foto).
+     * Si no existe, se crea como palabra personal: nunca aparece como "nueva" a otros alumnos.
+     */
+    public function addPersonal(Request $request)
+    {
+        $data = $request->validate([
+            'word' => ['required', 'string', 'max:40', "regex:/^[A-Za-z][A-Za-z' -]*$/"],
+            'translation' => ['required', 'string', 'max:120'],
+            'example' => ['required', 'string', 'max:200'],
+        ]);
+        $user = $request->user();
+        $text = mb_strtolower(trim($data['word']));
+        // El ejemplo lleva la palabra entre *asteriscos* (si no, se marca la primera vez que aparece).
+        $example = str_contains($data['example'], '*') ? $data['example']
+            : (preg_replace('/\b('.preg_quote($text, '/').')\b/i', '*$1*', $data['example'], 1) ?? $data['example']);
+
+        $word = Word::firstOrCreate(['word' => $text], [
+            'rank' => 900000, 'source' => LevelService::PERSONAL,
+            'translation' => $data['translation'], 'example' => $example,
+        ]);
+        $uw = UserWord::firstOrNew(['user_id' => $user->id, 'word_id' => $word->id]);
+        $already = (bool) $uw->introduced_at;
+        if (! $already) {
+            $today = $this->srs->today($user);
+            $uw->fill(['level' => 0, 'introduced_at' => $today, 'next_review' => $today->addDay()])->save();
+        }
+
+        return ['word' => $word->word, 'id' => $word->id, 'added' => ! $already];
     }
 
     /** Familias de palabras con el progreso del usuario en cada una. */

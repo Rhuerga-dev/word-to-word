@@ -185,6 +185,50 @@ TXT;
     }
 
     /**
+     * "Describe la imagen": la IA ve la misma foto y dice qué palabras te faltaron, una versión mejor y tus errores.
+     *
+     * @return array{reply: string, better: ?string, missed: array, feedback: ?string, used: array, mistakes: array}
+     */
+    public function describePicture(string $imageUrl, string $text, ?string $level = null): array
+    {
+        $level = $level ?: 'A2-B1';
+        $types = implode(', ', array_keys(config('speaking.mistake_categories')));
+        $system = <<<TXT
+You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
+The student looked at the attached photo and described it out loud. You get a speech-to-text transcript: ignore punctuation, capitalization and spelling.
+Answer with exactly these lines:
+- "COMMENT:" in simple English, 1-2 friendly sentences about how well they described the photo (what they saw and what they missed).
+- Up to 5 lines "MISSED: <useful English word or short phrase for something clearly visible that they did not name> | <Spanish translation> | <short example sentence about the photo with the word between *asterisks*>". Prefer common, useful words for their level.
+- "BETTER:" a natural description of the photo at their level using their ideas plus the missed words, max 70 words.
+- "FEEDBACK:" in Spanish, one encouraging sentence.
+- For each real grammar or word mistake (max 4), a line exactly like:
+  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words> | <type>
+  where <type> is one of: {$types}
+TXT;
+        $messages = [['role' => 'user', 'content' => [
+            ['type' => 'image', 'source' => ['type' => 'url', 'url' => $imageUrl]],
+            ['type' => 'text', 'text' => "My description: {$text}"],
+        ]]];
+        $raw = $this->message($system, $messages, 1000);
+        $out = self::parseTurn($raw, 4);
+
+        $missed = [];
+        if (preg_match_all('/^MISSED:\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+)$/mi', $raw, $all, PREG_SET_ORDER)) {
+            foreach (array_slice($all, 0, 5) as $m) {
+                $word = mb_strtolower(trim($m[1], " \t\"'*"));
+                if ($word !== '' && preg_match("/^[a-z][a-z' -]{0,40}$/", $word)) {
+                    $missed[] = ['word' => $word, 'translation' => mb_substr(trim($m[2]), 0, 120), 'example' => mb_substr(trim($m[3]), 0, 200)];
+                }
+            }
+        }
+        $rest = preg_replace('/^MISSED:.*$/mi', '', $out['reply']);
+        $comment = preg_match('/^COMMENT:\s*(.+)$/mi', $rest, $m) ? trim($m[1]) : null;
+        $better = preg_match('/^BETTER:\s*(.+)$/mi', $rest, $m) ? trim($m[1]) : null;
+
+        return ['reply' => $comment ?? '', 'better' => $better, 'missed' => $missed] + $out;
+    }
+
+    /**
      * Conversación de práctica que obliga a usar las palabras del día.
      *
      * @param  array<int, array{role: string, content: string}>  $history

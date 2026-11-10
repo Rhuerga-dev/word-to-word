@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SpeakingMistake;
 use App\Models\SpeakingSession;
 use App\Services\ClaudeService;
+use App\Services\PictureService;
 use App\Services\PronunciationService;
 use App\Services\SpeakingService;
 use App\Services\SrsService;
@@ -33,7 +34,7 @@ class SpeakingController extends Controller
     public function start(Request $request)
     {
         $data = $request->validate([
-            'scenario' => ['required', 'string', Rule::in([...array_keys(config('speaking.scenarios')), 'narrate'])],
+            'scenario' => ['required', 'string', Rule::in([...array_keys(config('speaking.scenarios')), 'narrate', 'picture'])],
             'skip' => ['sometimes', 'integer', 'min:0', 'max:100'],   // narración: otro tema
         ]);
         $user = $request->user();
@@ -45,7 +46,9 @@ class SpeakingController extends Controller
             'topic' => $topic['en'] ?? null,
         ]);
 
-        return response()->json(['id' => $session->id, 'scenario' => $session->scenario, 'topic' => $topic, 'seconds' => config('speaking.narration_seconds')], 201);
+        $seconds = $data['scenario'] === 'picture' ? config('speaking.picture_seconds') : config('speaking.narration_seconds');
+
+        return response()->json(['id' => $session->id, 'scenario' => $session->scenario, 'topic' => $topic, 'seconds' => $seconds], 201);
     }
 
     /**
@@ -105,6 +108,46 @@ class SpeakingController extends Controller
         $mistakes = $this->speaking->saveMistakes($user, $out['mistakes'], $session, $this->srs->today($user));
 
         return ['comment' => $out['reply'], 'better' => $out['better'], 'feedback' => $out['feedback'], 'mistakes' => $mistakes];
+    }
+
+    /** Una foto para describir (Unsplash). */
+    public function picture(PictureService $pictures)
+    {
+        abort_unless($pictures->enabled(), 503, 'Las fotos no están configuradas en el servidor (UNSPLASH_ACCESS_KEY).');
+        try {
+            $p = $pictures->random();
+        } catch (Throwable $e) {
+            report($e);
+            abort(502, 'No se pudo traer una foto ahora. Intenta otra vez.');
+        }
+        abort_unless(PictureService::allowed($p['url']), 502, 'La foto no es válida.');
+
+        return $p;
+    }
+
+    /** La IA mira la misma foto y corrige tu descripción: palabras que te faltaron, versión natural y errores. */
+    public function describe(Request $request, ClaudeService $claude, SpeakingSession $session)
+    {
+        abort_unless($session->user_id === $request->user()->id, 404);
+        abort_unless($session->scenario === 'picture', 422, 'Esta sesión no es de describir una foto.');
+        abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
+        $data = $request->validate([
+            'text' => ['required', 'string', 'min:3', 'max:4000'],
+            'image_url' => ['required', 'string', 'max:1000'],
+        ]);
+        abort_unless(PictureService::allowed($data['image_url']), 422, 'Solo se pueden describir fotos de Unsplash.');
+        $user = $request->user();
+        $session->update(['topic' => mb_substr('photo: '.$data['image_url'], 0, 200)]);
+
+        try {
+            $out = $claude->describePicture($data['image_url'], $data['text'], $user->cefr_level);
+        } catch (Throwable $e) {
+            report($e);
+            abort(502, 'La IA no respondió. Intenta otra vez.');
+        }
+        $mistakes = $this->speaking->saveMistakes($user, $out['mistakes'], $session, $this->srs->today($user));
+
+        return ['comment' => $out['reply'], 'better' => $out['better'], 'missed' => $out['missed'], 'feedback' => $out['feedback'], 'mistakes' => $mistakes];
     }
 
     public function finish(Request $request, SpeakingSession $session)
