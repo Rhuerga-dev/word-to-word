@@ -30,7 +30,7 @@ class PictureTest extends TestCase
         Sanctum::actingAs($this->user);
     }
 
-    private function session(): SpeakingSession
+    private function talk(): SpeakingSession
     {
         return SpeakingSession::create(['user_id' => $this->user->id, 'scenario' => 'picture', 'day' => today(config('vocab.timezone'))->toDateString()]);
     }
@@ -67,7 +67,7 @@ class PictureTest extends TestCase
             'FEEDBACK: ¡Bien!',
             'FIX: she cook => she is cooking | presente continuo para lo que pasa ahora | tense',
         ])]]])]);
-        $s = $this->session();
+        $s = $this->talk();
 
         $r = $this->postJson("/api/speaking/sessions/{$s->id}/picture", ['text' => 'a woman she cook in the kitchen', 'image_url' => self::PHOTO])->assertOk();
         $r->assertJsonPath('comment', 'Nice description of the kitchen!')->assertJsonPath('better', 'A woman is cooking in a bright kitchen.')
@@ -80,7 +80,7 @@ class PictureTest extends TestCase
     public function test_only_unsplash_photos_and_own_picture_sessions_are_accepted(): void
     {
         Http::fake();
-        $s = $this->session();
+        $s = $this->talk();
         foreach (['http://images.unsplash.com/x', 'https://evil.example/x.jpg', 'https://images.unsplash.com.evil.io/x', 'file:///etc/passwd'] as $bad) {
             $this->postJson("/api/speaking/sessions/{$s->id}/picture", ['text' => 'hello there', 'image_url' => $bad])->assertStatus(422);
         }

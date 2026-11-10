@@ -73,23 +73,44 @@ function sayBrowser(text, slow) { if (!("speechSynthesis" in window)) return; sp
 // ===== Grabación WAV 16 kHz (para Azure) =====
 let stopRecording = null;
 let hfAudioCtx = null;
+// ===== Micrófono =====
+// Con audífonos Bluetooth (AirPods), abrir el micrófono pasa el audio a "modo llamada": la voz suena peor y el
+// cambio tarda un momento (se pierde el principio de lo que dices). Por eso:
+// - se puede elegir el micrófono del iPhone (los AirPods siguen en alta calidad para escuchar),
+// - en una conversación el micrófono queda abierto todo el rato (sin cambiar de modo en cada turno).
+const mic = { stream: null, keep: false, pref: (() => { try { return localStorage.getItem("wtw_mic") || ""; } catch (e) { return ""; } })() };
+async function getMic() {
+  if (mic.stream && mic.stream.getAudioTracks().some(t => t.readyState === "live")) return mic.stream;
+  const audio = { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+  if (mic.pref) audio.deviceId = { exact: mic.pref };
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio }); }
+  catch (e) { if (!mic.pref) throw e; delete audio.deviceId; stream = await navigator.mediaDevices.getUserMedia({ audio }); } // el elegido ya no está
+  mic.stream = stream;
+  return stream;
+}
+function releaseMic() { mic.keep = false; if (mic.stream) { mic.stream.getTracks().forEach(t => t.stop()); mic.stream = null; } }
+async function listMics() {
+  try { return (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "audioinput" && d.deviceId); } catch (e) { return []; }
+}
+
 // onVoice: se llama una vez cuando empieza a oírse tu voz (para medir cuánto tardas en arrancar).
 async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0, onVoice) {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  const stream = await getMic();
   // En manos libres se reusa el contexto de audio que se desbloqueó con el toque (iPhone).
   const shared = hfAudioCtx && hfAudioCtx.state !== "closed";
   const ctx = shared ? hfAudioCtx : new (window.AudioContext || window.webkitAudioContext)();
   if (ctx.state === "suspended") { try { await ctx.resume(); } catch (e) {} } // iPhone
   const src = ctx.createMediaStreamSource(stream);
   const proc = ctx.createScriptProcessor(4096, 1, 1);
-  const chunks = []; let silentFor = 0, heard = false;
+  const chunks = []; let silentFor = 0, heard = false, level = 0.02; const calib = [];
   src.connect(proc); proc.connect(ctx.destination);
   onStart && onStart();
   return new Promise(resolve => {
     let done = false;
     const stop = () => {
       if (done) return; done = true; stopRecording = null;
-      proc.disconnect(); src.disconnect(); stream.getTracks().forEach(t => t.stop());
+      proc.disconnect(); src.disconnect(); if (!mic.keep) releaseMic();
       const rate = ctx.sampleRate; if (!shared) ctx.close();
       const wav = encodeWav(downsample(flatten(chunks), rate, 16000), 16000);
       wav.heard = heard; // false = no se oyó a nadie (solo silencio o ruido)
@@ -100,7 +121,9 @@ async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0, onVoice) {
     proc.onaudioprocess = e => {
       const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push(d);
       let rms = 0; for (let i = 0; i < d.length; i++) rms += d[i] * d[i]; rms = Math.sqrt(rms / d.length);
-      if (rms > 0.02) { if (!heard && onVoice) { try { onVoice(); } catch (er) {} } heard = true; silentFor = 0; } else if (heard) { silentFor += d.length / ctx.sampleRate; if (silentFor > silenceSec) { clearTimeout(timer); stop(); } }
+      // Umbral según el ruido de fondo de los primeros ~0,25 s: los micrófonos Bluetooth graban más bajo.
+      if (calib.length < 3 && !heard) { calib.push(rms); if (calib.length === 3) { const floor = Math.min(...calib); level = Math.min(0.02, Math.max(0.006, floor * 3)); } }
+      if (rms > level) { if (!heard && onVoice) { try { onVoice(); } catch (er) {} } heard = true; silentFor = 0; } else if (heard) { silentFor += d.length / ctx.sampleRate; if (silentFor > silenceSec) { clearTimeout(timer); stop(); } }
     };
   });
 }
@@ -709,6 +732,15 @@ function renderSide() {
   $("weak").innerHTML = stats.weak_sounds.map(w => `<button type="button" class="chip" data-ph="${esc(w.phoneme)}" title="Practicar · último: ${esc(w.last_word)}">/${esc(w.phoneme)}/ × ${w.count}</button>`).join("");
   $("weak").querySelectorAll("[data-ph]").forEach(b => b.onclick = () => { unlockAudio(); openLab(b.dataset.ph); });
 }
+// Elegir micrófono (p. ej. el del iPhone aunque tengas AirPods puestos).
+async function renderMicSelect() {
+  const sel = $("micSel"); if (!sel) return;
+  const mics = await listMics();
+  sel.innerHTML = `<option value="">Automático</option>` + mics.map((m, i) => `<option value="${esc(m.deviceId)}"${m.deviceId === mic.pref ? " selected" : ""}>${esc(m.label || "Micrófono " + (i + 1))}</option>`).join("");
+  $("micNote").textContent = mics.some(m => m.label) ? "" : "Usa el micrófono una vez (en Hablar o en una ficha) para ver los nombres.";
+}
+$("micSel").onchange = e => { mic.pref = e.target.value; try { localStorage.setItem("wtw_mic", mic.pref); } catch (er) {} releaseMic(); };
+$("micSel").onfocus = renderMicSelect;
 $("speakGoal").onchange = async e => { try { await api("/speaking/goal", { method: "PUT", body: { speaking_goal: Math.max(1, Math.min(60, +e.target.value || 5)) } }); if (typeof spRefreshStats === "function") spRefreshStats(); } catch (err) { alertSide(err.message); } };
 $("dailyNew").onchange = async e => { try { await api("/settings", { method: "PUT", body: { daily_new: +e.target.value } }); refresh(); } catch (err) { alertSide(err.message); } };
 async function nextDay() { try { await api("/debug/next-day", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } }
@@ -1252,6 +1284,7 @@ function renderSettings() {
   if (!profile) return;
   $("freelancePack").checked = !!profile.freelance_pack;
   $("speakGoal").value = profile.speaking_goal || 5;
+  renderMicSelect();
   $("remOn").checked = !!profile.reminder.enabled;
   $("remTime").value = profile.reminder.time || "19:00";
   $("remTime").disabled = !profile.reminder.enabled;

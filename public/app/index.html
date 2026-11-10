@@ -629,6 +629,9 @@ button.chip{cursor:pointer}
         <div class="panel">
           <h2>Ajustes</h2>
           <label class="inl" for="dailyNew">Palabras nuevas por día <input type="number" id="dailyNew" min="1" max="50" value="10"></label>
+          <label class="inl" for="micSel">Micrófono <select id="micSel" style="width:auto;max-width:180px"><option value="">Automático</option></select></label>
+          <p class="note" id="micNote"></p>
+          <p class="note">Con AirPods: elige el <b>micrófono del iPhone</b> y la voz de la app se oirá con mejor calidad en los AirPods.</p>
           <label class="inl" for="speakGoal">Minutos hablando por día <input type="number" id="speakGoal" min="1" max="60" value="5"></label>
           <label class="inl" for="freelancePack">Vocabulario para clientes (freelance) <input type="checkbox" id="freelancePack"></label>
           <label class="inl" for="remOn">Recordatorio diario <input type="checkbox" id="remOn"></label>
@@ -662,7 +665,7 @@ button.chip{cursor:pointer}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script src="/app/app.js?v=7"></script>
-<script src="/app/speak.js?v=5"></script>
+<script src="/app/app.js?v=8"></script>
+<script src="/app/speak.js?v=6"></script>
 <script src="/app/progress.js?v=1"></script>
 </body></html>

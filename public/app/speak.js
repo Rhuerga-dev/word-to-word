@@ -76,6 +76,7 @@ async function spStart(id) {
   try { sp.session = (await api("/speaking/sessions", { method: "POST", body: { scenario: id } })).id; }
   catch (e) { sp.busy = false; sp.status = e.message; return renderSpeak(); }
   sp.busy = false; sp.on = true; sp.paused = false; sp.view = "talk";
+  mic.keep = true; // el micrófono queda abierto toda la conversación (sin cortes al cambiar de turno)
   try { if ("wakeLock" in navigator) sp.wake = await navigator.wakeLock.request("screen"); } catch (e) {}
   renderSpeak(); spLoop();
 }
@@ -171,7 +172,7 @@ function spDone() { if (sp.recording && stopRecording) stopRecording(); }
 async function spFinish(quiet) {
   if (!sp.session) return;
   const id = sp.session;
-  sp.on = false; sp.paused = false; sp.session = null; spHush();
+  sp.on = false; sp.paused = false; sp.session = null; spHush(); releaseMic();
   if (sp.recording && stopRecording) { sp.abortRec = true; stopRecording(); }
   try { sp.wake && sp.wake.release(); } catch (e) {} sp.wake = null;
   try {
