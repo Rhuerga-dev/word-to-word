@@ -1287,7 +1287,7 @@ $("remOn").onchange = async e => {
 $("remTime").onchange = async () => { try { await saveReminder(true); } catch (err) { $("remMsg").textContent = err.message; } };
 
 // ===== PWA: instalable en el iPhone =====
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {})); }
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("/app/sw.js").catch(() => {})); }
 
 // ===== Aviso para instalar la app =====
 (function () {

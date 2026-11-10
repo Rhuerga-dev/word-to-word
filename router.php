@@ -12,6 +12,13 @@ $uri = urldecode((string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH
 $path = realpath($public.$uri);
 $root = realpath($public);
 if ($path && is_dir($path) && is_file($path.'/index.html')) {
+    // "/app" sin la barra final: la página pediría sus archivos (app.js, manifest) en la raíz y no cargaría.
+    if (! str_ends_with($uri, '/')) {
+        $query = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY);
+        header('Location: '.$uri.'/'.($query ? '?'.$query : ''), true, 301);
+
+        return true;
+    }
     $path .= '/index.html';
 }
 
