@@ -38,6 +38,13 @@ return [
         'mechanic garage car', 'laundry room', 'hardware store', 'concert crowd', 'rainy street umbrella',
     ],
 
+    // Shadowing: temas de los textos (se generan una vez por día, nivel y tema, y se reutilizan).
+    'shadowing_themes' => [
+        'ordering coffee', 'a phone call with a client', 'small talk with a coworker', 'asking for directions',
+        'a quick team meeting', 'talking about the weekend', 'at the doctor', 'returning something at a store',
+        'explaining a delay', 'meeting someone new', 'planning a trip', 'a job interview answer',
+    ],
+
     // Narración diaria: un minuto hablando sin parar sobre un tema (uno distinto cada día).
     'narration_seconds' => 60,
     'narration_topics' => [

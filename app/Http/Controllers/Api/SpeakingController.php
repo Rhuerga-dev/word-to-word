@@ -11,6 +11,7 @@ use App\Services\PronunciationService;
 use App\Services\SpeakingService;
 use App\Services\SrsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Throwable;
 
@@ -108,6 +109,28 @@ class SpeakingController extends Controller
         $mistakes = $this->speaking->saveMistakes($user, $out['mistakes'], $session, $this->srs->today($user));
 
         return ['comment' => $out['reply'], 'better' => $out['better'], 'feedback' => $out['feedback'], 'mistakes' => $mistakes];
+    }
+
+    /** Texto para shadowing de tu nivel (el mismo para todos ese día y tema: se guarda en caché). */
+    public function shadowing(Request $request, ClaudeService $claude)
+    {
+        abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
+        $data = $request->validate(['skip' => ['sometimes', 'integer', 'min:0', 'max:50']]);
+        $user = $request->user();
+        $level = $user->cefr_level ?: 'A2';
+        $themes = config('speaking.shadowing_themes');
+        $day = $this->srs->today($user);
+        $i = ((int) $day->format('z') + (int) ($data['skip'] ?? 0)) % count($themes);
+        $theme = $themes[$i];
+
+        try {
+            $text = Cache::remember("shadowing:{$level}:{$day->toDateString()}:{$i}", now()->addDays(2), fn () => $claude->shadowingText($level, $theme));
+        } catch (Throwable $e) {
+            report($e);
+            abort(502, 'No se pudo preparar el texto ahora. Intenta otra vez.');
+        }
+
+        return $text + ['theme' => $theme, 'level' => $level];
     }
 
     /** Una foto para describir (Unsplash). */

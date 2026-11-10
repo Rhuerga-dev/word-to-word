@@ -257,6 +257,7 @@ function renderSpeak() {
   if (sp.view === "talk") return renderTalk();
   if (sp.view === "narrate") el.innerHTML = narrHTML();
   else if (sp.view === "picture") el.innerHTML = picHTML();
+  else if (sp.view === "shadow") el.innerHTML = shHTML();
   else if (sp.view === "summary") el.innerHTML = summaryHTML();
   else if (sp.view === "review") el.innerHTML = reviewHTML();
   else el.innerHTML = homeHTML();
@@ -270,6 +271,13 @@ function renderSpeak() {
   on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.shown = false; renderSpeak(); });
   on("spNarr", () => spNarrStart(0));
   on("spPic", () => spPicStart());
+  on("spSh", () => spShStart(0));
+  on("spShOther", () => spShStart((sp.sh && sp.sh.skip || 0) + 1));
+  on("spShListen", () => { unlockAudio(); spShPlay(false); });
+  on("spShSlow", () => { unlockAudio(); spShPlay(true); });
+  on("spShRec", () => spShTry());
+  on("spShHide", () => { sp.sh.hide = !sp.sh.hide; renderSpeak(); });
+  on("spShNext", () => { const n = sp.sh; n.i++; n.result = null; n.tries = 0; renderSpeak(); if (n.i < n.sentences.length) spShPlay(false); });
   on("spPicGo", () => spPicGo());
   on("spPicOther", () => spPicStart());
   on("spPicListen", () => { unlockAudio(); spSay(sp.pic && sp.pic.fb && sp.pic.fb.better); });
@@ -317,6 +325,10 @@ function homeHTML() {
       <p class="sp-topic">${esc(st.topic.en)}</p><p class="note">${esc(st.topic.es)}</p>
       <p class="note">Hablas un minuto sin parar, sin preparar nada. Luego ves una versión más natural y tus errores.</p>
       <div class="row"><button type="button" class="${st.narrated_today ? "" : "primary"}" id="spNarr"${sp.busy ? " disabled" : ""}>Empezar</button><button type="button" id="spNarrOther"${sp.busy ? " disabled" : ""}>Otro tema</button></div></div>`;
+  html += `<div class="sp-narr sp-sh-card">
+      <div><b>🔁 Shadowing · repite como un nativo</b></div>
+      <p class="note">Escuchas una frase hablada natural y la repites enseguida copiando el ritmo y la entonación. Te evalúa la pronunciación y la fluidez.</p>
+      <div class="row"><button type="button" class="primary" id="spSh"${sp.busy ? " disabled" : ""}>Empezar</button></div></div>`;
   html += `<div class="sp-narr sp-pic-card">
       <div><b>🖼️ Describe la imagen · 45 s</b></div>
       <p class="note">Te muestro una foto y dices en inglés lo que ves. Luego la IA mira la misma foto y te dice qué palabras te faltaron.</p>
@@ -594,5 +606,81 @@ function picHTML() {
         <button type="button" class="primary" id="spReview">Repasar mis errores ahora</button>` : ""}
       <div class="row"><button type="button" class="primary" id="spPicOther">Otra foto</button><button type="button" id="spHome">Volver</button></div>`;
   }
+  return html;
+}
+
+// ---------- shadowing ----------
+async function spShStart(skip) {
+  unlockAudio();
+  if (hf.on) stopHF(true);
+  if (!cfg.ai) { sp.status = "Necesita la IA activada en el servidor (ANTHROPIC_API_KEY)."; return renderSpeak(); }
+  if (!cfg.pronunciation && !SR) { sp.status = "Para evaluar tu voz hace falta Azure Speech en el servidor o Google Chrome."; return renderSpeak(); }
+  sp.view = "shadow"; sp.sh = { phase: "loading", skip, i: 0, tries: 0, result: null, hide: false, scores: [] };
+  renderSpeak();
+  try { Object.assign(sp.sh, await api("/speaking/shadowing" + (skip ? "?skip=" + skip : "")), { phase: "go" }); }
+  catch (e) { sp.sh.phase = "error"; sp.sh.error = e.message; }
+  renderSpeak();
+  if (sp.sh.phase === "go") spShPlay(false);
+}
+function spShPlay(slow) {
+  const n = sp.sh, t = n && n.sentences && n.sentences[n.i]; if (!t) return Promise.resolve();
+  if (useTts()) return playTts(t, "en", slow).catch(() => spSayBrowser(t));
+  return spSayBrowser(t);
+}
+// Repites la frase: con Azure se evalúa sonido por sonido y la fluidez; sin Azure, las palabras.
+async function spShTry() {
+  const n = sp.sh, t = n.sentences[n.i]; if (!t || n.busy) return;
+  unlockAudio();
+  n.busy = true; n.result = null; n.listening = true; renderSpeak();
+  try {
+    if (cfg.pronunciation) {
+      const wav = await recordWav(3000 + t.split(" ").length * 600, null, 1.0);
+      n.listening = false; renderSpeak();
+      if (!wav.heard) { n.result = { silent: true }; return; }
+      const fd = new FormData(); fd.append("text", t); fd.append("audio", wav, "voz.wav");
+      const r = await api("/pronunciation/assess", { method: "POST", body: fd });
+      const a = r.assessment || {};
+      if (a.status !== "Success") { n.result = { silent: true }; return; }
+      n.result = { score: r.score, fluency: a.scores && a.scores.fluency, accuracy: a.scores && a.scores.accuracy,
+        words: (a.words || []).filter(w => w.error !== "Insertion").map(w => ({ w: w.word, ok: w.error === "None" && w.accuracy >= 60 })) };
+    } else {
+      let alts = []; try { alts = await browserListen(); } catch (e) { if (!/No oí/.test(e.message)) throw e; }
+      n.listening = false;
+      if (!alts.length) { n.result = { silent: true }; return; }
+      let best = null; alts.forEach(x => { const c = compare(t, x); if (!best || c.pct > best.pct) best = c; });
+      n.result = { score: best.pct, words: best.toks.map(z => ({ w: z.x, ok: z.ok })) };
+    }
+    n.tries++;
+    n.result.passed = n.result.score >= 75;
+    if (n.result.passed || n.tries >= 3) n.scores[n.i] = Math.max(n.scores[n.i] || 0, n.result.score);
+  } catch (e) { n.result = { error: e.message }; }
+  finally { n.busy = false; n.listening = false; renderSpeak(); }
+}
+
+function shHTML() {
+  const n = sp.sh; if (!n) return "";
+  let html = `<div class="kind"><span>🔁 Shadowing${n.title ? " · " + esc(n.title) : ""}</span><span>${n.sentences ? Math.min(n.i + 1, n.sentences.length) + " / " + n.sentences.length : ""}</span></div>`;
+  if (n.phase === "loading") return html + '<p class="note">Preparando el texto…</p>';
+  if (n.phase === "error") return html + `<p class="warnbox">${esc(n.error)}</p><div class="row"><button type="button" class="primary" id="spShOther">Intentar con otro</button><button type="button" id="spHome">Volver</button></div>`;
+  if (n.i >= n.sentences.length) {
+    const sc = n.scores.filter(x => x != null), avg = sc.length ? Math.round(sc.reduce((a, b) => a + b, 0) / sc.length) : 0;
+    return html + `<p class="banner ok">¡Terminaste! Promedio: <b>${avg}%</b>. Repetir el mismo texto mañana, ya sin mirarlo, es lo que más fija el ritmo.</p>
+      <div class="row"><button type="button" class="primary" id="spShOther">Otro texto</button><button type="button" id="spHome">Volver</button></div>`;
+  }
+  const t = n.sentences[n.i], r = n.result;
+  html += `<p class="note">Escucha y repite <b>justo después</b>, copiando el ritmo, las pausas y cómo se unen las palabras, no solo las palabras.</p>
+    <p class="sp-shline${n.hide ? " hidden-text" : ""}">${n.hide ? "🙈 Texto oculto: repítelo de oído" : esc(t)}</p>
+    <div class="row"><button type="button" id="spShListen">🔊 Escuchar</button><button type="button" id="spShSlow">🐢 Lento</button><button type="button" class="linkish" id="spShHide">${n.hide ? "Mostrar texto" : "Ocultar texto"}</button></div>`;
+  if (n.listening) html += '<p class="sp-status"><span class="hf-dot listen"></span>Te escucho…</p>';
+  if (r) {
+    if (r.error) html += `<p class="warnbox">${esc(r.error)}</p>`;
+    else if (r.silent) html += '<p class="warnbox">No te oí. Habla un poco más cerca del micrófono.</p>';
+    else html += `<p>${r.words.map(w => `<span class="tok ${w.ok ? "ok" : "miss"}">${esc(w.w)}</span>`).join("")}</p>
+      <div class="stats"><div class="stat"><b>${r.score}%</b><span>pronunciación</span></div>${r.fluency != null ? `<div class="stat"><b>${r.fluency}%</b><span>fluidez</span></div>` : ""}${r.accuracy != null ? `<div class="stat"><b>${r.accuracy}%</b><span>precisión</span></div>` : ""}</div>
+      <p class="${r.passed ? "banner ok" : "note"}">${r.passed ? "¡Muy bien! Sonó natural." : n.tries >= 3 ? "Seguimos: vuelve a ella mañana." : "Escúchala otra vez (prueba 🐢 Lento) y repítela."}</p>`;
+  }
+  const done = r && !r.silent && !r.error && (r.passed || n.tries >= 3);
+  html += `<div class="row">${!done ? `<button type="button" class="primary" id="spShRec"${n.busy ? " disabled" : ""}>🎙️ ${n.tries ? "Otra vez" : "Repetir"}</button>` : ""}
+    ${done || n.tries ? `<button type="button" class="${done ? "primary" : ""}" id="spShNext">Siguiente</button>` : ""}<button type="button" id="spHome">Salir</button></div>`;
   return html;
 }

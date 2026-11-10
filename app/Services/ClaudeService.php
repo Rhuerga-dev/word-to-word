@@ -229,6 +229,37 @@ TXT;
     }
 
     /**
+     * Texto original para "shadowing": frases habladas y naturales (con contracciones) para repetir como un nativo.
+     *
+     * @return array{title: string, sentences: string[]}
+     */
+    public function shadowingText(string $level, string $theme): array
+    {
+        $prompt = <<<TXT
+Write a short, natural spoken English text for shadowing practice (the learner repeats each sentence right after hearing it).
+Level: CEFR {$level}. Theme: {$theme}. It can be a short monologue or a dialogue line by line (no speaker names).
+Use everyday spoken English with contractions (I'm, don't, gonna is fine) and natural rhythm.
+Rules: 5 sentences, each 6 to 15 words. Use ONLY letters, spaces, apostrophes and the punctuation , . ? ! (no numbers, no quotes, no dashes).
+Answer ONLY with JSON: {"title": "short English title", "sentences": ["...", "..."]}
+TXT;
+        $text = $this->message('You write natural spoken English for language learners.', [['role' => 'user', 'content' => $prompt]], 700);
+        $start = strpos($text, '{');
+        $end = strrpos($text, '}');
+        $data = $start !== false && $end !== false ? json_decode(substr($text, $start, $end - $start + 1), true) : null;
+        if (! is_array($data) || empty($data['sentences']) || ! is_array($data['sentences'])) {
+            throw new RuntimeException('La respuesta no traía JSON válido.');
+        }
+        // Solo frases que la evaluación de pronunciación acepta (letras y puntuación simple).
+        $sentences = array_values(array_filter(array_map(fn ($x) => is_string($x) ? trim(preg_replace('/\s+/', ' ', $x)) : '', $data['sentences']),
+            fn ($x) => $x !== '' && mb_strlen($x) <= 160 && preg_match("/^[A-Za-z][A-Za-z'’,.!?\- ]*$/u", $x)));
+        if (count($sentences) < 3) {
+            throw new RuntimeException('El texto no traía suficientes frases válidas.');
+        }
+
+        return ['title' => mb_substr(trim((string) ($data['title'] ?? 'Shadowing')), 0, 80), 'sentences' => array_slice($sentences, 0, 6)];
+    }
+
+    /**
      * Conversación de práctica que obliga a usar las palabras del día.
      *
      * @param  array<int, array{role: string, content: string}>  $history
