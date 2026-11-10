@@ -481,6 +481,35 @@ button.chip{cursor:pointer}
 .sp-topic{font-family:var(--display);font-size:22px;line-height:1.3;margin:0}
 .sp-better{font-size:17px;line-height:1.55;margin:0;border-left:3px solid var(--good);padding-left:10px}
 .sp-said-all summary{font-size:14px;color:var(--muted)}
+
+/* Panel de progreso */
+.pg-sec{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.pg-sec h3{font-family:var(--display);font-size:19px;margin:0}
+.pg-todo{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.pg-todo li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.pg-ic{font-size:20px}
+.pg-bars{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;align-items:end}
+.pg-bar{display:grid;gap:4px;justify-items:center}
+.pg-c{position:relative;display:block;width:100%;max-width:38px;height:80px;background:var(--bg);border-radius:4px;overflow:hidden}
+.pg-c i{position:absolute;left:0;right:0;bottom:0;background:var(--accent);opacity:.8}
+.pg-bars.vocab .pg-bar:nth-child(n+6) i{background:var(--good);opacity:1}
+.pg-bar small{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+.pg-trends{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.pg-trends>div{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;padding:10px}
+.pg-trends small{color:var(--muted);font-size:12px}
+.pg-spark polyline{stroke:var(--muted)}
+.pg-spark.up polyline{stroke:var(--good)}
+.pg-spark.down polyline{stroke:var(--warn)}
+.pg-sounds{display:flex;flex-wrap:wrap;gap:8px}
+.pg-snd{display:grid;gap:0;justify-items:center;padding:8px 12px;min-width:84px}
+.pg-snd b{font-size:20px}.pg-snd small{font-size:11px;color:var(--muted)}
+.pg-snd.t-p{border-color:var(--warn)}.pg-snd.t-d,.pg-snd.t-m{border-color:var(--good)}
+.pg-cats{display:grid;gap:6px}
+.pg-cat{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 28px;gap:8px;align-items:center;font-size:14px}
+.pg-cbar{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.pg-cbar i{display:block;height:100%;background:var(--bad);opacity:.75}
+.pg-cat b{text-align:right;font-family:var(--mono)}
+@media (max-width:520px){.tabs{display:flex;flex-wrap:wrap;justify-self:stretch;max-width:100%}.tabs button{flex:1 1 auto;padding:8px 10px}}
 </style>
 
 <div class="wrap">
@@ -528,6 +557,7 @@ button.chip{cursor:pointer}
           <button type="button" role="tab" id="tabCards" aria-selected="true">Fichas</button>
           <button type="button" role="tab" id="tabSpeak" aria-selected="false">🎙️ Hablar</button>
           <button type="button" role="tab" id="tabChat" aria-selected="false">Chat escrito</button>
+          <button type="button" role="tab" id="tabProgress" aria-selected="false">📊 Progreso</button>
         </div>
         <div class="hf-bar" id="hfBar">
           <label class="switch" for="hfOn"><input type="checkbox" id="hfOn" role="switch"> Manos libres</label>
@@ -541,6 +571,7 @@ button.chip{cursor:pointer}
         <div class="queue" id="queue"></div>
         <main id="main" aria-live="polite"></main>
         <section id="speakView" hidden class="card"><div class="card-top sp-top"></div><div class="card-body sp" id="speakBody"></div></section>
+        <section id="progressView" hidden class="card"><div class="card-top sp-top"></div><div class="card-body sp" id="progressBody"></div></section>
         <section id="chatView" hidden class="card"><div class="card-top"></div><div class="card-body chat">
           <div class="kind"><span>Habla usando tus palabras de hoy</span><span id="chatMode"></span></div>
           <div class="row" id="targets"></div>
@@ -618,6 +649,7 @@ button.chip{cursor:pointer}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script src="/app/app.js?v=5"></script>
+<script src="/app/app.js?v=6"></script>
 <script src="/app/speak.js?v=3"></script>
+<script src="/app/progress.js?v=1"></script>
 </body></html>

@@ -164,6 +164,7 @@ TXT;
     public function narration(string $topic, string $text, ?string $level = null): array
     {
         $level = $level ?: 'A2-B1';
+        $types = implode(', ', array_keys(config('speaking.mistake_categories')));
         $system = <<<TXT
 You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
 The student spoke for about one minute about: "{$topic}". What you get is a speech-to-text transcript: ignore punctuation, capitalization and spelling.
@@ -172,7 +173,8 @@ Answer with exactly these lines:
 - A line starting with "BETTER:" with a more natural version of what they said, same ideas, same level, max 70 words.
 - A line starting with "FEEDBACK:" in Spanish: one encouraging sentence about how they did.
 - For each real mistake (max 5, the most useful ones), a line exactly like:
-  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words>
+  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words> | <type>
+  where <type> is one of: {$types}
 TXT;
         $out = self::parseTurn($this->message($system, [['role' => 'user', 'content' => $text]], 900), 5);
         $raw = $out['reply'];
@@ -197,6 +199,7 @@ TXT;
     public function converse(array $history, array $targetWords, ?string $weakSounds = null, string $scenario = 'free', bool $voice = false, ?string $level = null): array
     {
         $words = implode(', ', $targetWords) ?: '(none)';
+        $types = implode(', ', array_keys(config('speaking.mistake_categories')));
         $role = config("speaking.scenarios.{$scenario}.role") ?? config('speaking.scenarios.free.role');
         $level = $level ?: 'A2-B1';
         $input = $voice
@@ -212,7 +215,8 @@ Rules:
 - Use simple, natural American English for their level. If the student seems lost, rephrase more simply.
 - After your reply, add a line starting with "FEEDBACK:" written in Spanish: a short, encouraging note about the student's last message (max 2 sentences).
 - Then, for each real mistake in the student's last message (max 2, skip tiny ones), add a line exactly like:
-  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words>
+  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words> | <type>
+  where <type> is one of: {$types}
 - Then add a line starting with "USED:" listing the target words the student used correctly in their last message, comma separated (or "none").
 TXT;
         if ($weakSounds) {
@@ -243,8 +247,13 @@ TXT;
             foreach (array_slice($all, 0, $maxFixes) as $m) {
                 $said = trim($m[1], " \t\"'“”");
                 $correct = trim($m[2], " \t\"'“”");
+                // "| por qué | tipo": el tipo va al final si es uno de los conocidos.
+                $parts = isset($m[3]) ? array_map('trim', explode('|', $m[3])) : [];
+                $category = count($parts) > 1 && array_key_exists(strtolower(end($parts)), config('speaking.mistake_categories', []))
+                    ? strtolower(array_pop($parts)) : null;
+                $why = trim(implode(' | ', $parts));
                 if ($said !== '' && $correct !== '' && mb_strtolower($said) !== mb_strtolower($correct)) {
-                    $mistakes[] = ['said' => mb_substr($said, 0, 300), 'correct' => mb_substr($correct, 0, 300), 'why' => isset($m[3]) && trim($m[3]) !== '' ? mb_substr(trim($m[3]), 0, 300) : null];
+                    $mistakes[] = ['said' => mb_substr($said, 0, 300), 'correct' => mb_substr($correct, 0, 300), 'why' => $why !== '' ? mb_substr($why, 0, 300) : null, 'category' => $category];
                 }
             }
         }

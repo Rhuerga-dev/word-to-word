@@ -686,14 +686,16 @@ function showTab(which) {
   which = which === true ? "chat" : which === false ? "cards" : which;
   if (which !== "cards" && hf.on) stopHF();
   if (which !== "speak" && typeof spLeave === "function") spLeave();
-  $("tabCards").setAttribute("aria-selected", which === "cards"); $("tabChat").setAttribute("aria-selected", which === "chat"); $("tabSpeak").setAttribute("aria-selected", which === "speak");
-  $("main").hidden = which !== "cards"; $("queue").hidden = which !== "cards"; $("chatView").hidden = which !== "chat"; $("speakView").hidden = which !== "speak";
+  $("tabCards").setAttribute("aria-selected", which === "cards"); $("tabChat").setAttribute("aria-selected", which === "chat"); $("tabSpeak").setAttribute("aria-selected", which === "speak"); $("tabProgress").setAttribute("aria-selected", which === "progress");
+  $("main").hidden = which !== "cards"; $("queue").hidden = which !== "cards"; $("chatView").hidden = which !== "chat"; $("speakView").hidden = which !== "speak"; $("progressView").hidden = which !== "progress";
+  if (which === "progress" && typeof pgOpen === "function") pgOpen();
   if (which === "chat") renderChat();
   if (which === "speak" && typeof spOpen === "function") spOpen();
 }
 $("tabCards").onclick = () => showTab("cards");
 $("tabChat").onclick = () => showTab("chat");
 $("tabSpeak").onclick = () => showTab("speak");
+$("tabProgress").onclick = () => showTab("progress");
 
 // ===== Panel lateral y ajustes =====
 function renderSide() {

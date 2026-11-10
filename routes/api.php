@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tts', [\App\Http\Controllers\Api\TtsController::class, 'show'])->middleware('throttle:240,1');
 
     Route::post('/conversation', [ConversationController::class, 'store'])->middleware('throttle:30,1');
+    Route::get('/progress', \App\Http\Controllers\Api\ProgressController::class);
     Route::get('/speaking/scenarios', [SpeakingController::class, 'scenarios']);
     Route::get('/speaking/stats', [SpeakingController::class, 'stats']);
     Route::put('/speaking/goal', [SpeakingController::class, 'goal']);

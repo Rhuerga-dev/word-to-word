@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 /** Un error al hablar que se repasa diciendo la frase correcta. */
 class SpeakingMistake extends Model
 {
-    protected $fillable = ['user_id', 'speaking_session_id', 'said', 'correct', 'why', 'stage', 'reviews', 'reviewed_on', 'next_review', 'mastered_on'];
+    protected $fillable = ['user_id', 'speaking_session_id', 'said', 'correct', 'why', 'category', 'stage', 'reviews', 'reviewed_on', 'next_review', 'mastered_on'];
 
     protected function casts(): array
     {
@@ -21,6 +21,7 @@ class SpeakingMistake extends Model
             'said' => $this->said,
             'correct' => $this->correct,
             'why' => $this->why,
+            'category' => $this->category,
             'stage' => $this->stage,
             'mastered' => $this->mastered_on !== null,
         ];

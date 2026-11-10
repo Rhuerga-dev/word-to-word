@@ -15,6 +15,19 @@ return [
     // Días hasta el próximo repaso de un error según los repasos aprobados seguidos; el último lo da por dominado.
     'mistake_spacing' => [1, 3, 7, 14, 30],
 
+    // Tipos de error al hablar (la IA marca uno en cada corrección).
+    'mistake_categories' => [
+        'tense' => 'Tiempos verbales',
+        'preposition' => 'Preposiciones',
+        'article' => 'Artículos (a, an, the)',
+        'word_order' => 'Orden de las palabras',
+        'vocabulary' => 'Palabra equivocada',
+        'agreement' => 'Concordancia (he goes, there are…)',
+        'plural' => 'Plurales y contables',
+        'pronoun' => 'Pronombres',
+        'other' => 'Otros',
+    ],
+
     // Narración diaria: un minuto hablando sin parar sobre un tema (uno distinto cada día).
     'narration_seconds' => 60,
     'narration_topics' => [

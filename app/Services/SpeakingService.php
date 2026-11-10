@@ -59,6 +59,7 @@ class SpeakingService
                 'said' => $m['said'],
                 'correct' => $m['correct'],
                 'why' => $m['why'],
+                'category' => $m['category'] ?? null,
                 'next_review' => $today->toDateString(),
             ])->toCard();
         }

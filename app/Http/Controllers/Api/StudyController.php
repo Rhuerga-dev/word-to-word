@@ -25,6 +25,7 @@ class StudyController extends Controller
             'time_travel' => config('vocab.allow_time_travel'),
             'push' => filled(config('webpush.vapid.public_key')),
             'tts' => app(\App\Services\TtsService::class)->enabled(),
+            'intervals' => config('vocab.intervals'),
         ];
     }
 
