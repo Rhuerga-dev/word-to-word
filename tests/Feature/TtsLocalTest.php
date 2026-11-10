@@ -48,7 +48,7 @@ class TtsLocalTest extends TestCase
         Http::fake(['127.0.0.1:8880/health' => Http::response(['ok' => true]), '127.0.0.1:8880/tts' => Http::response('LOCALMP3'), '*' => Http::response('AZUREMP3')]);
         $this->tts(['provider' => 'azure'])->assertOk();
         Http::assertSent(fn (HttpRequest $r) => str_contains($r->url(), 'microsoft.com'));
-        $this->tts(['provider' => 'nope'])->assertStatus(302);
+        $this->tts(['provider' => 'nope'])->assertStatus(422);   // la API siempre responde JSON
     }
 
     public function test_asking_for_the_local_voice_while_it_is_off_fails_instead_of_faking_it(): void
