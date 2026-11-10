@@ -18,8 +18,14 @@ class PronunciationLabController extends Controller
     /** Días hasta el próximo taller según los talleres aprobados seguidos. */
     public const SPACING = [1, 3, 7, 14];
 
-    /** Talleres aprobados (en días distintos) para darlo por dominado. */
+    /** Talleres aprobados (en días distintos) para darlo por dominado (el último, en nivel Dominio). */
     public const MASTER_STAGE = 4;
+
+    /** Niveles de cada sonido: Guiado → Práctica → Dominio. */
+    public const TIERS = ['g', 'p', 'd'];
+
+    /** Talleres de Dominio fallados seguidos para volver a Práctica. */
+    public const DOMINIO_FAILS = 2;
 
     public function __construct(private SrsService $srs) {}
 
@@ -36,6 +42,7 @@ class PronunciationLabController extends Controller
                     'errors' => (int) $s->count,
                     'last_word' => $s->last_word,
                     'stage' => (int) $s->stage,
+                    'tier' => $s->tier ?? 'g',
                     'best_score' => $s->best_score,
                     'sessions' => (int) $s->sessions,
                     'next_practice' => $next,
@@ -84,6 +91,8 @@ class PronunciationLabController extends Controller
             'phoneme' => ['required', 'string', 'max:16'],
             'passed' => ['required', 'boolean'],
             'score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'tier' => ['sometimes', 'string', 'in:g,p,d'],      // nivel en el que se hizo el taller
+            'helps' => ['sometimes', 'integer', 'min:0', 'max:500'],
         ]);
         $user = $request->user();
         $today = $this->srs->today($user);
@@ -102,13 +111,24 @@ class PronunciationLabController extends Controller
             $days = 1;
         }
 
+        $played = $data['tier'] ?? ($row->tier ?? 'g');
+        $helps = (int) ($data['helps'] ?? 0);
+        [$tier, $fails] = self::nextTier($row->tier ?? 'g', (int) ($row->dominio_fails ?? 0), $played, (bool) $data['passed'], $helps);
+        // Dominado = los talleres espaciados completos, y el que lo cierra en Dominio y sin ninguna ayuda.
+        $clean = $data['passed'] && $helps === 0 && $played === 'd';
+        $mastered = $stage >= self::MASTER_STAGE && $tier === 'd'
+            ? ($row->mastered_on ?? ($clean ? $today->toDateString() : null))
+            : null;
+
         $values = [
             'stage' => $stage,
             'sessions' => (int) ($row->sessions ?? 0) + 1,
             'best_score' => max((int) ($row->best_score ?? 0), (int) ($data['score'] ?? 0)) ?: null,
             'practiced_on' => $today->toDateString(),
             'next_practice' => $today->addDays($days)->toDateString(),
-            'mastered_on' => $stage >= self::MASTER_STAGE ? ($row->mastered_on ?? $today->toDateString()) : null,
+            'mastered_on' => $mastered,
+            'tier' => $tier,
+            'dominio_fails' => $fails,
             'updated_at' => now(),
         ];
         if ($row) {
@@ -120,10 +140,35 @@ class PronunciationLabController extends Controller
         return [
             'phoneme' => $data['phoneme'],
             'stage' => $stage,
-            'mastered' => $stage >= self::MASTER_STAGE,
+            'tier' => $tier,
+            'previous_tier' => $row->tier ?? 'g',
+            'mastered' => $mastered !== null,
             'next_practice' => $values['next_practice'],
             'days' => $days,
         ];
+    }
+
+    /**
+     * Nivel después de un taller. Solo cambia si se hizo en el nivel actual del sonido
+     * (repasar con más ayuda nunca baja ni sube de nivel).
+     * - Guiado aprobado sin ayudas salta a Dominio; con ayudas pasa a Práctica.
+     * - Práctica aprobada sin ayudas pasa a Dominio.
+     * - En Dominio, fallar (o necesitar ayuda) dos veces seguidas devuelve a Práctica.
+     *
+     * @return array{0: string, 1: int} [nivel, fallos seguidos en Dominio]
+     */
+    public static function nextTier(string $current, int $fails, string $played, bool $passed, int $helps): array
+    {
+        if ($played !== $current) {
+            return [$current, $fails];
+        }
+        $clean = $passed && $helps === 0;
+
+        return match ($current) {
+            'g' => [$clean ? 'd' : ($passed ? 'p' : 'g'), 0],
+            'p' => [$clean ? 'd' : 'p', 0],
+            default => $clean ? ['d', 0] : ($fails + 1 >= self::DOMINIO_FAILS ? ['p', 0] : ['d', $fails + 1]),
+        };
     }
 
     /** Promedio de precisión del sonido practicado en lo que dijiste (null si no aparece). */

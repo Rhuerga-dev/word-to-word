@@ -1425,7 +1425,23 @@ if (!PRON_TIPS["ɛ"]) PRON_TIPS["ɛ"] = { name: "E corta (bed)", how: "Como la �
 if (!PRON_TIPS["l"]) PRON_TIPS["l"] = { name: "L final (call)", how: "Al final de la palabra levanta la parte de atrás de la lengua: suena más oscura, casi “ul”.", pair: "call · feel · people" };
 const labTip = k => PRON_TIPS[k] || { name: "/" + k + "/", how: "Escucha despacio, fíjate en la boca y repite exagerando el sonido.", pair: "" };
 
-const lab = { on: false, sounds: [], resolveTap: null };
+const lab = { on: false, sounds: [], resolveTap: null, tier: "g", helps: 0 };
+// Niveles por sonido: Guiado (te lo dan todo), Práctica (ayuda solo si la pides), Dominio (sin modelo, en frío).
+const LAB_TIERS = {
+  g: { label: "🧭 Guiado", how: "Te explico el sonido, lo oyes despacio y te corrijo en cada intento." },
+  p: { label: "✍️ Práctica", how: "Lo oyes una vez a velocidad normal. La explicación y el modelo lento, solo si los pides." },
+  d: { label: "🏆 Dominio", how: "Sin modelo: ves la palabra y la dices en frío, como en la vida real." },
+};
+function labHelp() { lab.helps++; const h = $("labHelps"); if (h) h.textContent = lab.helps; }
+// Botones de ayuda (cuentan como ayuda) para Práctica y Dominio.
+function labAids(text) {
+  const box = $("labAids"); if (!box) return;
+  if (lab.tier === "g" || !text) { box.innerHTML = ""; return; }
+  const t = labTip(labKey(lab.phoneme));
+  box.innerHTML = `<button type="button" class="linkish" id="labAidListen">🔊 Oír el modelo</button><button type="button" class="linkish" id="labAidTip">💡 Cómo se hace</button>`;
+  $("labAidListen").onclick = () => { labHelp(); labSay(text, "en", true); };
+  $("labAidTip").onclick = () => { labHelp(); const st = $("labStage"); if (st && !st.querySelector(".lab-how")) st.insertAdjacentHTML("beforeend", `<div class="lab-how"><p>${esc(t.how)}</p></div>`); labEs(t.how); };
+}
 function labSay(text, lang, slow) {
   if (!lab.on || !text) return Promise.resolve();
   lang = lang || "en";
@@ -1472,8 +1488,8 @@ function renderLabHome() {
     const when = s.mastered ? "✅ Dominado" : s.due ? "Toca hoy" : "Próximo: " + new Date(s.next_practice + "T12:00").toLocaleDateString("es", { weekday: "short", day: "numeric" });
     const info = s.common ? "Difícil para hispanohablantes" : `${s.errors} ${s.errors === 1 ? "error" : "errores"}${s.last_word ? " · última: “" + esc(s.last_word) + "”" : ""}`;
     return `<li class="lab-row${s.due && !s.mastered ? " due" : ""}"><span class="ipa">/${esc(s.phoneme)}/</span>
-      <div><b>${esc(t.name)}</b><small>${info}</small><span class="dots" title="Talleres aprobados">${dots}</span></div>
-      <div class="lab-act"><small>${when}</small><button type="button" class="${s.due && !s.mastered ? "primary" : ""}" data-lab="${esc(s.phoneme)}">Practicar</button></div></li>`;
+      <div><b>${esc(t.name)}</b><small>${info}</small><span class="lab-tier t-${s.tier || "g"}">${LAB_TIERS[s.tier || "g"].label}</span><span class="dots" title="Talleres aprobados">${dots}</span></div>
+      <div class="lab-act"><small>${when}</small><button type="button" class="${s.due && !s.mastered ? "primary" : ""}" data-lab="${esc(s.phoneme)}" data-tier="${esc(s.tier || "g")}">Practicar</button>${s.tier && s.tier !== "g" ? `<button type="button" class="linkish" data-lab="${esc(s.phoneme)}" data-tier="g" title="Repasar con toda la ayuda (no cambia tu nivel)">con guía</button>` : ""}</div></li>`;
   };
   const top = mine.find(s => s.due && !s.mastered) || mine[0];
   $("labBody").innerHTML = `<div class="kind"><span>🎯 Taller de pronunciación</span><span>unos 4 minutos por sonido</span></div>
@@ -1485,23 +1501,28 @@ function renderLabHome() {
       <li><b>Imita despacio:</b> escuchas lento, repites, y la app evalúa <i>ese sonido</i>. Se repite hasta que sale.</li>
       <li><b>Contraste:</b> dices la palabra difícil frente a la que se confunde.</li>
       <li><b>En una frase:</b> lo usas dentro de una frase real.</li>
-      <li><b>Repaso espaciado:</b> el taller vuelve mañana, en 3, 7 y 14 días. Con 4 aprobados el sonido queda dominado.</li></ol></details>
+      <li><b>Repaso espaciado:</b> el taller vuelve mañana, en 3, 7 y 14 días. Con 4 aprobados el sonido queda dominado.</li></ol>
+      <p><b>Niveles de cada sonido</b> (cada ayuda que pides cuenta):</p><ol>
+      <li><b>${LAB_TIERS.g.label}:</b> ${LAB_TIERS.g.how} Si lo apruebas sin necesitar ninguna ayuda, saltas directo a Dominio.</li>
+      <li><b>${LAB_TIERS.p.label}:</b> ${LAB_TIERS.p.how} Lo apruebas sin ayudas y pasas a Dominio.</li>
+      <li><b>${LAB_TIERS.d.label}:</b> ${LAB_TIERS.d.how} Si fallas o pides ayuda dos veces seguidas, vuelves a Práctica. El sonido solo queda dominado con un taller de Dominio sin ayudas.</li></ol></details>
     ${top ? `<div class="row"><button type="button" class="primary" data-lab="${esc(top.phoneme)}">▶ Empezar con /${esc(top.phoneme)}/</button></div>` : ""}
     <ul class="lab-list">${mine.map(row).join("")}${extra.length ? `<li class="lab-sep">${mine.length ? "Otros sonidos difíciles para hispanohablantes" : ""}</li>` + extra.map(row).join("") : ""}</ul>
     ${!cfg.pronunciation && !SR ? '<p class="warnbox">Para evaluar tu voz hace falta Azure Speech o Google Chrome.</p>' : ""}
     <div class="row"><button type="button" id="labClose">Volver a las fichas</button></div>`;
-  $("labBody").querySelectorAll("[data-lab]").forEach(b => b.onclick = () => { unlockAudio(); startLab(b.dataset.lab); });
+  $("labBody").querySelectorAll("[data-lab]").forEach(b => b.onclick = () => { unlockAudio(); startLab(b.dataset.lab, b.dataset.tier); });
   $("labClose").onclick = () => showLab(false);
 }
 
 function labScreen(phoneme, stepName, idx) {
   const k = labKey(phoneme), t = labTip(k);
   const steps = ["Cómo se hace", "Entrena el oído", "Imita despacio", "Contraste", "En una frase"];
-  $("labBody").innerHTML = `<div class="kind"><span>🎯 /${esc(phoneme)}/ · ${esc(t.name)}</span><span>${idx + 1} de ${steps.length}</span></div>
+  $("labBody").innerHTML = `<div class="kind"><span>🎯 /${esc(phoneme)}/ · ${esc(t.name)}</span><span>${LAB_TIERS[lab.tier].label} · ayudas: <b id="labHelps">${lab.helps}</b> · ${idx + 1} de ${steps.length}</span></div>
     <ol class="lab-steps">${steps.map((s, i) => `<li class="${i < idx ? "done" : i === idx ? "cur" : ""}">${s}</li>`).join("")}</ol>
     <h3 class="lab-title">${esc(stepName)}</h3>
     <div class="focus-step" id="labStep"></div>
     <div id="labStage"></div>
+    <div class="row lab-aids" id="labAids"></div>
     <div class="heard" id="labHeard"></div>
     <div class="row"><button type="button" id="labStop">Terminar</button></div>`;
   $("labStop").onclick = () => { lab.on = false; if (stopRecording) stopRecording(); if (lab.resolveTap) lab.resolveTap(null); openLab(); };
@@ -1534,13 +1555,23 @@ async function labAssess(text, phoneme, ms) {
 
 // Un ejercicio: modelo → repites → evaluación, hasta que sale (o se agotan los intentos).
 async function labDrill(text, phoneme, pass, showHtml) {
-  const k = labKey(phoneme), t = labTip(k), isSentence = /\s/.test(text);
+  const k = labKey(phoneme), t = labTip(k), isSentence = /\s/.test(text), tier = lab.tier;
   const stage = $("labStage"); if (stage) stage.innerHTML = showHtml || `<p class="lab-word">${esc(text)}</p>`;
+  labAids(text);
   let best = 0;
   for (let i = 0; i < LAB_TRIES && lab.on; i++) {
-    labStep(i ? "Escucha otra vez" : "Escucha", "speak");
-    await labSay(text, "en", true);
-    if (i >= 2) { await labEs("Ahora a velocidad normal."); await labSay(text, "en"); }
+    if (tier === "g") {
+      // Guiado: el modelo lento en cada intento (y normal desde el tercero). Repetir con el modelo cuenta como ayuda.
+      if (i) labHelp();
+      labStep(i ? "Escucha otra vez" : "Escucha", "speak");
+      await labSay(text, "en", true);
+      if (i >= 2) { await labEs("Ahora a velocidad normal."); await labSay(text, "en"); }
+    } else if (tier === "p" && i === 0) {
+      labStep("Escucha una vez", "speak");
+      await labSay(text, "en");
+    } else {
+      labStep(tier === "d" ? "Léela y dila" : "Otra vez, sin modelo");
+    }
     if (!lab.on) return null;
     const r = await labAssess(text, phoneme, isSentence ? 7000 : 3500);
     if (!lab.on) return null;
@@ -1548,6 +1579,8 @@ async function labDrill(text, phoneme, pass, showHtml) {
     lab.silent = 0;
     best = Math.max(best, r.pct);
     if (r.pct >= pass && (!isSentence || (r.overall || 0) >= 60)) { await labEs(i ? pick(["¡Ahora sí!", "¡Esa es!", "¡Mucho mejor!"]) : pick(HF_PRAISE)); return r.pct; }
+    labStep(`Sonido al ${r.pct}% · necesitas ${pass}%`);
+    if (tier !== "g") { await labEs(r.pct >= pass - 10 ? "Casi. Otra vez." : "Otra vez."); continue; }
     // Retroalimentación distinta en cada intento (lo que dice la investigación: corregir algo concreto, no solo "otra vez").
     const fb = [
       `El sonido salió al ${r.pct} por ciento. Recuerda: ${firstSentence(t.how)}`,
@@ -1555,31 +1588,37 @@ async function labDrill(text, phoneme, pass, showHtml) {
       "Escúchalo lento y luego normal, y copia el ritmo.",
       isSentence ? "Divide la frase: di primero las dos primeras palabras y luego el resto, sin parar." : "Di la palabra dos veces seguidas, como un eco.",
     ];
-    labStep(`Sonido al ${r.pct}% · necesitas ${pass}%`);
     await labEs(r.pct >= pass - 10 ? "¡Casi! " + fb[Math.min(i, fb.length - 1)] : fb[Math.min(i, fb.length - 1)]);
   }
   if (lab.on) await labEs("Lo dejamos aquí por ahora. Vuelve mañana: con el sueño de por medio sale mejor.");
   return -best || -1;
 }
 
-async function startLab(phoneme) {
+async function startLab(phoneme, tier) {
   if (!cfg.pronunciation && !SR) { alertSide("Para evaluar tu voz hace falta Azure Speech o Google Chrome."); return; }
   const k = labKey(phoneme), d = DRILLS[k], t = labTip(k);
   if (!d) { alertSide("Todavía no tengo ejercicios para /" + phoneme + "/."); return; }
-  lab.on = true; lab.silent = 0;
+  const mine = lab.sounds.find(x => x.phoneme === phoneme);
+  lab.on = true; lab.silent = 0; lab.helps = 0; lab.phoneme = phoneme;
+  lab.tier = LAB_TIERS[tier] ? tier : (mine && LAB_TIERS[mine.tier] ? mine.tier : "g");
   const scores = [];
   const record = v => { if (v != null) scores.push(v); };
   try {
-    // 1) Cómo se hace
+    // 1) Cómo se hace (solo en Guiado; en Práctica y Dominio está en «💡 Cómo se hace», que cuenta como ayuda)
+    if (lab.tier === "g") {
     labScreen(phoneme, "Cómo se hace", 0);
     $("labStage").innerHTML = `<div class="lab-how"><p>${esc(t.how)}</p>${t.pair ? `<p class="pair">Escucha: ${esc(t.pair)}</p>` : ""}</div>`;
     labStep("Escucha la explicación", "speak");
     await labEs("Vamos a practicar " + t.name.replace(/\(.*\)/, "") + ". " + t.how);
     for (const w of d.words.slice(0, 2)) { await labSay(w, "en", true); await labSay(w, "en"); }
+    } else {
+      labScreen(phoneme, "Cómo se hace", 0);
+      await labEs(lab.tier === "d" ? "Nivel Dominio: sin modelo. Lee y dilo tú." : "Nivel Práctica: lo oyes una vez. Si necesitas la explicación o el modelo lento, pídelo.");
+    }
     if (!lab.on) return;
 
     // 2) Entrena el oído: pares mínimos hasta acertar 4 seguidos (máx. 12)
-    if (d.pairs.length) {
+    if (d.pairs.length && lab.tier !== "d") {
       labScreen(phoneme, "Entrena el oído", 1);
       await labEs("Ahora entrena el oído. Te digo una palabra y tú tocas cuál oíste.");
       let streak = 0, n = 0, hits = 0;
@@ -1589,7 +1628,7 @@ async function startLab(phoneme) {
         $("labStage").innerHTML = `<p class="note">¿Cuál oíste? <span class="faint">${streak}/4 seguidas</span></p>
           <div class="lab-pair">${opts.map(w => `<button type="button" data-w="${esc(w)}">${esc(w)}</button>`).join("")}</div>
           <button type="button" class="linkish" id="labAgain">🔊 Oír otra vez</button>`;
-        $("labAgain").onclick = () => labSay(said, "en");
+        $("labAgain").onclick = () => { labHelp(); labSay(said, "en"); };
         labStep("Escucha y toca la palabra", "speak");
         await labSay(said, "en");
         const pickW = await new Promise(res => { lab.resolveTap = res; $("labStage").querySelectorAll("[data-w]").forEach(b => b.onclick = () => res(b.dataset.w)); });
@@ -1608,16 +1647,16 @@ async function startLab(phoneme) {
 
     // 3) Imita despacio: palabras con el sonido
     labScreen(phoneme, "Imita despacio", 2);
-    await labEs("Ahora imita. Te la digo despacio y la repites. Evalúo solo este sonido.");
+    await labEs(lab.tier === "g" ? "Ahora imita. Te la digo despacio y la repites. Evalúo solo este sonido." : lab.tier === "p" ? "Te la digo una vez y la repites." : "Di cada palabra. Evalúo solo este sonido.");
     for (const w of d.words.slice(0, 3)) { if (!lab.on) return; record(await labDrill(w, phoneme, LAB_PASS)); }
 
     // 4) Contraste: la palabra con el sonido frente a la que se confunde
     if (d.pairs.length) {
       labScreen(phoneme, "Contraste", 3);
-      await labEs("Contraste. Escucha las dos y di la primera, la que tiene el sonido.");
+      await labEs(lab.tier === "d" ? "Contraste. Di la primera palabra, la que tiene el sonido." : "Contraste. Escucha las dos y di la primera, la que tiene el sonido.");
       for (const [a, b] of d.pairs.slice(0, 2)) {
         if (!lab.on) return;
-        await labSay(a, "en", true); await labSay(b, "en", true);
+        if (lab.tier !== "d") { await labSay(a, "en", lab.tier === "g"); await labSay(b, "en", lab.tier === "g"); }
         record(await labDrill(a, phoneme, LAB_PASS, `<p class="lab-word">${esc(a)} <span class="faint">≠ ${esc(b)}</span></p>`));
       }
     }
@@ -1633,16 +1672,21 @@ async function startLab(phoneme) {
     const passedItems = scores.filter(s => s > 0).length, total = scores.length;
     const avg = Math.round(scores.map(Math.abs).reduce((a, b) => a + b, 0) / Math.max(1, total));
     const passed = total > 0 && passedItems / total >= 0.8;
-    let res = null; try { res = await api("/pronunciation/sounds/result", { method: "POST", body: { phoneme, passed, score: Math.min(100, avg) } }); } catch (e) {}
+    let res = null; try { res = await api("/pronunciation/sounds/result", { method: "POST", body: { phoneme, passed, score: Math.min(100, avg), tier: lab.tier, helps: lab.helps } }); } catch (e) {}
+    const order = ["g", "p", "d"], up = res && order.indexOf(res.tier) > order.indexOf(res.previous_tier), down = res && order.indexOf(res.tier) < order.indexOf(res.previous_tier);
+    const tierMsg = !res ? "" : up ? `<p class="banner ok">⬆️ Subes a <b>${LAB_TIERS[res.tier].label}</b>${res.previous_tier === "g" && res.tier === "d" ? " directo: no necesitaste ninguna ayuda" : ""}.</p>`
+      : down ? `<p class="warnbox">Vuelves a <b>${LAB_TIERS[res.tier].label}</b> un tiempo: en Dominio necesitaste ayuda dos veces seguidas.</p>`
+      : `<p class="note">Sigues en <b>${LAB_TIERS[res.tier].label}</b>${res.tier !== "d" && passed ? ". Para subir, apruébalo sin pedir ayudas" : ""}.</p>`;
     const when = res ? (res.days === 1 ? "mañana" : "en " + res.days + " días") : "mañana";
     $("labBody").innerHTML = `<div class="kind"><span>🎯 /${esc(phoneme)}/ · ${esc(t.name)}</span><span>Resultado</span></div>
       <div class="done"><div class="big">${passed ? (res && res.mastered ? "🏆" : "🎉") : "💪"}</div>
       <h2>${passed ? (res && res.mastered ? "¡Sonido dominado!" : "¡Taller aprobado!") : "¡Buen trabajo, sigue así!"}</h2>
-      <p class="note">${passedItems} de ${total} ejercicios logrados · promedio ${avg}%</p>
+      <p class="note">${passedItems} de ${total} ejercicios logrados · promedio ${avg}% · ${lab.helps} ${lab.helps === 1 ? "ayuda" : "ayudas"}</p>
+      ${tierMsg}
       <p class="note">${passed ? `Lo repasamos <b>${when}</b> para que se quede fijo${res ? ` (${res.stage} de 4 aprobados).` : "."}` : `Lo repetimos <b>${when}</b>. Dormir entre prácticas ayuda a fijar el movimiento.`}</p>
       <div class="row"><button type="button" class="primary" id="labAgainAll">Repetir ahora</button><button type="button" id="labHome">Otros sonidos</button><button type="button" id="labBack">Volver a las fichas</button></div></div>`;
     if (passed) confetti();
-    $("labAgainAll").onclick = () => { unlockAudio(); startLab(phoneme); };
+    $("labAgainAll").onclick = async () => { unlockAudio(); try { lab.sounds = (await api("/pronunciation/sounds")).sounds; } catch (e) {} startLab(phoneme); };
     $("labHome").onclick = () => openLab();
     $("labBack").onclick = () => showLab(false);
     await labEs(passed ? "¡Excelente! Lo repasamos " + when + "." : "Buen esfuerzo. Lo repetimos " + when + ".");

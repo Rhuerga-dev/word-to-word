@@ -88,4 +88,54 @@ class PronunciationLabTest extends TestCase
         // La práctica no suma errores al historial.
         $this->assertSame(9, (int) DB::table('phoneme_errors')->where(['user_id' => $user->id, 'phoneme' => 'θ'])->value('count'));
     }
+
+    private function result(array $body): \Illuminate\Testing\TestResponse
+    {
+        return $this->postJson('/api/pronunciation/sounds/result', $body + ['phoneme' => 'θ'])->assertOk();
+    }
+
+    public function test_guided_with_helps_goes_to_practice_and_without_helps_skips_to_dominio(): void
+    {
+        $user = $this->user();
+        $this->getJson('/api/pronunciation/sounds')->assertJsonPath('sounds.0.tier', 'g');
+
+        $this->result(['passed' => true, 'tier' => 'g', 'helps' => 3])->assertJsonPath('tier', 'p')->assertJsonPath('previous_tier', 'g');
+        $user->increment('day_offset');
+        // En Práctica, aprobar con ayudas no sube; sin ayudas, pasa a Dominio.
+        $this->result(['passed' => true, 'tier' => 'p', 'helps' => 1])->assertJsonPath('tier', 'p');
+        $this->result(['passed' => true, 'tier' => 'p', 'helps' => 0])->assertJsonPath('tier', 'd');
+
+        $this->result(['passed' => true, 'tier' => 'g', 'helps' => 0, 'phoneme' => 'v'])->assertJsonPath('tier', 'd'); // salto directo
+    }
+
+    public function test_failing_dominio_twice_in_a_row_goes_back_to_practice(): void
+    {
+        $this->user();
+        $this->result(['passed' => true, 'tier' => 'g', 'helps' => 0])->assertJsonPath('tier', 'd');
+        $this->result(['passed' => false, 'tier' => 'd', 'helps' => 0])->assertJsonPath('tier', 'd');
+        $this->result(['passed' => true, 'tier' => 'd', 'helps' => 2])->assertJsonPath('tier', 'p'); // con ayuda tampoco cuenta
+    }
+
+    public function test_practising_with_more_help_never_changes_the_level(): void
+    {
+        $this->user();
+        $this->result(['passed' => true, 'tier' => 'g', 'helps' => 0])->assertJsonPath('tier', 'd');
+        $this->result(['passed' => false, 'tier' => 'g', 'helps' => 9])->assertJsonPath('tier', 'd');
+        $this->result(['passed' => false, 'tier' => 'g', 'helps' => 9])->assertJsonPath('tier', 'd');
+    }
+
+    public function test_a_sound_is_only_mastered_by_a_clean_dominio_workshop(): void
+    {
+        $user = $this->user();
+        $this->result(['passed' => true, 'tier' => 'g', 'helps' => 0]);                // → Dominio, etapa 1
+        foreach (range(1, 2) as $i) {
+            $user->increment('day_offset');
+            $this->result(['passed' => true, 'tier' => 'd', 'helps' => 0]);            // etapas 2 y 3
+        }
+        $user->increment('day_offset');
+        $this->result(['passed' => true, 'tier' => 'd', 'helps' => 1])
+            ->assertJsonPath('stage', 4)->assertJsonPath('mastered', false)->assertJsonPath('tier', 'd'); // primera vez con ayuda: sigue en Dominio
+        $user->increment('day_offset');
+        $this->result(['passed' => true, 'tier' => 'd', 'helps' => 0])->assertJsonPath('mastered', true);
+    }
 }

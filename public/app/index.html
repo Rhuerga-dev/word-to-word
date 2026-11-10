@@ -460,6 +460,13 @@ button.chip{cursor:pointer}
 .sp-fix b{color:var(--good)}
 .sp-said{font-size:20px;margin:0}
 .sp-correct{font-family:var(--display);font-size:24px;margin:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--good)}
+
+/* Niveles de pronunciación por sonido */
+.lab-tier{display:inline-block;font-size:11px;font-family:var(--mono);padding:1px 7px;border-radius:999px;border:1px solid var(--line);margin:3px 6px 0 0}
+.lab-tier.t-p{border-color:var(--warn);color:var(--warn)}
+.lab-tier.t-d{border-color:var(--good);color:var(--good)}
+.lab-aids{gap:14px}
+.lab .linkish{background:none;border:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-size:14px}
 </style>
 
 <div class="wrap">
@@ -597,6 +604,6 @@ button.chip{cursor:pointer}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script src="/app/app.js?v=2"></script>
+<script src="/app/app.js?v=3"></script>
 <script src="/app/speak.js?v=1"></script>
 </body></html>
