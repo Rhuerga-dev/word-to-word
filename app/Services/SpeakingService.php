@@ -111,7 +111,7 @@ class SpeakingService
     }
 
     /** Todo lo que muestra el panel de fluidez. */
-    public function stats(User $user): array
+    public function stats(User $user, int $topicSkip = 0): array
     {
         $today = $this->srs->today($user);
         $goal = $this->goal($user);
@@ -147,7 +147,7 @@ class SpeakingService
             'reaction_trend' => $recent->filter(fn (SpeakingSession $s) => $s->reaction_turns > 0)
                 ->map(fn (SpeakingSession $s) => $s->reaction())->values()->all(),
             'narrated_today' => $narrated,
-            'topic' => $this->topic($user),
+            'topic' => $this->topic($user, $topicSkip),
             'today' => (float) ($byDay[$today->toDateString()] ?? 0),
             'streak' => $streak,
             'week' => $week,

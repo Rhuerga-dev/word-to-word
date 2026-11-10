@@ -523,6 +523,17 @@ button.chip{cursor:pointer}
 /* Shadowing */
 .sp-shline{font-family:var(--display);font-size:24px;line-height:1.4;margin:0}
 .sp-shline.hidden-text{font-size:16px;color:var(--muted);font-family:var(--body)}
+
+/* Hablar: inicio con 4 ejercicios */
+.sp-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sp-tile{display:grid;gap:3px;justify-items:start;text-align:left;padding:14px 12px;border-radius:12px;min-height:118px;align-content:start}
+.sp-tile span{font-size:28px;line-height:1}
+.sp-tile b{font-size:16px}
+.sp-tile small{color:var(--muted);font-size:13px;line-height:1.35}
+.sp-settings{border-top:1px solid var(--line);padding-top:10px}
+.sp-settings summary{font-size:14px;color:var(--muted)}
+.sp-settings[open]{display:grid;gap:8px}
+.sp .linkish{background:none;border:none;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;font-size:13px;text-transform:none;letter-spacing:0}
 </style>
 
 <div class="wrap">
@@ -629,7 +640,7 @@ button.chip{cursor:pointer}
         <div class="panel">
           <h2>Ajustes</h2>
           <label class="inl" for="dailyNew">Palabras nuevas por día <input type="number" id="dailyNew" min="1" max="50" value="10"></label>
-          <div class="row"><span class="note">Comparar voces:</span><button type="button" id="cmpAzure">🔊 Azure</button><button type="button" id="cmpKokoro">🔊 Kokoro (local)</button></div>
+          <div class="row" id="voiceCmp" hidden><span class="note">Comparar voces:</span><button type="button" id="cmpAzure">🔊 Azure</button><button type="button" id="cmpKokoro">🔊 Kokoro (local)</button></div>
           <p class="note" id="voiceCmpState"></p>
           <label class="inl" for="micSel">Micrófono <select id="micSel" style="width:auto;max-width:180px"><option value="">Automático</option></select></label>
           <p class="note" id="micNote"></p>
@@ -667,7 +678,7 @@ button.chip{cursor:pointer}
   <span class="arrow" id="installArrow" hidden aria-hidden="true">&#8595;</span>
 </div>
 
-<script src="/app/app.js?v=9"></script>
-<script src="/app/speak.js?v=6"></script>
+<script src="/app/app.js?v=10"></script>
+<script src="/app/speak.js?v=7"></script>
 <script src="/app/progress.js?v=1"></script>
 </body></html>

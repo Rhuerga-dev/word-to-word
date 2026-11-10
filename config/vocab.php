@@ -92,8 +92,9 @@ return [
         'enabled' => env('TTS_ENABLED', true),
         'voice_en' => env('TTS_VOICE_EN', 'en-US-AvaMultilingualNeural'),
         'voice_es' => env('TTS_VOICE_ES', 'es-MX-DaliaNeural'),
-        // Voz local Kokoro (tts-local/): se usa primero si está encendida; si no, Azure. Vacío = solo Azure.
-        'local_url' => env('KOKORO_URL', 'http://127.0.0.1:8880'),
+        // Voz local Kokoro (tts-local/), opcional: solo si pones KOKORO_URL=http://127.0.0.1:8880 en el .env.
+        // Se usa primero si está encendida; si no, Azure.
+        'local_url' => env('KOKORO_URL'),
     ],
 
     'azure_speech' => [

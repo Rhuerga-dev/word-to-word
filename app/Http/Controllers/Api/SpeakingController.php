@@ -29,7 +29,10 @@ class SpeakingController extends Controller
 
     public function stats(Request $request)
     {
-        return $this->speaking->stats($request->user());
+        // skip: ver otro tema para la narración antes de empezarla.
+        $skip = (int) ($request->validate(['skip' => ['sometimes', 'integer', 'min:0', 'max:100']])['skip'] ?? 0);
+
+        return $this->speaking->stats($request->user(), $skip);
     }
 
     public function start(Request $request)

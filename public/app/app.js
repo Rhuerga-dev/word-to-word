@@ -1296,6 +1296,7 @@ function renderSettings() {
   if (!profile) return;
   $("freelancePack").checked = !!profile.freelance_pack;
   $("speakGoal").value = profile.speaking_goal || 5;
+  $("voiceCmp").hidden = !cfg.tts_local;   // comparar voces solo si la voz local está configurada
   renderMicSelect();
   $("remOn").checked = !!profile.reminder.enabled;
   $("remTime").value = profile.reminder.time || "19:00";

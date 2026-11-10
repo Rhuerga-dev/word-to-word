@@ -259,6 +259,8 @@ function renderSpeak() {
   if (sp.view === "narrate") el.innerHTML = narrHTML();
   else if (sp.view === "picture") el.innerHTML = picHTML();
   else if (sp.view === "shadow") el.innerHTML = shHTML();
+  else if (sp.view === "scenarios") el.innerHTML = scenariosHTML();
+  else if (sp.view === "narrPick") el.innerHTML = narrPickHTML();
   else if (sp.view === "summary") el.innerHTML = summaryHTML();
   else if (sp.view === "review") el.innerHTML = reviewHTML();
   else el.innerHTML = homeHTML();
@@ -270,8 +272,10 @@ function renderSpeak() {
   on("spShow", () => { sp.review.shown = true; renderSpeak(); spSay(sp.review.list[sp.review.i].correct); });
   on("spListen", () => { unlockAudio(); spSay(sp.review.list[sp.review.i].correct); });
   on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.shown = false; renderSpeak(); });
-  on("spNarr", () => spNarrStart(0));
   on("spPic", () => spPicStart());
+  on("spGoTalk", () => { sp.view = "scenarios"; sp.status = ""; renderSpeak(); });
+  on("spGoNarr", () => { sp.view = "narrPick"; sp.status = ""; renderSpeak(); });
+  on("spToProgress", () => showTab("progress"));
   on("spSh", () => spShStart(0));
   on("spShOther", () => spShStart((sp.sh && sp.sh.skip || 0) + 1));
   on("spShListen", () => { unlockAudio(); spShPlay(false); });
@@ -284,7 +288,12 @@ function renderSpeak() {
   on("spPicListen", () => { unlockAudio(); spSay(sp.pic && sp.pic.fb && sp.pic.fb.better); });
   on("spPicDone", () => { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.stop(); } catch (e) {} });
   document.querySelectorAll("[data-addw]").forEach(b => b.onclick = () => spAddWord(+b.dataset.addw, b));
-  on("spNarrOther", () => { sp.narrSkip = (sp.narrSkip || 0) + 1; spNarrStart(sp.narrSkip); });
+  on("spNarrOther", async () => {
+    sp.narrSkip = (sp.narrSkip || 0) + 1;
+    if (sp.view === "narrPick") { try { sp.stats = await api("/speaking/stats?skip=" + sp.narrSkip); } catch (e) {} renderSpeak(); }
+    else spNarrStart(sp.narrSkip);
+  });
+  on("spNarr", () => spNarrStart(sp.narrSkip || 0));
   on("spNarrAgain", () => spNarrStart(sp.narrSkip || 0));
   on("spNarrListen", () => { unlockAudio(); spSay(sp.narr && sp.narr.fb && sp.narr.fb.better); });
   on("spNarrDone", () => { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.stop(); } catch (e) {} });
@@ -295,53 +304,47 @@ function renderSpeak() {
 
 function homeHTML() {
   const st = sp.stats;
-  let html = `<div class="kind"><span>Habla en voz alta</span><span>${st ? esc(spMin(st.total_minutes)) + " min en total" : ""}</span></div>`;
+  let html = `<div class="kind"><span>Habla en voz alta</span><span><button type="button" class="linkish" id="spToProgress">📊 Ver progreso</button></span></div>`;
   if (sp.status) html += `<p class="warnbox">${esc(sp.status)}</p>`;
   if (st) {
-    const pct = Math.min(100, Math.round(st.today / st.goal * 100));
-    const done = st.today >= st.goal;
-    const max = Math.max(st.goal, ...st.week.map(d => d.minutes));
-    const wd = ["D", "L", "M", "X", "J", "V", "S"];
-    const w = st.wpm.filter(x => x.wpm), lastW = w.length ? w[w.length - 1].wpm : null, firstW = w.length > 1 ? w[0].wpm : null;
+    const pct = Math.min(100, Math.round(st.today / st.goal * 100)), done = st.today >= st.goal;
     html += `<div class="sp-goal">
-      <div class="sp-goal-top"><b>${esc(spMin(st.today))}</b> de ${st.goal} min hablando hoy ${done ? '<span class="chip sp-ok">¡Meta cumplida!</span>' : ""}</div>
-      <div class="sp-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
-      <p class="note">Solo cuenta el tiempo que <b>tú</b> hablas, sin silencios. ${st.streak ? `🔥 ${st.streak} ${st.streak === 1 ? "día seguido" : "días seguidos"} cumpliendo la meta.` : ""}</p>
-    </div>
-    <div class="sp-week" aria-label="Minutos hablados los últimos 7 días">${st.week.map(d => {
-      const h = max ? Math.round(d.minutes / max * 100) : 0, day = new Date(d.day + "T12:00:00");
-      return `<div class="sp-col" title="${esc(spMin(d.minutes))} min"><span class="sp-c"><i style="height:${h}%" class="${d.minutes >= st.goal ? "ok" : ""}"></i><em style="bottom:${Math.round(st.goal / max * 100)}%"></em></span><small>${wd[day.getDay()]}</small></div>`;
-    }).join("")}</div>
-    <div class="stats">
-      <div class="stat"><b>${lastW ?? "—"}</b><span>palabras/min${firstW && lastW ? (lastW > firstW ? " ↑" : lastW < firstW ? " ↓" : "") : ""}</span></div>
-      <div class="stat"><b>${st.pauses_per_min ?? "—"}</b><span>pausas largas/min</span></div>
-      <div class="stat"><b>${st.reaction != null ? String(st.reaction).replace(".", ",") + " s" : "—"}</b><span>para arrancar${st.reaction_trend && st.reaction_trend.length > 1 ? (st.reaction_trend[st.reaction_trend.length - 1] < st.reaction_trend[0] ? " ↓" : st.reaction_trend[st.reaction_trend.length - 1] > st.reaction_trend[0] ? " ↑" : "") : ""}</span></div>
-    </div>
-    <p class="note">«Para arrancar» es lo que tardas en empezar a contestar. Si baja, estás traduciendo menos. ${st.mistakes_mastered ? `Errores superados: <b>${st.mistakes_mastered}</b>.` : ""}</p>
-    <p class="note">Referencia: en una charla normal un nativo dice unas 120–160 palabras por minuto. Que suba tu ritmo y bajen las pausas es fluidez.</p>`;
-    if (st.mistakes_due) html += `<button type="button" class="primary" id="spReview">Repasar ${st.mistakes_due} ${st.mistakes_due === 1 ? "error" : "errores"} de tus conversaciones</button>`;
+      <div class="sp-goal-top"><b>${esc(spMin(st.today))}</b> de ${st.goal} min hoy ${done ? '<span class="chip sp-ok">¡Meta cumplida!</span>' : ""}${st.streak ? ` <span class="note">🔥 ${st.streak} ${st.streak === 1 ? "día" : "días"}</span>` : ""}</div>
+      <div class="sp-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`;
+    if (st.mistakes_due) html += `<button type="button" class="primary" id="spReview">🔁 Repasar ${st.mistakes_due} ${st.mistakes_due === 1 ? "error" : "errores"}</button>`;
   }
-  if (st && st.topic) html += `<div class="sp-narr">
-      <div><b>🗣️ Narración del día · 1 minuto</b> ${st.narrated_today ? '<span class="chip sp-ok">✓ Hecha hoy</span>' : ""}</div>
-      <p class="sp-topic">${esc(st.topic.en)}</p><p class="note">${esc(st.topic.es)}</p>
-      <p class="note">Hablas un minuto sin parar, sin preparar nada. Luego ves una versión más natural y tus errores.</p>
-      <div class="row"><button type="button" class="${st.narrated_today ? "" : "primary"}" id="spNarr"${sp.busy ? " disabled" : ""}>Empezar</button><button type="button" id="spNarrOther"${sp.busy ? " disabled" : ""}>Otro tema</button></div></div>`;
-  html += `<div class="sp-narr sp-sh-card">
-      <div><b>🔁 Shadowing · repite como un nativo</b></div>
-      <p class="note">Escuchas una frase hablada natural y la repites enseguida copiando el ritmo y la entonación. Te evalúa la pronunciación y la fluidez.</p>
-      <div class="row"><button type="button" class="primary" id="spSh"${sp.busy ? " disabled" : ""}>Empezar</button></div></div>`;
-  html += `<div class="sp-narr sp-pic-card">
-      <div><b>🖼️ Describe la imagen · 45 s</b></div>
-      <p class="note">Te muestro una foto y dices en inglés lo que ves. Luego la IA mira la misma foto y te dice qué palabras te faltaron.</p>
-      ${cfg.pictures ? `<div class="row"><button type="button" class="primary" id="spPic"${sp.busy ? " disabled" : ""}>Ver una foto</button></div>` : '<p class="note"><i>Falta configurar las fotos en el servidor (UNSPLASH_ACCESS_KEY).</i></p>'}</div>`;
-  html += `<h3 class="sp-h">Elige una situación</h3>`;
-  html += sp.scenarios ? `<div class="sp-scen">${sp.scenarios.map(s => `<button type="button" data-sc="${esc(s.id)}"${sp.busy ? " disabled" : ""}><span class="sp-e" aria-hidden="true">${esc(s.emoji)}</span><b>${esc(s.title)}</b><small>${esc(s.desc)}</small></button>`).join("")}</div>` : '<p class="note">Cargando…</p>';
-  html += `<label class="switch" for="spQuickOn"><input type="checkbox" id="spQuickOn" role="switch"${sp.quick ? " checked" : ""}> ⚡ Respuesta rápida</label>
-    <p class="note">Tienes 3 segundos para empezar a contestar: no da tiempo a traducir, y así el cerebro aprende a ir directo al inglés.</p>`;
-  html += `<label class="inl" for="spPauseSel">Cuánto espero cuando haces una pausa
-    <select id="spPauseSel" style="width:auto">${[[1.8, "Poco (1,8 s)"], [2.5, "Normal (2,5 s)"], [3.5, "Mucho (3,5 s)"]].map(([v, l]) => `<option value="${v}"${sp.pause === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
-    <p class="note">La IA te habla y te escucha sola, sin botones. Para terminar di <b>«stop»</b> o pulsa Terminar. Al final verás tus errores para repasarlos.</p>`;
+  const narr = st && st.narrated_today;
+  html += `<div class="sp-tiles">
+    <button type="button" class="sp-tile" id="spGoTalk"><span>💬</span><b>Conversación</b><small>Elige una situación real y habla con la IA</small></button>
+    <button type="button" class="sp-tile" id="spGoNarr"><span>🗣️</span><b>Narración del día ${narr ? "✓" : ""}</b><small>Un minuto hablando sin parar</small></button>
+    <button type="button" class="sp-tile" id="spPic"${cfg.pictures ? "" : " disabled"}><span>🖼️</span><b>Describe la imagen</b><small>${cfg.pictures ? "Dices lo que ves en una foto" : "Falta configurar las fotos"}</small></button>
+    <button type="button" class="sp-tile" id="spSh"><span>🔁</span><b>Shadowing</b><small>Repite frases como un nativo</small></button>
+  </div>`;
+  html += `<details class="sp-settings"><summary>Ajustes de voz</summary>
+    <label class="switch" for="spQuickOn"><input type="checkbox" id="spQuickOn" role="switch"${sp.quick ? " checked" : ""}> ⚡ Respuesta rápida</label>
+    <p class="note">Tienes 3 segundos para empezar a contestar: así no da tiempo a traducir.</p>
+    <label class="inl" for="spPauseSel">Cuánto espero cuando haces una pausa
+      <select id="spPauseSel" style="width:auto">${[[1.8, "Poco (1,8 s)"], [2.5, "Normal (2,5 s)"], [3.5, "Mucho (3,5 s)"]].map(([v, l]) => `<option value="${v}"${sp.pause === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+  </details>`;
   return html;
+}
+
+// Segundo paso de "Conversación": elegir la situación.
+function scenariosHTML() {
+  return `<div class="kind"><span>💬 Elige una situación</span><span><button type="button" class="linkish" id="spHome">← Volver</button></span></div>
+    ${sp.status ? `<p class="warnbox">${esc(sp.status)}</p>` : ""}
+    <p class="note">La IA te habla y te escucha sola, sin botones. Para terminar di <b>«stop»</b> o pulsa Terminar.</p>
+    ${sp.scenarios ? `<div class="sp-scen">${sp.scenarios.map(x => `<button type="button" data-sc="${esc(x.id)}"${sp.busy ? " disabled" : ""}><span class="sp-e" aria-hidden="true">${esc(x.emoji)}</span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></button>`).join("")}</div>` : '<p class="note">Cargando…</p>'}`;
+}
+
+// Antes de la narración: el tema del día, con opción de cambiarlo.
+function narrPickHTML() {
+  const st = sp.stats, tp = st && st.topic;
+  return `<div class="kind"><span>🗣️ Narración del día</span><span><button type="button" class="linkish" id="spHome">← Volver</button></span></div>
+    ${sp.status ? `<p class="warnbox">${esc(sp.status)}</p>` : ""}
+    ${tp ? `<p class="sp-topic">${esc(tp.en)}</p><p class="note">${esc(tp.es)}</p>` : ""}
+    <p class="note">Hablas un minuto sin parar, sin preparar nada. Luego ves una versión más natural de lo que dijiste y tus errores.</p>
+    <div class="row"><button type="button" class="primary" id="spNarr"${sp.busy ? " disabled" : ""}>🎙️ Empezar</button><button type="button" id="spNarrOther"${sp.busy ? " disabled" : ""}>Otro tema</button></div>`;
 }
 
 function renderTalk() {

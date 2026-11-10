@@ -27,6 +27,7 @@ class StudyController extends Controller
             'push' => filled(config('webpush.vapid.public_key')),
             'tts' => app(\App\Services\TtsService::class)->enabled(),
             'intervals' => config('vocab.intervals'),
+            'tts_local' => filled(config('vocab.tts.local_url')),
             'pictures' => app(\App\Services\PictureService::class)->enabled(),
         ];
     }
