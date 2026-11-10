@@ -254,7 +254,7 @@ function spStatus(t) { sp.status = t; const el = $("spStatus"); if (el) el.inner
 const spMin = n => (Math.round((n || 0) * 10) / 10).toLocaleString("es", { maximumFractionDigits: 1 });
 
 function renderSpeak() {
-  const el = $("speakBody"); if (!el) return;
+  const el = sp.root || $("speakBody"); if (!el) return;
   if (sp.view === "talk") return renderTalk();
   if (sp.view === "narrate") el.innerHTML = narrHTML();
   else if (sp.view === "picture") el.innerHTML = picHTML();
@@ -299,6 +299,11 @@ function renderSpeak() {
   on("spNarrDone", () => { if (sp.recording && stopRecording) stopRecording(); if (sp.narrRec) try { sp.narrRec.stop(); } catch (e) {} });
   const qo = $("spQuickOn"); if (qo) qo.onchange = e => { sp.quick = e.target.checked; try { localStorage.setItem("wtw_sp_quick", sp.quick ? "1" : "0"); } catch (er) {} };
   const rh = $("spRevHf"); if (rh) rh.onchange = e => { sp.reviewHf = e.target.checked; spSaveRevHf(); if (sp.reviewHf) { unlockAudio(); spReviewLoop(); } else spHush(); };
+  // Dentro de la sesión guiada de "Hoy": al terminar se sigue con el siguiente paso, sin desvíos.
+  if (sp.inSession) {
+    const h = $("spHome"); if (h) { h.textContent = "Continuar"; h.className = "primary sess-big"; h.onclick = () => { sp.inSession = false; sp.root = null; sp.view = "home"; if (typeof sessNext === "function") sessNext(); }; }
+    ["spReview", "spPicOther", "spShOther", "spNarrOther"].forEach(id => { const b = $(id); if (b && !(id === "spPicOther" && sp.pic && sp.pic.phase === "error")) b.remove(); });
+  }
   const pz = $("spPauseSel"); if (pz) pz.onchange = e => { sp.pause = +e.target.value; try { localStorage.setItem("wtw_sp_pause", sp.pause); } catch (er) {} };
 }
 
@@ -348,7 +353,7 @@ function narrPickHTML() {
 }
 
 function renderTalk() {
-  const el = $("speakBody"); if (!el) return;
+  const el = sp.root || $("speakBody"); if (!el) return;
   if (!$("spMsgs")) {
     el.innerHTML = `<div class="kind"><span>${esc(sp.scenario.emoji)} ${esc(sp.scenario.title)}</span><span id="spToday"></span></div>
       <p class="sp-status" id="spStatus" aria-live="polite"></p>

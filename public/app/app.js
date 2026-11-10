@@ -226,6 +226,7 @@ async function start() {
   await loadLevels();
   if (!profile.cefr_level) { placementIntro(); return; }
   await refresh();
+  showTab("today");
 }
 async function refresh() {
   try {
@@ -343,10 +344,10 @@ function render() {
       <p class="note">Terminaste tus palabras de hoy.${streak ? ` Llevas <b>${streak} ${streak === 1 ? "día" : "días"} seguidos</b> 🔥` : ""}</p>
       <div class="today">${dayTotal ? `<span>✅ ${dayTotal} fichas hoy</span>` : ""}${stats ? `<span>📚 ${stats.learned} aprendidas</span><span>⭐ ${stats.mastered} dominadas</span>` : ""}</div>
       <p class="note"><b>Mañana:</b> repasarás ${tm} ${tm === 1 ? "palabra" : "palabras"} (entre ellas las que aprendiste hoy) y aprenderás ${+($("dailyNew") || {}).value || 10} nuevas. ¡Te espero!</p>
-      <div class="row"><button type="button" class="primary" id="goChat">💬 Practicar conversación</button>
+      <div class="row"><button type="button" class="primary" id="goChat">🎙️ Practicar hablando</button>
       ${cfg.time_travel && profile && profile.demo ? '<button type="button" id="goNext">Simular mañana</button>' : ""}</div></div></div>`;
     if ($("goNext")) $("goNext").onclick = nextDay;
-    if ($("goChat")) $("goChat").onclick = () => showTab(true);
+    if ($("goChat")) $("goChat").onclick = () => showTab("speak");
     const today = stats ? stats.today : "";
     if (dayTotal && lsGet("wtw_celebrated") !== today) { try { localStorage.setItem("wtw_celebrated", today); } catch (e) {} confetti(); }
     return;
@@ -704,21 +705,34 @@ $("dictBtn").onclick = async () => {
   catch (e) { $("msgs").insertAdjacentHTML("beforeend", '<p class="warnbox">' + esc(e.message) + "</p>"); }
   $("dictBtn").classList.remove("rec");
 };
-// Pestañas: "cards" (fichas), "chat" (conversación escrita) o "speak" (hablar por voz). true/false = chat/fichas.
+// Secciones. Abajo: today (Hoy), path (Camino), practice (Practicar), progress (Progreso).
+// Dentro de Practicar: cards (fichas), speak (hablar), chat. true/false = chat/fichas (llamadas viejas).
+const NAV_OF = { today: "today", path: "path", practice: "practice", progress: "progress", cards: "practice", speak: "practice", chat: "practice" };
+let currentTab = "today";
 function showTab(which) {
   which = which === true ? "chat" : which === false ? "cards" : which;
   if (which !== "cards" && hf.on) stopHF();
   if (which !== "speak" && typeof spLeave === "function") spLeave();
+  currentTab = which;
+  document.body.dataset.nav = which === "progress" ? "progress" : which === "cards" ? "cards" : NAV_OF[which];
+  if ($("labView") && !$("labView").hidden) { lab.on = false; if (stopRecording) stopRecording(); $("labView").hidden = true; }
   $("tabCards").setAttribute("aria-selected", which === "cards"); $("tabChat").setAttribute("aria-selected", which === "chat"); $("tabSpeak").setAttribute("aria-selected", which === "speak"); $("tabProgress").setAttribute("aria-selected", which === "progress");
   $("main").hidden = which !== "cards"; $("queue").hidden = which !== "cards"; $("chatView").hidden = which !== "chat"; $("speakView").hidden = which !== "speak"; $("progressView").hidden = which !== "progress";
-  if (which === "progress" && typeof pgOpen === "function") pgOpen();
+  $("todayView").hidden = which !== "today"; $("pathView").hidden = which !== "path"; $("practiceView").hidden = which !== "practice";
+  document.querySelectorAll("#bottomNav [data-nav]").forEach(b => b.toggleAttribute("aria-current", false) || (b.dataset.nav === NAV_OF[which] && b.setAttribute("aria-current", "page")));
   if (which === "chat") renderChat();
   if (which === "speak" && typeof spOpen === "function") spOpen();
+  if (which === "progress" && typeof pgOpen === "function") pgOpen();
+  if (which === "today" && typeof tdOpen === "function") tdOpen();
+  if (which === "practice" && typeof prOpen === "function") prOpen();
+  if (which === "path" && typeof pathOpen === "function") pathOpen();
+  window.scrollTo({ top: 0 });
 }
 $("tabCards").onclick = () => showTab("cards");
 $("tabChat").onclick = () => showTab("chat");
 $("tabSpeak").onclick = () => showTab("speak");
 $("tabProgress").onclick = () => showTab("progress");
+document.querySelectorAll("#bottomNav [data-nav]").forEach(b => b.onclick = () => { unlockAudio(); showTab(b.dataset.nav); });
 
 // ===== Panel lateral y ajustes =====
 function renderSide() {
@@ -1214,10 +1228,10 @@ function renderLevel() {
 
 // --- Vista de prueba (reemplaza las fichas mientras dura) ---
 function showQuiz(on) {
-  $("quizView").hidden = !on;
-  $("tabsBar").hidden = on; $("queue").hidden = on; $("main").hidden = on; $("hfBar").hidden = on;
-  if (on && hf.on) stopHF();
-  if (on) $("chatView").hidden = true; else $("tabCards").click();
+  if (!on) { $("quizView").hidden = true; showTab("today"); return; }
+  if (hf.on) stopHF();
+  ["queue", "main", "hfBar", "hello", "chatView", "speakView", "progressView", "todayView", "pathView", "practiceView", "labView"].forEach(id => { if ($(id)) $(id).hidden = true; });
+  $("quizView").hidden = false;
 }
 function placementIntro() {
   showQuiz(true);
@@ -1546,11 +1560,13 @@ const labEs = t => labSay(t, "es");
 function labStep(text, mode) { const s = $("labStep"); if (s) s.innerHTML = `<span class="hf-dot ${mode || ""}"></span>${esc(text)}`; }
 
 function showLab(on) {
-  $("labView").hidden = !on;
-  $("tabsBar").hidden = on; $("queue").hidden = on; $("main").hidden = on; $("hfBar").hidden = on; $("hello").hidden = on;
-  if (on && hf.on) stopHF();
-  if (on) { $("chatView").hidden = true; $("quizView").hidden = true; window.scrollTo({ top: 0, behavior: "smooth" }); }
-  else { lab.on = false; if (stopRecording) stopRecording(); $("tabCards").click(); }
+  if (!on) { lab.on = false; if (stopRecording) stopRecording(); $("labView").hidden = true; showTab("practice"); return; }
+  if (hf.on) stopHF();
+  ["queue", "main", "hfBar", "hello", "chatView", "quizView", "speakView", "progressView", "todayView", "pathView", "practiceView"].forEach(id => { if ($(id)) $(id).hidden = true; });
+  $("labView").hidden = false;
+  document.body.dataset.nav = "practice";
+  document.querySelectorAll("#bottomNav [data-nav]").forEach(b => b.dataset.nav === "practice" ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function openLab(focusPhoneme) {
@@ -1593,7 +1609,7 @@ function renderLabHome() {
     ${top ? `<div class="row"><button type="button" class="primary" data-lab="${esc(top.phoneme)}">▶ Empezar con /${esc(top.phoneme)}/</button></div>` : ""}
     <ul class="lab-list">${mine.map(row).join("")}${extra.length ? `<li class="lab-sep">${mine.length ? "Otros sonidos difíciles para hispanohablantes" : ""}</li>` + extra.map(row).join("") : ""}</ul>
     ${!cfg.pronunciation && !SR ? '<p class="warnbox">Para evaluar tu voz hace falta Azure Speech o Google Chrome.</p>' : ""}
-    <div class="row"><button type="button" id="labClose">Volver a las fichas</button></div>`;
+    <div class="row"><button type="button" id="labClose">Volver</button></div>`;
   $("labBody").querySelectorAll("[data-lab]").forEach(b => b.onclick = () => { unlockAudio(); startLab(b.dataset.lab, b.dataset.tier); });
   $("labClose").onclick = () => showLab(false);
   $("labHf").onchange = e => { lab.hf = e.target.checked; try { localStorage.setItem("wtw_lab_hf", lab.hf ? "1" : "0"); } catch (er) {} };
@@ -1811,7 +1827,7 @@ async function startLab(phoneme, tier) {
       <p class="note">${passedItems} de ${total} ejercicios logrados · promedio ${avg}% · ${lab.helps} ${lab.helps === 1 ? "ayuda" : "ayudas"}</p>
       ${tierMsg}
       <p class="note">${passed ? `Lo repasamos <b>${when}</b> para que se quede fijo${res ? ` (${res.stage} de 4 aprobados).` : "."}` : `Lo repetimos <b>${when}</b>. Dormir entre prácticas ayuda a fijar el movimiento.`}</p>
-      <div class="row"><button type="button" class="primary" id="labAgainAll">Repetir ahora</button><button type="button" id="labHome">Otros sonidos</button><button type="button" id="labBack">Volver a las fichas</button></div></div>`;
+      <div class="row"><button type="button" class="primary" id="labAgainAll">Repetir ahora</button><button type="button" id="labHome">Otros sonidos</button><button type="button" id="labBack">Volver</button></div></div>`;
     if (passed) confetti();
     $("labAgainAll").onclick = async () => { unlockAudio(); try { lab.sounds = (await api("/pronunciation/sounds")).sounds; } catch (e) {} startLab(phoneme); };
     $("labHome").onclick = () => openLab();
