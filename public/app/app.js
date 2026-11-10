@@ -1425,7 +1425,30 @@ if (!PRON_TIPS["ɛ"]) PRON_TIPS["ɛ"] = { name: "E corta (bed)", how: "Como la �
 if (!PRON_TIPS["l"]) PRON_TIPS["l"] = { name: "L final (call)", how: "Al final de la palabra levanta la parte de atrás de la lengua: suena más oscura, casi “ul”.", pair: "call · feel · people" };
 const labTip = k => PRON_TIPS[k] || { name: "/" + k + "/", how: "Escucha despacio, fíjate en la boca y repite exagerando el sonido.", pair: "" };
 
-const lab = { on: false, sounds: [], resolveTap: null, tier: "g", helps: 0 };
+const lab = { on: false, sounds: [], resolveTap: null, tier: "g", helps: 0,
+  hf: (() => { try { return localStorage.getItem("wtw_lab_hf") === "1"; } catch (e) { return false; } })() };
+// Manos libres: comandos de voz (en inglés, que es lo que se reconoce): repeat, hint, skip, stop.
+function labCmd(text) {
+  const t = noAccents(text || "").trim();
+  if (!t || t.split(" ").length > 3) return null;
+  if (/^(stop|finish|end|terminar|para)( please)?$/.test(t)) return "stop";
+  if (/^(skip|next|siguiente)( please)?$/.test(t)) return "skip";
+  if (/^(hint|help|tip|pista|ayuda)( please)?$/.test(t)) return "hint";
+  if (/^(repeat|again|one more time|repite|repetir)( please)?$/.test(t)) return "repeat";
+  return null;
+}
+// Escucha una respuesta corta y devuelve el texto (Azure o el navegador).
+async function labHear(ref) {
+  if (cfg.pronunciation) {
+    lab.listening = true;
+    const wav = await recordWav(3500, null, 0.7);
+    lab.listening = false;
+    if (!lab.on || !wav.heard) return "";
+    const fd = new FormData(); fd.append("text", ref); fd.append("audio", wav, "voz.wav");
+    try { const r = await api("/pronunciation/assess", { method: "POST", body: fd }); return (r.assessment && r.assessment.recognized) || ""; } catch (e) { return ""; }
+  }
+  try { return (await browserListen())[0] || ""; } catch (e) { return ""; }
+}
 // Niveles por sonido: Guiado (te lo dan todo), Práctica (ayuda solo si la pides), Dominio (sin modelo, en frío).
 const LAB_TIERS = {
   g: { label: "🧭 Guiado", how: "Te explico el sonido, lo oyes despacio y te corrijo en cada intento." },
@@ -1495,6 +1518,8 @@ function renderLabHome() {
   $("labBody").innerHTML = `<div class="kind"><span>🎯 Taller de pronunciación</span><span>unos 4 minutos por sonido</span></div>
     <h2 class="tr">${mine.length ? "Los sonidos que más te cuestan" : "Empecemos con los sonidos más difíciles"}</h2>
     <p class="note">${mine.length ? "Salen de tus grabaciones: cada vez que un sonido queda por debajo del 60%, se anota aquí." : "Todavía no tengo tus datos. Practica fichas con el micrófono y aquí aparecerán tus sonidos difíciles. Mientras, estos son los que más cuestan a los hispanohablantes."}</p>
+    <label class="switch" for="labHf"><input type="checkbox" id="labHf" role="switch"${lab.hf ? " checked" : ""}> 🎧 Manos libres</label>
+    <p class="note">Con manos libres contestas todo hablando y al terminar un sonido pasa solo al siguiente. Comandos en inglés: <b>repeat</b>, <b>hint</b>, <b>skip</b>, <b>stop</b>.</p>
     <details class="how-lab"><summary>Cómo funciona</summary><ol>
       <li><b>Cómo se hace:</b> dónde poner la lengua, los labios y el aire.</li>
       <li><b>Entrena el oído:</b> distingues pares de palabras que solo cambian en ese sonido. Si no lo oyes, no lo puedes decir.</li>
@@ -1512,6 +1537,7 @@ function renderLabHome() {
     <div class="row"><button type="button" id="labClose">Volver a las fichas</button></div>`;
   $("labBody").querySelectorAll("[data-lab]").forEach(b => b.onclick = () => { unlockAudio(); startLab(b.dataset.lab, b.dataset.tier); });
   $("labClose").onclick = () => showLab(false);
+  $("labHf").onchange = e => { lab.hf = e.target.checked; try { localStorage.setItem("wtw_lab_hf", lab.hf ? "1" : "0"); } catch (er) {} };
 }
 
 function labScreen(phoneme, stepName, idx) {
@@ -1541,6 +1567,7 @@ async function labAssess(text, phoneme, ms) {
     catch (e) { labStep(e.message); if (/límite|configurada/i.test(e.message)) throw e; return { silent: true }; }
     if (out) showAzure(r, out);
     if (!r.assessment || r.assessment.status !== "Success") return { silent: true };
+    if (lab.hf && labCmd(r.assessment.recognized)) return { pct: 0, cmd: labCmd(r.assessment.recognized) };
     const pct = r.target_score != null ? r.target_score : r.score;
     if (out && r.target_score != null) out.insertAdjacentHTML("afterbegin", `<p class="lab-target">Sonido /${esc(phoneme)}/: <b style="color:${pct >= LAB_PASS ? "var(--good)" : pct >= 60 ? "var(--warn)" : "var(--bad)"}">${pct}%</b></p>`);
     return { pct, overall: r.score };
@@ -1548,6 +1575,7 @@ async function labAssess(text, phoneme, ms) {
   if (!SR) throw new Error("Para evaluar tu voz hace falta Azure Speech o Google Chrome.");
   labStep("🎙️ Tu turno: habla ahora", "listen");
   let alts = []; try { alts = await browserListen(); } catch (e) { return { silent: true }; }
+  if (lab.hf && labCmd(alts[0])) return { pct: 0, cmd: labCmd(alts[0]) };
   let best = null; alts.forEach(a => { const c = compare(text, a); if (!best || c.pct > best.pct) best = c; });
   if (out) verdict(out, best.pct, '<span class="note">Entendí: “' + esc(alts[0]) + '”</span>', best.toks.map(z => `<span class="tok ${z.ok ? "ok" : "miss"}">${esc(z.x)}</span>`).join(""));
   return { pct: best.pct, overall: best.pct };
@@ -1577,6 +1605,13 @@ async function labDrill(text, phoneme, pass, showHtml) {
     if (!lab.on) return null;
     if (r.silent) { if (++lab.silent > 3) { await labEs("No te oigo. Revisa el micrófono y vuelve a intentarlo."); return -best || -1; } await labEs("No te oí. Acércate al micrófono."); i--; continue; }
     lab.silent = 0;
+    if (r.cmd) {
+      if (r.cmd === "stop") { lab.on = false; return null; }
+      if (r.cmd === "skip") { await labEs("Saltamos esta."); return -best || -1; }
+      labHelp();
+      if (r.cmd === "hint") await labEs(t.how); else await labSay(text, "en", true);
+      i--; continue;
+    }
     best = Math.max(best, r.pct);
     if (r.pct >= pass && (!isSentence || (r.overall || 0) >= 60)) { await labEs(i ? pick(["¡Ahora sí!", "¡Esa es!", "¡Mucho mejor!"]) : pick(HF_PRAISE)); return r.pct; }
     labStep(`Sonido al ${r.pct}% · necesitas ${pass}%`);
@@ -1592,6 +1627,21 @@ async function labDrill(text, phoneme, pass, showHtml) {
   }
   if (lab.on) await labEs("Lo dejamos aquí por ahora. Vuelve mañana: con el sueño de por medio sale mejor.");
   return -best || -1;
+}
+
+// Manos libres: al terminar un sonido, sigue con el próximo que toca hoy (se puede parar).
+async function labAutoNext(done) {
+  try { lab.sounds = (await api("/pronunciation/sounds")).sounds; } catch (e) { return; }
+  const next = lab.sounds.find(s => s.due && !s.mastered && s.phoneme !== done && DRILLS[labKey(s.phoneme)]);
+  const box = $("labBody").querySelector(".done .row"); if (!box) return;
+  lab.on = true; // para que hable
+  if (!next) { await labEs("No quedan más sonidos para hoy. ¡Buen trabajo!"); lab.on = false; return; }
+  box.insertAdjacentHTML("beforebegin", `<p class="banner" id="labNext">Siguiente: /${esc(next.phoneme)}/ en unos segundos… <button type="button" id="labNextStop">Parar aquí</button></p>`);
+  let stop = false; $("labNextStop").onclick = () => { stop = true; lab.on = false; $("labNext").remove(); };
+  await labEs("Seguimos con el siguiente sonido.");
+  await new Promise(r => setTimeout(r, 2500));
+  lab.on = false;
+  if (!stop && $("labNext")) startLab(next.phoneme, next.tier);
 }
 
 async function startLab(phoneme, tier) {
@@ -1631,7 +1681,25 @@ async function startLab(phoneme, tier) {
         $("labAgain").onclick = () => { labHelp(); labSay(said, "en"); };
         labStep("Escucha y toca la palabra", "speak");
         await labSay(said, "en");
-        const pickW = await new Promise(res => { lab.resolveTap = res; $("labStage").querySelectorAll("[data-w]").forEach(b => b.onclick = () => res(b.dataset.w)); });
+        const pickW = await new Promise(res => {
+          let done = false;
+          const fin = v => { if (done) return; done = true; lab.resolveTap = null; if (lab.listening && stopRecording) stopRecording(); res(v); };
+          lab.resolveTap = fin;
+          $("labStage").querySelectorAll("[data-w]").forEach(b => b.onclick = () => fin(b.dataset.w));
+          // Manos libres: también vale decir la palabra en voz alta ("repeat" la vuelve a decir).
+          if (lab.hf) (async () => {
+            for (let tries = 0; tries < 4 && !done && lab.on; tries++) {
+              labStep("Di la palabra que oíste (o tócala)", "listen");
+              const heard = norm(await labHear(opts[0]));
+              if (done || !lab.on) return;
+              const hit = opts.find(w => heard.includes(norm(w)[0]));
+              if (hit && !opts.every(w => heard.includes(norm(w)[0]))) return fin(hit);
+              if (labCmd(heard.join(" ")) === "stop") { lab.on = false; return fin(null); }
+              if (labCmd(heard.join(" ")) === "repeat") { labHelp(); await labSay(said, "en"); tries--; }
+            }
+            if (!done) labStep("Toca la palabra que oíste");
+          })();
+        });
         lab.resolveTap = null; if (!lab.on || pickW == null) return;
         n++;
         const btn = $("labStage").querySelector(`[data-w="${CSS.escape(said)}"]`); if (btn) btn.classList.add("ok");
@@ -1690,8 +1758,10 @@ async function startLab(phoneme, tier) {
     $("labHome").onclick = () => openLab();
     $("labBack").onclick = () => showLab(false);
     await labEs(passed ? "¡Excelente! Lo repasamos " + when + "." : "Buen esfuerzo. Lo repetimos " + when + ".");
+    const wasOn = lab.on;
     lab.on = false;
     try { stats = await api("/stats"); renderSide(); } catch (e) {}
+    if (lab.hf && wasOn) await labAutoNext(phoneme);
   } catch (e) {
     lab.on = false; alertSide(e.message);
     if ($("labStage")) $("labStage").innerHTML = `<p class="warnbox">${esc(e.message)}</p>`;

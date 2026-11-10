@@ -8,6 +8,7 @@ const sp = {
   view: "home", on: false, paused: false, busy: false, session: null, scenario: null, history: [],
   stats: null, scenarios: null, summary: null, review: null, status: "", mode: "",
   pause: (() => { try { return +localStorage.getItem("wtw_sp_pause") || 2.5; } catch (e) { return 2.5; } })(),
+  reviewHf: (() => { try { return localStorage.getItem("wtw_rev_hf") === "1"; } catch (e) { return false; } })(),
 };
 const SP_STOP = /^(stop|end|finish|terminar|termina|para|pausa|basta)( (please|the conversation|ya|por favor))?$/;
 
@@ -38,6 +39,21 @@ function spSayBrowser(text) {
     if (!("speechSynthesis" in window)) return resolve();
     if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 0.92; if (voice) u.voice = voice;
+    let done = false; const fin = () => { if (!done) { done = true; resolve(); } };
+    u.onend = fin; u.onerror = fin; setTimeout(fin, 2500 + text.length * 110);
+    speechSynthesis.speak(u);
+  });
+}
+function spSayEs(text) {
+  if (!text) return Promise.resolve();
+  if (useTts()) return playTts(text, "es", false).catch(() => spSayEsBrowser(text));
+  return spSayEsBrowser(text);
+}
+function spSayEsBrowser(text) {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window)) return resolve();
+    if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = "es-ES"; if (typeof esVoice !== "undefined" && esVoice) u.voice = esVoice;
     let done = false; const fin = () => { if (!done) { done = true; resolve(); } };
     u.onend = fin; u.onerror = fin; setTimeout(fin, 2500 + text.length * 110);
     speechSynthesis.speak(u);
@@ -147,7 +163,44 @@ async function spReviewStart() {
   sp.view = "review"; sp.review = { list: [], i: 0, result: null, shown: false, ok: 0 }; renderSpeak();
   try { sp.review.list = (await api("/speaking/mistakes")).mistakes; } catch (e) { sp.status = e.message; }
   renderSpeak();
+  if (sp.reviewHf) spReviewLoop();
 }
+
+// Manos libres en el repaso: te lee el error, te escucha decirlo bien y pasa solo al siguiente.
+// Comandos (en inglés): "repeat" repite la frase correcta, "skip" salta, "stop" termina.
+async function spReviewLoop() {
+  const rv = sp.review; if (!rv || rv.looping) return;
+  rv.looping = true; rv.misses = 0;
+  try {
+    while (sp.reviewHf && sp.view === "review" && sp.review === rv && rv.i < rv.list.length) {
+      const m = rv.list[rv.i];
+      rv.attempts = rv.attempts || 0;
+      if (!rv.result) {
+        if (!rv.attempts) { await spSayEs("Dijiste:"); await spSay(m.said); if (m.why) await spSayEs(m.why); await spSayEs("Dilo bien."); }
+        else await spSayEs("Otra vez.");
+        if (!sp.reviewHf || sp.view !== "review") break;
+      }
+      await spReviewSay();
+      if (rv.speaking) await rv.speaking;
+      const r = rv.result || {};
+      const cmd = typeof labCmd === "function" ? labCmd(r.heard) : null;
+      if (cmd === "stop") { sp.reviewHf = false; spSaveRevHf(); renderSpeak(); break; }
+      if (cmd === "repeat") { rv.result = null; await spSayEs("Se dice:"); await spSay(m.correct); continue; }
+      if (cmd === "skip" || r.passed || (r.passed === false && ++rv.attempts >= 2) || r.error) {
+        rv.i++; rv.result = null; rv.shown = false; rv.attempts = 0; rv.misses = 0; renderSpeak();
+        await new Promise(res => setTimeout(res, 700));
+        continue;
+      }
+      if (r.silent) {
+        if (++rv.misses >= 2) { sp.reviewHf = false; spSaveRevHf(); renderSpeak(); await spSayEs("No te oigo. Lo dejo en pausa."); break; }
+        rv.result = null; await spSayEs("No te oí."); continue;
+      }
+      rv.result = null; // falló: otro intento
+    }
+    if (sp.reviewHf && sp.view === "review" && rv.i >= rv.list.length && rv.list.length) await spSayEs(`Listo. Dijiste bien ${rv.ok} de ${rv.list.length}.`);
+  } finally { rv.looping = false; }
+}
+function spSaveRevHf() { try { localStorage.setItem("wtw_rev_hf", sp.reviewHf ? "1" : "0"); } catch (e) {} }
 async function spReviewSay() {
   const rv = sp.review, m = rv && rv.list[rv.i]; if (!m || sp.busy) return;
   unlockAudio();
@@ -166,7 +219,7 @@ async function spReviewSay() {
     }
     rv.result = await api(`/speaking/mistakes/${m.id}/review`, { method: "POST", body });
     if (rv.result.passed) rv.ok++;
-    if (!rv.result.silent) { rv.shown = true; spSay(m.correct); }
+    if (!rv.result.silent) { rv.shown = true; rv.speaking = spSay(m.correct); }
   } catch (e) { rv.result = { error: e.message }; }
   finally { sp.busy = false; rv.listening = false; renderSpeak(); }
 }
@@ -189,6 +242,7 @@ function renderSpeak() {
   on("spShow", () => { sp.review.shown = true; renderSpeak(); spSay(sp.review.list[sp.review.i].correct); });
   on("spListen", () => { unlockAudio(); spSay(sp.review.list[sp.review.i].correct); });
   on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.shown = false; renderSpeak(); });
+  const rh = $("spRevHf"); if (rh) rh.onchange = e => { sp.reviewHf = e.target.checked; spSaveRevHf(); if (sp.reviewHf) { unlockAudio(); spReviewLoop(); } else spHush(); };
   const pz = $("spPauseSel"); if (pz) pz.onchange = e => { sp.pause = +e.target.value; try { localStorage.setItem("wtw_sp_pause", sp.pause); } catch (er) {} };
 }
 
@@ -276,6 +330,7 @@ function reviewHTML() {
     <p class="banner ok">¡Listo! Dijiste bien ${rv.ok} de ${rv.list.length}. Los que fallaste vuelven mañana.</p><button type="button" class="primary" id="spHome">Volver</button>`;
   const m = rv.list[rv.i], r = rv.result;
   let html = `<div class="kind"><span>Repaso de errores</span><span>${rv.i + 1} / ${rv.list.length}</span></div>
+    <label class="switch" for="spRevHf"><input type="checkbox" id="spRevHf" role="switch"${sp.reviewHf ? " checked" : ""}> 🎧 Manos libres</label>
     <p class="note">Dijiste:</p><p class="sp-said"><s>${esc(m.said)}</s></p>
     ${m.why ? `<p class="note">💡 ${esc(m.why)}</p>` : ""}
     <p><b>Dilo bien en voz alta.</b></p>
