@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\SpeakingMistake;
+use App\Models\SpeakingSession;
+use App\Services\PronunciationService;
+use App\Services\SpeakingService;
+use App\Services\SrsService;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Throwable;
+
+/** Conversación por voz: situaciones, turnos con medición de fluidez, resumen, errores y metas. */
+class SpeakingController extends Controller
+{
+    public function __construct(private SpeakingService $speaking, private SrsService $srs) {}
+
+    public function scenarios()
+    {
+        return ['scenarios' => collect(config('speaking.scenarios'))
+            ->map(fn ($s, $id) => ['id' => $id, 'title' => $s['title'], 'emoji' => $s['emoji'], 'desc' => $s['desc']])
+            ->values()];
+    }
+
+    public function stats(Request $request)
+    {
+        return $this->speaking->stats($request->user());
+    }
+
+    public function start(Request $request)
+    {
+        $data = $request->validate(['scenario' => ['required', 'string', Rule::in(array_keys(config('speaking.scenarios')))]]);
+        $user = $request->user();
+        $session = SpeakingSession::create([
+            'user_id' => $user->id,
+            'scenario' => $data['scenario'],
+            'day' => $this->srs->today($user)->toDateString(),
+        ]);
+
+        return response()->json(['id' => $session->id, 'scenario' => $session->scenario], 201);
+    }
+
+    /**
+     * Lo que dijiste en un turno. Con Azure se manda el audio y el servidor lo transcribe y mide el ritmo.
+     * Sin Azure (navegador), se manda el texto reconocido y cuánto duró: se estima el ritmo.
+     */
+    public function turn(Request $request, PronunciationService $pron, SpeakingSession $session)
+    {
+        abort_unless($session->user_id === $request->user()->id, 404);
+        abort_if($session->ended_at !== null, 409, 'Esta conversación ya terminó. Empieza otra.');
+
+        if ($request->hasFile('audio')) {
+            abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
+            $request->validate(['audio' => ['required', 'file', 'max:3072']]);   // ~45 s de WAV 16 kHz mono
+            try {
+                $out = $pron->transcribe($request->file('audio')->get());
+            } catch (Throwable $e) {
+                report($e);
+                abort(502, 'No se pudo entender el audio ahora. Intenta otra vez.');
+            }
+        } else {
+            $data = $request->validate([
+                'text' => ['required', 'string', 'max:1000'],
+                'ms' => ['required', 'integer', 'min:0', 'max:60000'],
+            ]);
+            $n = str_word_count($data['text']);
+            // El navegador no da el momento de cada palabra: se cuenta el tiempo total y no se miden pausas.
+            $out = ['text' => trim($data['text']), 'words' => $n, 'speech_ms' => $data['ms'], 'long_pauses' => 0,
+                'wpm' => $n >= 3 && $data['ms'] > 0 ? (int) round($n / ($data['ms'] / 60000)) : null];
+        }
+
+        if ($out['words'] > 0) {
+            $this->speaking->addTurn($session, $out);
+        }
+
+        return $out + ['today' => $this->speaking->stats($request->user())['today']];
+    }
+
+    public function finish(Request $request, SpeakingSession $session)
+    {
+        abort_unless($session->user_id === $request->user()->id, 404);
+        if (! $session->ended_at) {
+            $session->update(['ended_at' => now()]);
+        }
+
+        return $this->speaking->summary($session) + ['stats' => $this->speaking->stats($request->user())];
+    }
+
+    /** Errores que tocan repasar hoy. */
+    public function mistakes(Request $request)
+    {
+        $user = $request->user();
+        $today = $this->srs->today($user)->toDateString();
+
+        return ['mistakes' => SpeakingMistake::where('user_id', $user->id)->whereNull('mastered_on')
+            ->whereDate('next_review', '<=', $today)->orderBy('next_review')->orderBy('id')->limit(20)->get()
+            ->map->toCard()->values()];
+    }
+
+    /**
+     * Repaso de un error: dices la frase correcta en voz alta y el servidor comprueba las palabras.
+     * Con Azure se manda el audio; sin Azure, el texto que reconoció el navegador.
+     */
+    public function review(Request $request, PronunciationService $pron, SpeakingMistake $mistake)
+    {
+        abort_unless($mistake->user_id === $request->user()->id, 404);
+
+        if ($request->hasFile('audio')) {
+            abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
+            $request->validate(['audio' => ['required', 'file', 'max:2048']]);
+            try {
+                $heard = $pron->transcribe($request->file('audio')->get())['text'];
+            } catch (Throwable $e) {
+                report($e);
+                abort(502, 'No se pudo entender el audio ahora. Intenta otra vez.');
+            }
+        } else {
+            $heard = $request->validate(['text' => ['required', 'string', 'max:1000']])['text'];
+        }
+
+        $match = self::match($mistake->correct, (string) $heard);
+        if ($heard === '' || $match['pct'] === 0) {
+            // No se oyó nada: no cuenta como fallo.
+            return ['heard' => $heard, 'pct' => 0, 'tokens' => $match['tokens'], 'silent' => true] + $mistake->toCard();
+        }
+
+        return ['heard' => $heard, 'pct' => $match['pct'], 'tokens' => $match['tokens'], 'passed' => $match['pct'] >= self::PASS]
+            + $this->speaking->review($mistake, $match['pct'] >= self::PASS, $this->srs->today($request->user()));
+    }
+
+    /** % de palabras de la frase correcta que se dijeron (para aprobar un repaso). */
+    public const PASS = 85;
+
+    public static function match(string $target, string $heard): array
+    {
+        $norm = fn (string $t) => array_values(array_filter(preg_split('/\s+/', preg_replace('/[^a-z0-9\s]/', ' ', str_replace(["'", '’'], '', mb_strtolower($t))))));
+        $pool = $norm($heard);
+        $tokens = [];
+        foreach ($norm($target) as $w) {
+            $i = array_search($w, $pool, true);
+            if ($i !== false) {
+                unset($pool[$i]);
+            }
+            $tokens[] = ['w' => $w, 'ok' => $i !== false];
+        }
+        $ok = count(array_filter($tokens, fn ($t) => $t['ok']));
+
+        return ['pct' => $tokens ? (int) round($ok / count($tokens) * 100) : 0, 'tokens' => $tokens];
+    }
+
+    public function goal(Request $request)
+    {
+        $data = $request->validate(['speaking_goal' => ['required', 'integer', 'min:1', 'max:60']]);
+        $request->user()->forceFill($data)->save();
+
+        return $this->speaking->stats($request->user());
+    }
+}

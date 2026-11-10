@@ -133,39 +133,68 @@ TXT;
      * @param  array<int, array{role: string, content: string}>  $history
      * @param  string[]  $targetWords
      */
-    public function converse(array $history, array $targetWords, ?string $weakSounds = null): array
+    /**
+     * Un turno de la conversación. $scenario es una de config('speaking.scenarios');
+     * $voice = el alumno habla (lo que llega es una transcripción, sin puntuación fiable).
+     *
+     * @return array{reply: string, feedback: ?string, used: array<int, string>, mistakes: array<int, array{said: string, correct: string, why: ?string}>}
+     */
+    public function converse(array $history, array $targetWords, ?string $weakSounds = null, string $scenario = 'free', bool $voice = false, ?string $level = null): array
     {
-        $words = implode(', ', $targetWords);
+        $words = implode(', ', $targetWords) ?: '(none)';
+        $role = config("speaking.scenarios.{$scenario}.role") ?? config('speaking.scenarios.free.role');
+        $level = $level ?: 'A2-B1';
+        $input = $voice
+            ? 'The student is SPEAKING: their messages are speech-to-text transcripts. Ignore punctuation, capitalization and spelling; correct only grammar, word choice and natural phrasing.'
+            : 'The student is typing.';
         $system = <<<TXT
-You are a friendly English conversation tutor for a Spanish-speaking adult (Latin American) who lives in Miami.
-Goal: get the student to USE these target words naturally: {$words}.
+You are an English speaking partner for a Spanish-speaking adult (Latin American) who lives in Miami. Their level is about {$level} (CEFR).
+Role-play: {$role}
+Stay in character and keep the conversation going naturally. {$input}
+Target words of the day (use them only when it fits naturally; praise the student when they use one): {$words}.
 Rules:
-- Keep each reply short (1-3 sentences) and end with ONE question that invites the student to use a target word they have not used yet.
-- Speak simple, natural American English.
-- After your reply, add a line starting with "FEEDBACK:" written in Spanish: correct the student's last message (grammar, word choice, more natural phrasing). If it was correct, say what was good. Max 2 short sentences.
+- Keep each reply short (1-3 sentences, spoken style) and end with ONE question so the student keeps talking.
+- Use simple, natural American English for their level. If the student seems lost, rephrase more simply.
+- After your reply, add a line starting with "FEEDBACK:" written in Spanish: a short, encouraging note about the student's last message (max 2 sentences).
+- Then, for each real mistake in the student's last message (max 2, skip tiny ones), add a line exactly like:
+  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words>
 - Then add a line starting with "USED:" listing the target words the student used correctly in their last message, comma separated (or "none").
 TXT;
         if ($weakSounds) {
             $system .= "\nThe student struggles with these sounds: {$weakSounds}. Occasionally include words with them.";
         }
 
-        if (empty($history)) {
-            $history = [['role' => 'user', 'content' => 'Hi! Let\'s start.']];
+        // La API pide que el primer mensaje sea del alumno: si la IA abrió la conversación, va un saludo antes.
+        if (empty($history) || ($history[0]['role'] ?? '') !== 'user') {
+            array_unshift($history, ['role' => 'user', 'content' => 'Hi! Please start the conversation in character.']);
         }
 
-        $text = $this->message($system, $history, 500);
+        return self::parseTurn($this->message($system, $history, 600));
+    }
 
-        $reply = $text;
+    /** Separa la respuesta de la IA en: lo que dice, la nota en español, errores y palabras usadas. */
+    public static function parseTurn(string $text): array
+    {
         $feedback = null;
         $used = [];
+        $mistakes = [];
         if (preg_match('/^FEEDBACK:\s*(.+)$/mi', $text, $m)) {
             $feedback = trim($m[1]);
         }
         if (preg_match('/^USED:\s*(.+)$/mi', $text, $m)) {
-            $used = strtolower(trim($m[1])) === 'none' ? [] : array_map('trim', explode(',', $m[1]));
+            $used = strtolower(trim($m[1])) === 'none' ? [] : array_values(array_filter(array_map('trim', explode(',', $m[1]))));
         }
-        $reply = trim(preg_replace('/^(FEEDBACK|USED):.*$/mi', '', $reply));
+        if (preg_match_all('/^FIX:\s*(.+?)\s*=>\s*(.+?)\s*(?:\|\s*(.+))?$/mi', $text, $all, PREG_SET_ORDER)) {
+            foreach (array_slice($all, 0, 2) as $m) {
+                $said = trim($m[1], " \t\"'“”");
+                $correct = trim($m[2], " \t\"'“”");
+                if ($said !== '' && $correct !== '' && mb_strtolower($said) !== mb_strtolower($correct)) {
+                    $mistakes[] = ['said' => mb_substr($said, 0, 300), 'correct' => mb_substr($correct, 0, 300), 'why' => isset($m[3]) && trim($m[3]) !== '' ? mb_substr(trim($m[3]), 0, 300) : null];
+                }
+            }
+        }
+        $reply = trim(preg_replace(["/^(FEEDBACK|USED|FIX):.*$/mi", "/\n{3,}/"], ['', "\n\n"], $text));
 
-        return ['reply' => $reply, 'feedback' => $feedback, 'used' => $used];
+        return ['reply' => $reply, 'feedback' => $feedback, 'used' => $used, 'mistakes' => $mistakes];
     }
 }

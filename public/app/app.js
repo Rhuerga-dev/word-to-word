@@ -90,7 +90,9 @@ async function recordWav(maxMs = 6000, onStart, silenceSec = 1.0) {
       if (done) return; done = true; stopRecording = null;
       proc.disconnect(); src.disconnect(); stream.getTracks().forEach(t => t.stop());
       const rate = ctx.sampleRate; if (!shared) ctx.close();
-      resolve(encodeWav(downsample(flatten(chunks), rate, 16000), 16000));
+      const wav = encodeWav(downsample(flatten(chunks), rate, 16000), 16000);
+      wav.heard = heard; // false = no se oyó a nadie (solo silencio o ruido)
+      resolve(wav);
     };
     const timer = setTimeout(stop, maxMs);
     stopRecording = () => { clearTimeout(timer); stop(); };
@@ -668,14 +670,19 @@ $("dictBtn").onclick = async () => {
   catch (e) { $("msgs").insertAdjacentHTML("beforeend", '<p class="warnbox">' + esc(e.message) + "</p>"); }
   $("dictBtn").classList.remove("rec");
 };
-function showTab(chat) {
-  if (chat && hf.on) stopHF();
-  $("tabCards").setAttribute("aria-selected", !chat); $("tabChat").setAttribute("aria-selected", chat);
-  $("main").hidden = chat; $("queue").hidden = chat; $("chatView").hidden = !chat;
-  if (chat) renderChat();
+// Pestañas: "cards" (fichas), "chat" (conversación escrita) o "speak" (hablar por voz). true/false = chat/fichas.
+function showTab(which) {
+  which = which === true ? "chat" : which === false ? "cards" : which;
+  if (which !== "cards" && hf.on) stopHF();
+  if (which !== "speak" && typeof spLeave === "function") spLeave();
+  $("tabCards").setAttribute("aria-selected", which === "cards"); $("tabChat").setAttribute("aria-selected", which === "chat"); $("tabSpeak").setAttribute("aria-selected", which === "speak");
+  $("main").hidden = which !== "cards"; $("queue").hidden = which !== "cards"; $("chatView").hidden = which !== "chat"; $("speakView").hidden = which !== "speak";
+  if (which === "chat") renderChat();
+  if (which === "speak" && typeof spOpen === "function") spOpen();
 }
-$("tabCards").onclick = () => showTab(false);
-$("tabChat").onclick = () => showTab(true);
+$("tabCards").onclick = () => showTab("cards");
+$("tabChat").onclick = () => showTab("chat");
+$("tabSpeak").onclick = () => showTab("speak");
 
 // ===== Panel lateral y ajustes =====
 function renderSide() {
@@ -689,6 +696,7 @@ function renderSide() {
   $("weak").innerHTML = stats.weak_sounds.map(w => `<button type="button" class="chip" data-ph="${esc(w.phoneme)}" title="Practicar · último: ${esc(w.last_word)}">/${esc(w.phoneme)}/ × ${w.count}</button>`).join("");
   $("weak").querySelectorAll("[data-ph]").forEach(b => b.onclick = () => { unlockAudio(); openLab(b.dataset.ph); });
 }
+$("speakGoal").onchange = async e => { try { await api("/speaking/goal", { method: "PUT", body: { speaking_goal: Math.max(1, Math.min(60, +e.target.value || 5)) } }); if (typeof spRefreshStats === "function") spRefreshStats(); } catch (err) { alertSide(err.message); } };
 $("dailyNew").onchange = async e => { try { await api("/settings", { method: "PUT", body: { daily_new: +e.target.value } }); refresh(); } catch (err) { alertSide(err.message); } };
 async function nextDay() { try { await api("/debug/next-day", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } }
 $("nextDay").onclick = nextDay;
@@ -1230,6 +1238,7 @@ function fmtEx(t) { return esc(t).replace(/\*([^*]+)\*/g, "<em>$1</em>"); }
 function renderSettings() {
   if (!profile) return;
   $("freelancePack").checked = !!profile.freelance_pack;
+  $("speakGoal").value = profile.speaking_goal || 5;
   $("remOn").checked = !!profile.reminder.enabled;
   $("remTime").value = profile.reminder.time || "19:00";
   $("remTime").disabled = !profile.reminder.enabled;

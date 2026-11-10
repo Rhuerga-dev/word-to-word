@@ -122,6 +122,8 @@ class StudyController extends Controller
             DB::table('study_days')->where('user_id', $user->id)->delete();
             DB::table('phoneme_errors')->where('user_id', $user->id)->delete();
             DB::table('level_results')->where('user_id', $user->id)->delete();
+            DB::table('speaking_mistakes')->where('user_id', $user->id)->delete();
+            DB::table('speaking_sessions')->where('user_id', $user->id)->delete();
             $user->forceFill(['day_offset' => 0, 'streak' => 0, 'last_study_day' => null, 'cefr_level' => null])->save();
         });
 

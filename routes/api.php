@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\LevelController;
 use App\Http\Controllers\Api\PronunciationController;
 use App\Http\Controllers\Api\ReminderController;
+use App\Http\Controllers\Api\SpeakingController;
 use App\Http\Controllers\Api\StudyController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,4 +64,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tts', [\App\Http\Controllers\Api\TtsController::class, 'show'])->middleware('throttle:240,1');
 
     Route::post('/conversation', [ConversationController::class, 'store'])->middleware('throttle:30,1');
+    Route::get('/speaking/scenarios', [SpeakingController::class, 'scenarios']);
+    Route::get('/speaking/stats', [SpeakingController::class, 'stats']);
+    Route::put('/speaking/goal', [SpeakingController::class, 'goal']);
+    Route::post('/speaking/sessions', [SpeakingController::class, 'start'])->middleware('throttle:20,1');
+    Route::post('/speaking/sessions/{session}/turns', [SpeakingController::class, 'turn'])->middleware('throttle:40,1');
+    Route::post('/speaking/sessions/{session}/finish', [SpeakingController::class, 'finish']);
+    Route::get('/speaking/mistakes', [SpeakingController::class, 'mistakes']);
+    Route::post('/speaking/mistakes/{mistake}/review', [SpeakingController::class, 'review'])->middleware('throttle:60,1');
 });

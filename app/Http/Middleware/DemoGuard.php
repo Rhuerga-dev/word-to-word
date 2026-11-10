@@ -25,7 +25,9 @@ class DemoGuard
 
     /** Paid features: pattern => uses allowed per demo student. */
     public const QUOTAS = [
-        'api/conversation' => 15,
+        'api/conversation' => 25,
+        'api/speaking/sessions/*/turns' => 40,
+        'api/speaking/mistakes/*/review' => 40,
         'api/words/*/aid/suggest' => 10,
         'api/words/*/pronunciation' => 40,
         'api/pronunciation/assess' => 60,
@@ -34,7 +36,9 @@ class DemoGuard
 
     /** Lo mismo para alumnos normales, por día (frena cuentas gratis creadas para gastar la IA). */
     public const USER_DAILY = [
-        'api/conversation' => 60,
+        'api/conversation' => 150,              // ~2 conversaciones por voz largas al día
+        'api/speaking/sessions/*/turns' => 300,
+        'api/speaking/mistakes/*/review' => 300,
         'api/words/*/aid/suggest' => 40,
         'api/words/*/pronunciation' => 200,
         'api/pronunciation/assess' => 300,
@@ -43,7 +47,9 @@ class DemoGuard
 
     /** Tope diario entre TODOS los usuarios: el gasto del día nunca pasa de aquí (W2W_PAID_GLOBAL_MULTIPLIER lo escala). */
     public const GLOBAL_DAILY = [
-        'api/conversation' => 600,
+        'api/conversation' => 1500,
+        'api/speaking/sessions/*/turns' => 3000,
+        'api/speaking/mistakes/*/review' => 3000,
         'api/words/*/aid/suggest' => 400,
         'api/words/*/pronunciation' => 3000,
         'api/pronunciation/assess' => 3000,
