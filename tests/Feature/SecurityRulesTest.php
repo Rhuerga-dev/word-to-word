@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\DemoGuard;
 use App\Models\User;
 use App\Services\DemoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -43,7 +44,7 @@ class SecurityRulesTest extends TestCase
         $user = User::factory()->create();
         Sanctum::actingAs($user);
         $day = now()->toDateString();
-        cache()->put("paid:{$day}:{$user->id}:api/conversation", 60, now()->addDay());
+        cache()->put("paid:{$day}:{$user->id}:api/conversation", DemoGuard::USER_DAILY['api/conversation'], now()->addDay());
 
         $this->postJson('/api/conversation', ['message' => 'hola'])->assertStatus(429);
     }
@@ -52,7 +53,7 @@ class SecurityRulesTest extends TestCase
     {
         $user = User::factory()->unverified()->create();
         Sanctum::actingAs($user);
-        cache()->put('paid:'.now()->toDateString().":{$user->id}:api/conversation", 30, now()->addDay());
+        cache()->put('paid:'.now()->toDateString().":{$user->id}:api/conversation", (int) ceil(DemoGuard::USER_DAILY['api/conversation'] / 2), now()->addDay());
 
         $this->postJson('/api/conversation', ['messages' => []])->assertStatus(429);
     }
@@ -60,7 +61,7 @@ class SecurityRulesTest extends TestCase
     public function test_demo_sessions_count_against_the_global_daily_cap(): void
     {
         $token = $this->postJson('/api/auth/demo')->assertCreated()->json('token');
-        cache()->put('paid:'.now()->toDateString().':all:api/conversation', 600, now()->addDay());
+        cache()->put('paid:'.now()->toDateString().':all:api/conversation', DemoGuard::GLOBAL_DAILY['api/conversation'], now()->addDay());
 
         $this->withToken($token)->postJson('/api/conversation', ['messages' => []])->assertStatus(429);
     }

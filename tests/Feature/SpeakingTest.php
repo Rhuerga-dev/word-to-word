@@ -139,8 +139,8 @@ class SpeakingTest extends TestCase
         SpeakingMistake::create(['user_id' => $this->user->id, 'speaking_session_id' => $s->id, 'said' => 'he go', 'correct' => 'he goes', 'next_review' => $this->day()]);
 
         $r = $this->postJson("/api/speaking/sessions/{$s->id}/finish")->assertOk();
-        $r->assertJsonPath('minutes', 2.0)->assertJsonPath('wpm', 120)->assertJsonPath('pauses_per_min', 3.0)
-            ->assertJsonPath('mistakes.0.correct', 'he goes')->assertJsonPath('stats.today', 2.0)->assertJsonPath('stats.goal', 5);
+        $r->assertJsonPath('minutes', 2)->assertJsonPath('wpm', 120)->assertJsonPath('pauses_per_min', 3)
+            ->assertJsonPath('mistakes.0.correct', 'he goes')->assertJsonPath('stats.today', 2)->assertJsonPath('stats.goal', 5);
         $this->assertNotNull($s->refresh()->ended_at);
     }
 
@@ -195,7 +195,7 @@ class SpeakingTest extends TestCase
         }
 
         $st = $this->getJson('/api/speaking/stats')->assertOk();
-        $st->assertJsonPath('today', 4.0)->assertJsonPath('goal', 3)->assertJsonPath('streak', 2)->assertJsonPath('total_minutes', 13.0);
+        $st->assertJsonPath('today', 4)->assertJsonPath('goal', 3)->assertJsonPath('streak', 2)->assertJsonPath('total_minutes', 13);
         $this->assertSame([0, 0, 0, 5, 1, 3, 4], array_map('intval', array_column($st->json('week'), 'minutes')));
         $this->assertSame(100, $st->json('wpm.3.wpm'));
         $this->getJson('/api/me')->assertJsonPath('speaking_goal', 3);
