@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:word_to_word/core/l10n/tr.dart';
 import 'package:word_to_word/core/services/audio_service.dart';
+import 'package:word_to_word/core/utils/compare.dart';
 import 'package:word_to_word/features/session/data/ear_item.dart';
 import 'package:word_to_word/features/today/data/today.dart';
 import 'package:word_to_word/features/auth/data/user_profile.dart';
@@ -78,19 +79,26 @@ void main() {
     expect(EarItem.fromJson({'id': 1, 'word': 'x', 'options': ['q'], 'answer': 0}).level, 0);
   });
 
-  test('oído: cada escalón trae lo que suena y cómo se contesta', () {
+  test('oído: primero tocar, después repetir algo cada vez más largo', () {
     final e = EarItem.fromJson({
-      'id': 3, 'word': 'rent', 'mode': 'sentence', 'fast_ms': 3500,
-      'audio': [{'text': 'The rent is due.', 'slow': false}, {'text': 'rent', 'slow': false}],
-      'options': ['money for a house', 'b', 'c'], 'answer': 0, 'ear_level': 3,
+      'id': 3, 'word': 'rent', 'mode': 'repeat_phrase', 'fast_ms': 4000, 'pass': 80,
+      'audio': [{'text': 'pay the rent', 'slow': false}], 'target': 'pay the rent', 'meaning': '🏠 money for a house',
+      'options': [], 'answer': null, 'ear_level': 3,
     });
     expect(e.step, 4);
-    expect(e.definitions, isTrue);
-    expect(e.sounds.map((a) => a.text), ['The rent is due.', 'rent']);
+    expect(e.isRepeat, isTrue);
+    expect(e.meaning, '🏠 money for a house');
+    expect(e.sounds.single.text, 'pay the rent');
     final s = EarItem.fromJson({'id': 1, 'word': 'think', 'mode': 'sound', 'options': ['think', 'sink', 'thing'], 'answer': 0});
     expect(s.step, 1);
-    expect(s.definitions, isFalse);
-    expect(s.sounds.single.text, 'think');
-    expect(WordLookup.fromJson({'word': 'payment', 'emoji': '💳', 'gloss': 'money given'}).text, '💳 money given');
+    expect(s.isRepeat, isFalse);
+  });
+
+  test('repetir: se compara palabra por palabra', () {
+    final m = matchWords('Pay the rent.', 'pay de rent');
+    expect(m.pct, 67);
+    expect(m.tokens.map((t) => t.$2), [true, false, true]);
+    expect(matchWords("I can't pay", 'I cant pay').pct, 100);
+    expect(matchWords('rent', '').pct, 0);
   });
 }

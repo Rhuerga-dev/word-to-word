@@ -1,13 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/l10n/tr.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
+import '../../../../core/utils/compare.dart';
 import '../../data/ear_item.dart';
 import '../../data/session_repository.dart';
 import 'exercise_outcome.dart';
 
 class EarState {
-  const EarState({this.playing = true, this.endedAt, this.chosen, this.ms = 0, this.result, this.error, this.lens = false, this.look});
+  const EarState({
+    this.playing = true,
+    this.endedAt,
+    this.chosen,
+    this.ms = 0,
+    this.result,
+    this.error,
+    this.recording = false,
+    this.checking = false,
+    this.tries = 0,
+    this.match,
+    this.heard = '',
+    this.msg = '',
+  });
   final bool playing;
 
   /// Cuándo terminó de sonar (desde ahí se cuenta lo que tardas).
@@ -17,38 +32,62 @@ class EarState {
   final EarResult? result;
   final String? error;
 
-  /// Modo lupa: tocar las palabras de las opciones para entenderlas.
-  final bool lens;
-
-  /// Lo último que buscaste con la lupa.
-  final String? look;
+  // Escalones de repetir.
+  final bool recording, checking;
+  final int tries;
+  final WordMatch? match;
+  final String heard, msg;
 
   bool get answered => chosen != null;
   bool get finished => result != null || error != null;
 
-  EarState copyWith({bool? playing, DateTime? endedAt, int? chosen, int? ms, EarResult? result, String? error, bool? lens, String? look}) => EarState(
-      playing: playing ?? this.playing,
-      endedAt: endedAt ?? this.endedAt,
-      chosen: chosen ?? this.chosen,
-      ms: ms ?? this.ms,
-      result: result ?? this.result,
-      error: error ?? this.error,
-      lens: lens ?? this.lens,
-      look: look ?? this.look);
+  EarState copyWith({
+    bool? playing,
+    DateTime? endedAt,
+    int? chosen,
+    int? ms,
+    EarResult? result,
+    String? error,
+    bool? recording,
+    bool? checking,
+    int? tries,
+    WordMatch? match,
+    String? heard,
+    String? msg,
+  }) =>
+      EarState(
+        playing: playing ?? this.playing,
+        endedAt: endedAt ?? this.endedAt,
+        chosen: chosen ?? this.chosen,
+        ms: ms ?? this.ms,
+        result: result ?? this.result,
+        error: error ?? this.error,
+        recording: recording ?? this.recording,
+        checking: checking ?? this.checking,
+        tries: tries ?? this.tries,
+        match: match ?? this.match,
+        heard: heard ?? this.heard,
+        msg: msg ?? this.msg,
+      );
 }
 
-/// Oído por escalones: sonido → significado fácil → definición → en una frase → rápido.
+/// Oído por escalones: primero escuchar y tocar; después escuchar y repetir, cada vez algo más largo.
 class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
   EarItem get item => arg;
+
+  /// Intentos para repetir antes de dejarlo para mañana.
+  static const maxTries = 2;
 
   @override
   EarState build(EarItem item) => const EarState();
 
-  ExerciseOutcome outcome() => ExerciseOutcome(xp: state.result?.xp ?? 0, graded: true, ok: state.chosen == item.answer);
+  bool get passed => item.isRepeat ? (state.match?.pct ?? 0) >= item.pass : state.chosen == item.answer;
 
-  bool get fast => state.chosen == item.answer && state.ms <= item.fastMs;
+  ExerciseOutcome outcome() => ExerciseOutcome(xp: state.result?.xp ?? 0, graded: true, ok: passed);
 
-  /// Suena lo de este escalón (la palabra, despacio al principio, o la frase y la palabra).
+  bool get fast => passed && state.ms <= item.fastMs;
+
+  /// Suena lo de este escalón.
   Future<void> play() async {
     state = state.copyWith(playing: true);
     final audio = ref.read(audioProvider);
@@ -61,24 +100,50 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
     state = state.copyWith(playing: false, endedAt: state.endedAt ?? DateTime.now());
   }
 
-  void toggleLens() => state = state.copyWith(lens: !state.lens);
+  /// Escalones de tocar.
+  Future<void> choose(int i) async {
+    if (state.answered || state.endedAt == null) return;
+    final ms = DateTime.now().difference(state.endedAt!).inMilliseconds;
+    await _send(i == item.answer, ms, chosen: i);
+  }
 
-  /// Toca una palabra que no entiendes: la dice y muestra su significado más simple.
-  Future<void> lookUp(String word) async {
-    state = state.copyWith(look: '$word…');
-    ref.read(audioProvider).say(word);
+  /// Escalones de repetir: grabas, se pasa a texto y se compara palabra por palabra.
+  Future<void> attempt() async {
+    if (state.finished || state.recording || state.checking) return;
+    final audio = ref.read(audioProvider);
+    final target = item.target ?? item.word;
+    final t0 = state.endedAt ?? DateTime.now();
+    DateTime? voice;
+    state = state.copyWith(recording: true, msg: '');
     try {
-      final r = await ref.read(sessionRepositoryProvider).lookup(word);
-      state = state.copyWith(look: '${r.word} = ${r.text}');
+      final words = target.split(' ').length;
+      final rec = await audio.record(maxMs: 4000 + words * 700, silenceMs: 1200, onVoice: () => voice ??= DateTime.now());
+      state = state.copyWith(recording: false);
+      if (!rec.heard && !rec.maybeVoice) {
+        state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
+        return;
+      }
+      state = state.copyWith(checking: true);
+      final text = await ref.read(sessionRepositoryProvider).transcribe(rec.wav);
+      await _judge(text, (voice ?? DateTime.now()).difference(t0).inMilliseconds);
     } catch (e) {
-      state = state.copyWith(look: '$word: $e');
+      state = state.copyWith(recording: false, msg: '$e');
+    } finally {
+      if (state.checking) state = state.copyWith(checking: false);
     }
   }
 
-  Future<void> choose(int i) async {
-    if (state.answered || state.endedAt == null || state.lens) return;
-    final ms = DateTime.now().difference(state.endedAt!).inMilliseconds;
-    await _send(i == item.answer, ms, chosen: i);
+  /// Compara lo que se entendió; pasa con [EarItem.pass] % o falla al segundo intento.
+  Future<bool> _judge(String heard, int ms) async {
+    final m = matchWords(item.target ?? item.word, heard);
+    final tries = state.tries + 1;
+    state = state.copyWith(match: m, heard: heard, tries: tries, checking: false);
+    final ok = m.pct >= item.pass;
+    if (ok || tries >= maxTries) {
+      await _send(ok, ms, chosen: ok ? 0 : 1);
+      return true;
+    }
+    return false;
   }
 
   Future<void> _send(bool ok, int ms, {required int chosen}) async {
@@ -93,9 +158,8 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
   static String _plain(String t) => t.replaceAll(RegExp(r'[^\x00-\x7F]'), '').trim();
   static String _norm(String t) => t.toLowerCase().replaceAll(RegExp(r"[^a-z' ]"), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
 
-  /// Manos libres. Escalón "sonido": repites la palabra que oíste y se compara con las opciones.
-  /// Los demás: dices qué significa (en inglés), te dice la respuesta y le dices si la sabías.
-  /// El tiempo va desde que termina de sonar hasta que empiezas a hablar.
+  /// Manos libres: sonido → repites la palabra y se compara con las opciones; significado → dices qué
+  /// significa y luego si la sabías; repetir → repites lo que oíste (dos intentos).
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {
     if (state.finished) return outcome();
     Future<void> sayItem() async {
@@ -104,10 +168,40 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
       }
     }
 
-    await hf.say('Listen.');
+    await hf.say(item.isRepeat ? 'Listen and repeat.' : 'Listen.');
     await sayItem();
-    final t0 = DateTime.now();
+    var t0 = DateTime.now();
     DateTime? voice;
+
+    if (item.isRepeat) {
+      while (true) {
+        voice = null;
+        final h = await hf.listen(maxMs: 4000 + (item.target ?? '').split(' ').length * 700, onVoice: () => voice ??= DateTime.now());
+        if (h.silent) {
+          await hf.say('Repeat after me.');
+          await sayItem();
+          t0 = DateTime.now();
+          continue;
+        }
+        if (await handleCommand(hf, h, onHelp: () async {
+          await hf.say(item.target ?? item.word, slow: true);
+        })) {
+          continue;
+        }
+        final done = await _judge(h.text, (voice ?? DateTime.now()).difference(t0).inMilliseconds);
+        if (passed) {
+          await hf.say(state.match!.pct >= 100 ? 'Perfect!' : 'Good!');
+          return outcome();
+        }
+        if (done) {
+          await hf.say("Let's practice it again tomorrow.");
+          return outcome();
+        }
+        await hf.say('Almost. Listen again.');
+        await sayItem();
+        t0 = DateTime.now();
+      }
+    }
 
     if (item.mode == 'sound') {
       await hf.say('Which word did you hear? Say it.');

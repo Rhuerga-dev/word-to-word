@@ -1,7 +1,7 @@
 import '../../../core/utils/json.dart';
 
 /// Escalones del Oído, de menos a más difícil.
-const earSteps = ['sound', 'easy', 'definition', 'sentence', 'fast'];
+const earSteps = ['sound', 'easy', 'repeat_word', 'repeat_phrase', 'repeat_sentence', 'repeat_long'];
 
 /// Lo que suena: un texto y si va despacio.
 class EarAudio {
@@ -11,8 +11,8 @@ class EarAudio {
 }
 
 /// Oído: una palabra que ya aprendiste para reconocerla al oírla.
-/// [mode]: sound (eliges la palabra escrita que oíste) · easy (emoji + palabras básicas) · definition ·
-/// sentence (la oyes en una frase) · fast (igual, en 2 s).
+/// Primero se escucha y se toca: sound (la palabra escrita que oíste) · easy (su significado fácil).
+/// Después se escucha y se REPITE, cada vez algo más largo: repeat_word · repeat_phrase · repeat_sentence · repeat_long.
 class EarItem {
   const EarItem({
     required this.id,
@@ -20,10 +20,13 @@ class EarItem {
     this.mode = 'easy',
     this.audio = const [],
     this.example,
-    required this.options,
-    required this.answer,
+    this.options = const [],
+    this.answer = 0,
     this.level = 0,
     this.fastMs = 3000,
+    this.target,
+    this.meaning2,
+    this.pass = 80,
   });
   final int id;
   final String word;
@@ -35,13 +38,22 @@ class EarItem {
   final int level;
   final int fastMs;
 
-  String get meaning => options[answer];
+  /// Lo que hay que repetir (escalones de repetir) y su significado fácil.
+  final String? target;
+  final String? meaning2;
 
-  /// 1–5, para la barra de escalones.
+  /// % de palabras que hay que decir bien para pasar.
+  final int pass;
+
+  bool get isRepeat => mode.startsWith('repeat_');
+
+  String get meaning => isRepeat ? (meaning2 ?? '') : options[answer];
+
+  /// 1–6, para la barra de escalones.
   int get step => earSteps.indexOf(mode) + 1;
 
   /// Las opciones son definiciones (se pueden tocar sus palabras para entenderlas).
-  bool get definitions => mode == 'definition' || mode == 'sentence' || mode == 'fast';
+  bool get definitions => false;
 
   List<EarAudio> get sounds => audio.isEmpty ? [EarAudio(word)] : audio;
 
@@ -55,6 +67,9 @@ class EarItem {
         answer: asInt(j['answer']),
         level: asInt(j['ear_level']),
         fastMs: asInt(j['fast_ms'], 3000),
+        target: asStringOrNull(j['target']),
+        meaning2: asStringOrNull(j['meaning']),
+        pass: asInt(j['pass'], 80),
       );
 }
 

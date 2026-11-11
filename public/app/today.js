@@ -301,9 +301,11 @@ function sessActions(html) {
   a.innerHTML = html; a.hidden = !html;
 }
 
-// ---------- Oído: reconocer de oído las palabras aprendidas, por escalones (sonido → significado → frase → rápido) ----------
-const EAR_STEPS = { sound: "Sonido", easy: "Significado fácil", definition: "Definición", sentence: "En una frase", fast: "Rápido" };
-const EAR_ORDER = ["sound", "easy", "definition", "sentence", "fast"];
+// ---------- Oído: primero escuchar y tocar; después escuchar y repetir (palabra → frase → oración → oración larga) ----------
+const EAR_STEPS = { sound: "Sonido", easy: "Significado fácil", repeat_word: "Repite la palabra", repeat_phrase: "Repite la frase", repeat_sentence: "Repite la oración", repeat_long: "Oración larga" };
+const EAR_ORDER = Object.keys(EAR_STEPS);
+const EAR_PROMPT = { sound: "¿Qué palabra oíste?", easy: "¿Qué significa? Toca la respuesta.", repeat_word: "Escucha y repite la palabra.",
+  repeat_phrase: "Escucha y repite la frase.", repeat_sentence: "Escucha y repite la oración.", repeat_long: "Escucha y repite la oración completa." };
 function earSay(text, slow) {
   if (useTts()) return playTts(text, "en", !!slow).catch(() => earBrowser(text, slow));
   return earBrowser(text, slow);
@@ -323,68 +325,97 @@ async function earPlay(e) {
     await earSay(parts[i].text, parts[i].slow);
   }
 }
-// Las opciones con cada palabra tocable (modo lupa): para entender una definición sin pasar por el español.
-const earWords = t => esc(t).replace(/([A-Za-z][A-Za-z'’-]*)/g, '<span class="ear-w" role="button" tabindex="0">$1</span>');
+/** Escucha lo que repites: el reconocimiento del navegador (Chrome) o, en el iPhone, el servidor. onVoice: cuando empiezas a hablar. */
+async function earHear(ms, onVoice) {
+  if (cfg.pronunciation) {
+    const wav = await recordWav(ms, null, 1.2, onVoice);
+    if (!wav.heard) return null;
+    const fd = new FormData(); fd.append("audio", wav, "voz.wav"); fd.append("lang", "en");
+    const r = await api("/speech/transcribe", { method: "POST", body: fd });
+    return r.text || "";
+  }
+  if (!SR) throw new Error("Para repetir hace falta Chrome o activar Azure en el servidor.");
+  onVoice && onVoice();
+  return new Promise(resolve => {
+    const r = new SR(); r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 1;
+    let got = null; const t = setTimeout(() => { try { r.stop(); } catch (e) {} }, ms);
+    r.onresult = ev => { got = ev.results[0][0].transcript; }; r.onerror = () => {};
+    r.onend = () => { clearTimeout(t); resolve(got); };
+    try { r.start(); } catch (e) { resolve(null); }
+  });
+}
 function sessEar(st) {
   const e = st.item, mode = e.mode || "easy", first = sess.steps.findIndex(x => x.type === "ear") === sess.i;
-  const step = EAR_ORDER.indexOf(mode) + 1, fastMs = e.fast_ms || 3000, defs = ["definition", "sentence", "fast"].includes(mode);
-  let tEnd = 0, answered = false, lens = false;
-  const prompt = { sound: "¿Qué palabra oíste?", easy: "¿Qué significa? Toca la respuesta.", definition: "¿Qué significa? Toca la respuesta.",
-    sentence: "Oíste una frase y luego la palabra. ¿Qué significa la palabra?", fast: "¿Qué significa? Rápido: tienes 2 segundos." }[mode];
+  const step = EAR_ORDER.indexOf(mode) + 1, fastMs = e.fast_ms || 3000, repeat = mode.startsWith("repeat_");
+  const target = e.target || e.word, pass = e.pass || 80;
+  let tEnd = 0, answered = false, tries = 0, busy = false;
   sessStage(`<span class="sess-kind">Oído · ${esc(EAR_STEPS[mode] || "")}</span>
-    <div class="ear-ladder" aria-label="Escalón ${step} de 5">${EAR_ORDER.map((m, k) => `<i class="${k < step ? "on" : ""}"></i>`).join("")}</div>
-    ${first ? `<p class="note">Cada palabra sube por escalones: primero reconoces el sonido, luego lo que significa, después dentro de una frase y al final sin pensar. Rápido y sin traducir.</p>` : ""}
+    <div class="ear-ladder" aria-label="Escalón ${step} de ${EAR_ORDER.length}">${EAR_ORDER.map((m, k) => `<i class="${k < step ? "on" : ""}"></i>`).join("")}</div>
+    ${first ? `<p class="note">Cada palabra sube por escalones: primero la reconoces y sabes qué significa; después la repites, luego en una frase, en una oración y en una oración larga.</p>` : ""}
     <button type="button" class="ear-play" id="earPlay" aria-label="Oír otra vez">${ICON_SPK}</button>
     <p class="note" id="earHint">Escuchando…</p>
-    <div class="ear-opts" id="earOpts" hidden>${e.options.map((o, i) => `<button type="button" class="ear-opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
-    ${defs ? `<div id="earLensBar" hidden><button type="button" class="linkish" id="earLens">🔍 No entiendo una palabra</button></div><p class="ear-look" id="earLook" hidden></p>` : ""}
+    ${repeat ? "" : `<div class="ear-opts" id="earOpts" hidden>${e.options.map((o, i) => `<button type="button" class="ear-opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>`}
+    <div id="earHeard"></div>
     <div id="earReveal"></div>`);
   sessActions("");
-  const opts = () => $("earOpts").querySelectorAll(".ear-opt");
-  const setLens = on => {
-    lens = on;
-    opts().forEach(b => { b.innerHTML = on ? earWords(e.options[+b.dataset.i]) : esc(e.options[+b.dataset.i]); b.classList.toggle("lens", on); });
-    $("earLens").textContent = on ? "✓ Listo, ya entiendo" : "🔍 No entiendo una palabra";
-    $("earHint").textContent = on ? "Toca la palabra que no entiendes." : prompt;
+  const finish = async (ok, ms) => {
+    answered = true; sessActions("");
+    $("earHint").textContent = "";
+    $("earReveal").innerHTML = repeat
+      ? `<p class="sess-word" style="font-size:${mode === "repeat_word" ? 36 : 22}px">${esc(target)}</p>${e.meaning ? `<p class="note">${esc(e.word)} = ${esc(e.meaning)}</p>` : ""}`
+      : mode === "sound" ? "" : `<p class="sess-word" style="font-size:36px">${esc(e.word)}</p>${e.example ? `<p class="sess-ex">${esc(e.example)}</p>` : ""}`;
+    sess.graded++; if (ok) sess.right++;
+    let r = {}; try { r = await api(`/words/${e.id}/ear`, { method: "POST", body: { ok, ms } }); } catch (err) { r = { error: err.message }; }
+    sessAdd(r.xp_gained);
+    const secs = (ms / 1000).toFixed(1).replace(".", ","), fast = ok && ms <= fastMs;
+    const up = fast && r.mode && r.mode !== mode ? ` Sube a: ${EAR_STEPS[r.mode] || r.mode}.` : "";
+    const title = repeat ? (ok ? (r.automatic ? "¡Automática! 🎧" : "¡Bien dicho!") : "Sigue practicándolo")
+      : fast ? (r.automatic ? "¡Automática! 🎧" : "¡Al oído!") : ok ? "Bien, pero tardaste" : "Era esta";
+    const text = !ok ? "Mañana la vuelves a oír, un escalón más fácil." : repeat ? "¡Lo repetiste bien!" + up : fast ? "La reconociste en " + secs + " s." + up : secs + " s: aún la traduces. Mañana otra vez.";
+    sessSheet(r.error ? `<h3>No se guardó</h3><p>${esc(r.error)}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`
+      : `<h3>${title} ${r.xp_gained ? "+" + r.xp_gained + " XP" : ""}</h3><p>${text}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`, ok ? "ok" : "bad");
   };
-  const look = async word => {
-    const box = $("earLook"); box.hidden = false; box.textContent = word + "…";
-    earSay(word);
-    try { const r = await api("/words/lookup?w=" + encodeURIComponent(word)); box.innerHTML = `<b>${esc(r.word)}</b> ${r.emoji ? esc(r.emoji) + " " : ""}= ${esc(r.gloss || r.easy || "")}`; }
-    catch (err) { box.textContent = word + ": " + err.message; }
+  // Repetir: grabar, pasar a texto y comparar palabra por palabra (2 intentos).
+  const attempt = async () => {
+    if (busy || answered) return;
+    busy = true; let tVoice = 0;
+    $("earHint").textContent = "Te escucho…"; sessActions(`<button type="button" class="primary sess-big" disabled>🎙️ Te escucho…</button>`);
+    let heard = null;
+    try { heard = await earHear(4000 + target.split(" ").length * 700, () => { tVoice = tVoice || Date.now(); }); }
+    catch (err) { $("earHint").textContent = err.message; }
+    busy = false;
+    if (heard === null) { $("earHint").textContent = "No te oí. Habla un poco más cerca."; return askMic(); }
+    const best = compare(target, heard);
+    tries++;
+    $("earHeard").innerHTML = `<p class="ear-toks">${best.toks.map(z => `<span class="tok ${z.ok ? "ok" : "miss"}">${esc(z.x)}</span>`).join(" ")}</p><p class="note">Entendí: “${esc(heard)}” · ${best.pct}%</p>`;
+    const ok = best.pct >= pass, ms = (tVoice || Date.now()) - tEnd;
+    if (ok || tries >= 2) return finish(ok, ms);
+    $("earHint").textContent = "Casi. Escucha otra vez y repite.";
+    await earPlay(e); tEnd = Date.now();
+    askMic();
+  };
+  const askMic = () => {
+    sessActions(`<button type="button" class="primary sess-big" id="earMic">🎙️ ${tries ? "Otra vez" : "Repetir"}</button>`);
+    $("earMic").onclick = attempt;
   };
   const play = async () => {
     $("earPlay").classList.add("on"); $("earHint").textContent = "Escuchando…";
     await earPlay(e);
     if (!$("earPlay")) return;
     $("earPlay").classList.remove("on");
-    tEnd = Date.now();
-    $("earOpts").hidden = false; if ($("earLensBar")) $("earLensBar").hidden = false;
-    $("earHint").textContent = lens ? "Toca la palabra que no entiendes." : prompt;
+    if (!tEnd) tEnd = Date.now();
+    if (answered) return;
+    $("earHint").textContent = EAR_PROMPT[mode] || "";
+    if (repeat) { if (!busy) askMic(); } else $("earOpts").hidden = false;
   };
   $("earPlay").onclick = () => answered ? earPlay(e) : play();
-  if ($("earLens")) $("earLens").onclick = () => setLens(!lens);
-  $("earOpts").onclick = async ev => {
-    const w = ev.target.closest(".ear-w");
-    if (lens && w) return look(w.textContent);
+  if (!repeat) $("earOpts").onclick = ev => {
     const b = ev.target.closest(".ear-opt");
-    if (!b || lens || answered || !tEnd) return;
-    answered = true;
-    const i = +b.dataset.i, ok = i === e.answer, ms = Date.now() - tEnd;
-    opts().forEach(x => { x.disabled = true; if (+x.dataset.i === e.answer) x.classList.add("ok"); });
+    if (!b || answered || !tEnd) return;
+    const i = +b.dataset.i, ok = i === e.answer;
+    $("earOpts").querySelectorAll(".ear-opt").forEach(x => { x.disabled = true; if (+x.dataset.i === e.answer) x.classList.add("ok"); });
     if (!ok) b.classList.add("bad");
-    if ($("earLensBar")) $("earLensBar").hidden = true;
-    $("earReveal").innerHTML = mode === "sound" ? "" : `<p class="sess-word" style="font-size:36px">${esc(e.word)}</p>${e.example ? `<p class="sess-ex">${esc(e.example)}</p>` : ""}`;
-    $("earHint").textContent = "";
-    sess.graded++; if (ok) sess.right++;
-    let r = {}; try { r = await api(`/words/${e.id}/ear`, { method: "POST", body: { ok, ms } }); } catch (err) { r = { error: err.message }; }
-    sessAdd(r.xp_gained);
-    const secs = (ms / 1000).toFixed(1).replace(".", ","), fast = ok && ms <= fastMs;
-    const up = fast && r.mode && r.mode !== mode ? `Sube a: ${EAR_STEPS[r.mode] || r.mode}.` : "";
-    sessSheet(r.error ? `<h3>No se guardó</h3><p>${esc(r.error)}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`
-      : `<h3>${fast ? (r.automatic ? "¡Automática! 🎧" : "¡Al oído!") : ok ? "Bien, pero tardaste" : "Era esta"} ${r.xp_gained ? "+" + r.xp_gained + " XP" : ""}</h3>`
-        + `<p>${fast ? "La reconociste en " + secs + " s. " + up : ok ? secs + " s: aún la traduces. Mañana otra vez." : "Mañana la vuelves a oír, un escalón más fácil."}</p>`
-        + `<button type="button" class="primary sess-big" data-next>Continuar</button>`, ok ? "ok" : "bad");
+    finish(ok, Date.now() - tEnd);
   };
   play();
 }

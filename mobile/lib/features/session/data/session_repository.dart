@@ -89,6 +89,9 @@ class SessionRepository {
   /// Una palabra que no entiendes dentro de una definición: su significado más simple.
   Future<WordLookup> lookup(String word) async => WordLookup.fromJson(asMap(await _api.get('/words/lookup?w=${Uri.encodeQueryComponent(word)}')));
 
+  /// Lo que dijiste, en texto (inglés).
+  Future<String> transcribe(Uint8List wav) async => asString(asMap(await _api.upload('/speech/transcribe', wav))['text']);
+
   /// Puntuación (0–100) del sonido [phoneme] al decir [word].
   Future<int> assess(String word, String phoneme, Uint8List wav) async {
     final r = asMap(await _api.upload('/pronunciation/assess', wav, fields: {'text': word, 'phoneme': phoneme}));
