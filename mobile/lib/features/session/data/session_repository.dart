@@ -7,6 +7,7 @@ import '../../../core/storage/offline_cache.dart';
 import '../../../core/utils/json.dart';
 import '../../today/data/today.dart';
 import 'word_card.dart';
+import 'ear_item.dart';
 
 /// Tema de la narración del día.
 class NarrationTopic {
@@ -71,6 +72,19 @@ class SessionRepository {
   Future<int> review(int cardId, String grade) => _postOrQueue('/words/$cardId/review', {'grade': grade});
 
   Future<int> learn(int cardId) => _postOrQueue('/words/$cardId/learn');
+
+  /// Oído: si la reconociste y cuánto tardaste desde que terminó de sonar (sin conexión se guarda).
+  Future<EarResult> ear(int wordId, {required bool ok, required int ms}) async {
+    final body = {'ok': ok, 'ms': ms};
+    try {
+      final r = asMap(await _api.post('/words/$wordId/ear', body));
+      return EarResult(xp: asInt(r['xp_gained']), fast: asBool(r['fast']), automatic: asBool(r['automatic']));
+    } on ApiException catch (e) {
+      if (!e.isNetwork) rethrow;
+      await _cache.enqueue('/words/$wordId/ear', body);
+      return EarResult(fast: ok && ms <= 3000);
+    }
+  }
 
   /// Puntuación (0–100) del sonido [phoneme] al decir [word].
   Future<int> assess(String word, String phoneme, Uint8List wav) async {

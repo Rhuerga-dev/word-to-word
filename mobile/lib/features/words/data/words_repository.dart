@@ -7,8 +7,11 @@ import '../../session/data/word_card.dart';
 
 /// El plan de fichas de hoy (GET /today) y las cuentas (GET /stats).
 class WordsDay {
-  const WordsDay({required this.dailyNew, required this.newDone, required this.cards, this.learned = 0, this.mastered = 0, this.forecast = const []});
+  const WordsDay({required this.dailyNew, required this.newDone, required this.cards, this.learned = 0, this.mastered = 0, this.byEar = 0, this.forecast = const []});
   final int dailyNew, newDone, learned, mastered;
+
+  /// Las que reconoces de oído sin pensar.
+  final int byEar;
   final List<WordCard> cards;
 
   /// Repasos de los próximos 7 días: (fecha, cuántas).
@@ -37,6 +40,7 @@ class WordsRepository {
             cards: listOf(t['cards'], WordCard.fromJson),
             learned: asInt(s['learned']),
             mastered: asInt(s['mastered']),
+            byEar: asInt(s['ear_automatic']),
             forecast: [for (final f in asMaps(s['forecast'])) (DateTime.tryParse(asString(f['date'])) ?? DateTime.now(), asInt(f['count']))],
           );
         },

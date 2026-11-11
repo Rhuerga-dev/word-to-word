@@ -49,6 +49,7 @@ class _TodayBody extends ConsumerWidget {
     final hello = hour < 12 ? tr('Buenos días') : (hour < 20 ? tr('Buenas tardes') : tr('Buenas noches'));
     final speak = {'narrate': tr('Contar tu día durante un minuto'), 'picture': tr('Describir una foto'), 'shadowing': tr('Repetir como un nativo')}[d.speak] ?? tr('Hablar un minuto');
     final agenda = <(String, String)>[
+      if (!d.offline && d.ear.isNotEmpty) (trn(d.ear.length, 'Oído: reconoce {0} palabra al oírla', 'Oído: reconoce {0} palabras al oírlas'), '1 min'),
       if (cards > 0) (trn(cards, 'Calentamiento con {0} ficha', 'Calentamiento con {0} fichas'), '${(cards * 15 / 60).ceil()} min'),
       if (!d.offline) (tr('El sonido /{0}/', [d.sounds.isNotEmpty ? d.sounds.first : defaultSound()]), '2 min'),
       if (!d.offline) (speak, '2 min'),

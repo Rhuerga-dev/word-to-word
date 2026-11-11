@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:word_to_word/core/l10n/tr.dart';
 import 'package:word_to_word/core/services/audio_service.dart';
+import 'package:word_to_word/features/session/data/ear_item.dart';
+import 'package:word_to_word/features/today/data/today.dart';
 import 'package:word_to_word/features/auth/data/user_profile.dart';
 import 'package:word_to_word/features/session/data/word_card.dart';
 
@@ -59,5 +61,20 @@ void main() {
     expect(Recording(empty, false, 1000, peakDb: -57, floorDb: -60).maybeVoice, isFalse); // solo ruido
     expect(Recording(empty, false, 1000, peakDb: -70, floorDb: -72).maybeVoice, isFalse);
     expect(Recording(empty, true, 1000, peakDb: -20, floorDb: -60).maybeVoice, isFalse); // ya se oyó
+  });
+
+  test('oído: el plan de hoy empieza por las palabras para reconocer al oírlas', () {
+    final d = TodayData.fromJson({
+      'xp': {'xp': 0, 'goal': 100},
+      'plan': {
+        'ear': [
+          {'id': 7, 'word': 'invoice', 'options': ['a', 'b', 'c'], 'answer': 2, 'ear_level': 1},
+        ],
+        'reviews': [], 'new': [], 'sounds': [], 'mistakes': [], 'speak': 'narrate',
+      },
+    });
+    expect(d.ear.single.word, 'invoice');
+    expect(d.ear.single.meaning, 'c');
+    expect(EarItem.fromJson({'id': 1, 'word': 'x', 'options': ['q'], 'answer': 0}).level, 0);
   });
 }

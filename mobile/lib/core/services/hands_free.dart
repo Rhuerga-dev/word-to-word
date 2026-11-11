@@ -119,10 +119,10 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   Future<void> repeatLast({bool slow = false}) => say(_last, lang: _lastLang, slow: slow);
 
   /// Escucha hasta tu pausa. Con [transcribe] también lo pasa a texto y busca órdenes de voz.
-  Future<Heard> listen({int maxMs = 6000, int silenceMs = 1200, bool transcribe = true}) async {
+  Future<Heard> listen({int maxMs = 6000, int silenceMs = 1200, bool transcribe = true, void Function()? onVoice}) async {
     _check();
     state = state.copyWith(phase: HfPhase.listening, heard: '');
-    final r = await _audio.record(maxMs: maxMs, silenceMs: silenceMs);
+    final r = await _audio.record(maxMs: maxMs, silenceMs: silenceMs, onVoice: onVoice);
     _check();
     if (!r.heard && !r.maybeVoice) return _nothing(r.wav);
     if (!transcribe) {

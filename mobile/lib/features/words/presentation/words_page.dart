@@ -119,6 +119,8 @@ class _WordsPageState extends ConsumerState<WordsPage> {
                 Expanded(child: _stat('${d.learned}', tr('aprendidas'))),
                 const SizedBox(width: 10),
                 Expanded(child: _stat('${d.mastered}', tr('dominadas'))),
+                const SizedBox(width: 10),
+                Expanded(child: _stat('${d.byEar}', tr('de oído'))),
               ]),
               const SizedBox(height: 18),
               Card(

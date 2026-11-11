@@ -20,6 +20,8 @@ import 'exercises/sound_exercise.dart';
 import 'session_controller.dart';
 import 'session_summary.dart';
 import '../../../core/l10n/tr.dart';
+import 'exercises/ear_controller.dart';
+import 'exercises/ear_exercise.dart';
 
 /// Una sesión: barra de progreso arriba y un ejercicio a la vez. Con manos libres, todo sigue solo por voz.
 class SessionPage extends ConsumerWidget {
@@ -78,6 +80,7 @@ class SessionPage extends ConsumerWidget {
   }
 
   Widget _exercise(SessionStep step, void Function(ExerciseOutcome) done) => switch (step) {
+        EarStep(:final item) => EarExercise(item: item, onDone: done, first: identical(plan.steps.whereType<EarStep>().firstOrNull, step)),
         ReviewStep(:final card) => ReviewExercise(card: card, onDone: done),
         NewStep(:final card) => NewWordExercise(card: card, onDone: done),
         SoundStep() => SoundExercise(step: step, onDone: done),
@@ -109,6 +112,7 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
   }
 
   Future<ExerciseOutcome> _byVoice(HandsFreeController hf) => switch (widget.step) {
+        EarStep(:final item) => ref.read(earControllerProvider(item).notifier).handsFree(hf),
         ReviewStep(:final card) => ref.read(reviewControllerProvider(card).notifier).handsFree(hf),
         NewStep(:final card) => ref.read(newWordControllerProvider(card).notifier).handsFree(hf),
         SoundStep() => ref.read(soundControllerProvider(widget.step as SoundStep).notifier).handsFree(hf),

@@ -1,6 +1,7 @@
 import '../../today/data/today.dart';
 import 'word_card.dart';
 import '../../../core/l10n/tr.dart';
+import 'ear_item.dart';
 
 /// Dos palabras por sonido difícil (las mismas ideas que el Taller de la web).
 const soundWords = <String, List<String>>{
@@ -22,6 +23,12 @@ String defaultSound([DateTime? now]) => const ['θ', 'v', 'ɪ', 'æ', 'z'][(now 
 
 sealed class SessionStep {
   const SessionStep();
+}
+
+/// Oído: oír una palabra aprendida (sin verla) y elegir qué significa, rápido.
+class EarStep extends SessionStep {
+  const EarStep(this.item);
+  final EarItem item;
 }
 
 class ReviewStep extends SessionStep {
@@ -60,6 +67,8 @@ class SessionPlan {
   factory SessionPlan.fromToday(TodayData d) {
     final ph = d.sounds.map(soundKey).whereType<String>().firstOrNull ?? defaultSound();
     return SessionPlan([
+      // Primero el oído, con la cabeza fresca.
+      for (final e in d.ear) EarStep(e),
       for (final c in d.reviews) ReviewStep(c),
       for (final c in d.newCards) NewStep(c),
       for (final w in soundWords[ph]!) SoundStep(ph, w),

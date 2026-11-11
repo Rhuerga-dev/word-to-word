@@ -1,5 +1,6 @@
 import '../../../core/utils/json.dart';
 import '../../session/data/word_card.dart';
+import '../../session/data/ear_item.dart';
 
 /// Puntos de hoy y de la semana.
 class XpToday {
@@ -33,6 +34,7 @@ class TodayData {
     required this.sounds,
     required this.speak,
     required this.mistakes,
+    this.ear = const [],
     this.offline = false,
   });
 
@@ -48,6 +50,9 @@ class TodayData {
   /// narrate · picture · shadowing
   final String speak;
   final List<Mistake> mistakes;
+
+  /// Oído: palabras que ya aprendiste para reconocerlas al escucharlas (el primer paso).
+  final List<EarItem> ear;
 
   /// Viene de lo guardado (sin conexión): solo se pueden hacer las fichas.
   final bool offline;
@@ -65,6 +70,7 @@ class TodayData {
       sounds: [for (final s in asMaps(plan['sounds'])) asString(s['phoneme'])],
       speak: asString(plan['speak'], 'narrate'),
       mistakes: listOf(plan['mistakes'], Mistake.fromJson),
+      ear: listOf(plan['ear'], EarItem.fromJson),
       offline: offline,
     );
   }
