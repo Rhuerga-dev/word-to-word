@@ -299,14 +299,32 @@ class _AirPodsCard extends ConsumerStatefulWidget {
 
 class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
   String _msg = '';
+  bool _askSettings = false;
 
   Future<void> _toggle(bool on) async {
     final svc = ref.read(airPodsProvider.notifier);
-    final ok = await svc.setEnabled(on);
+    final r = await svc.setEnabled(on);
     var msg = '';
-    if (on && !ok) msg = tr('Hace falta el permiso de dispositivos cercanos (Bluetooth).');
-    if (on && ok && !await svc.connected()) msg = tr('Activado. Funcionará cuando practiques con los AirPods conectados.');
-    if (mounted) setState(() => _msg = msg);
+    var settings = false;
+    if (on) {
+      switch (r) {
+        case AirPodsEnable.denied:
+          msg = tr('Falta el permiso «Dispositivos cercanos». Si no te salió la pregunta, dalo en los ajustes de la app: Permisos → Dispositivos cercanos → Permitir.');
+          settings = true;
+        case AirPodsEnable.reinstall:
+          msg = tr('Esta función es nueva y necesita reinstalar la app: detén la app y vuelve a ejecutar flutter run (el hot reload no la carga).');
+        case AirPodsEnable.unsupported:
+          msg = tr('Solo está disponible en Android.');
+        case AirPodsEnable.ok:
+          if (!await svc.connected()) msg = tr('Activado. Funcionará cuando practiques con los AirPods conectados.');
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _msg = msg;
+        _askSettings = settings;
+      });
+    }
   }
 
   @override
@@ -327,6 +345,18 @@ class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
             style: const TextStyle(color: W.muted, fontSize: 13),
           ),
         ),
+        if (_askSettings)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => ref.read(airPodsProvider.notifier).openSettings(),
+                icon: const Icon(Icons.settings),
+                label: Text(tr('Abrir ajustes de la app')),
+              ),
+            ),
+          ),
       ]),
     );
   }

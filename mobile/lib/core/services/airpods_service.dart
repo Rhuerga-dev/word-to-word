@@ -27,19 +27,29 @@ class AirPodsService extends Notifier<bool> {
     return false;
   }
 
-  /// Activar la opción (pide el permiso de Bluetooth). Devuelve false si no se dio el permiso.
-  Future<bool> setEnabled(bool on) async {
-    if (!supported) return false;
+  /// Activar la opción (pide el permiso de Bluetooth).
+  Future<AirPodsEnable> setEnabled(bool on) async {
+    if (!supported) return AirPodsEnable.unsupported;
     if (on) {
-      final granted = await _invoke<bool>('permission') ?? false;
-      if (!granted) return false;
+      try {
+        final granted = await _channel.invokeMethod<bool>('permission') ?? false;
+        if (!granted) return AirPodsEnable.denied;
+      } on MissingPluginException {
+        // El código nativo nuevo no está en la app instalada (se hizo hot reload): hay que reinstalarla.
+        return AirPodsEnable.reinstall;
+      } catch (_) {
+        return AirPodsEnable.denied;
+      }
     }
     state = on;
     try {
       await _storage.write(key: _key, value: on ? '1' : '0');
     } catch (_) {}
-    return true;
+    return AirPodsEnable.ok;
   }
+
+  /// Abre los ajustes de la app (Permisos → Dispositivos cercanos).
+  Future<void> openSettings() async => _invoke<bool>('settings');
 
   /// ¿Hay AirPods conectados ahora?
   Future<bool> connected() async => (await _invoke<bool>('connected')) ?? false;
@@ -66,5 +76,8 @@ class AirPodsService extends Notifier<bool> {
     }
   }
 }
+
+/// Resultado de activar la opción.
+enum AirPodsEnable { ok, denied, reinstall, unsupported }
 
 final airPodsProvider = NotifierProvider<AirPodsService, bool>(AirPodsService.new);

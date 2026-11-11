@@ -238,4 +238,8 @@ const stringsEn = <String, String>{
   "Experimental: funciona en Android 16 QPR3 o más nuevo (Pixel, OnePlus, Oppo, realme). En otros teléfonos no hace nada.": "Experimental: works on Android 16 QPR3 or newer (Pixel, OnePlus, Oppo, realme). On other phones it does nothing.",
   "Hace falta el permiso de dispositivos cercanos (Bluetooth).": "The nearby devices (Bluetooth) permission is needed.",
   "Activado. Funcionará cuando practiques con los AirPods conectados.": "On. It will work when you practice with your AirPods connected.",
+  "Falta el permiso «Dispositivos cercanos». Si no te salió la pregunta, dalo en los ajustes de la app: Permisos → Dispositivos cercanos → Permitir.": "The “Nearby devices” permission is missing. If you didn't get the prompt, grant it in the app settings: Permissions → Nearby devices → Allow.",
+  "Esta función es nueva y necesita reinstalar la app: detén la app y vuelve a ejecutar flutter run (el hot reload no la carga).": "This feature is new and needs the app reinstalled: stop the app and run flutter run again (hot reload doesn't load it).",
+  "Solo está disponible en Android.": "Only available on Android.",
+  "Abrir ajustes de la app": "Open app settings",
 };

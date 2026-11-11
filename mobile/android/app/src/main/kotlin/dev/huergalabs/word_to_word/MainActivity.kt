@@ -26,6 +26,12 @@ class MainActivity : FlutterActivity() {
                         requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 4711)
                     } else result.success(true)
                 }
+                // Ajustes de la app (para dar el permiso a mano si se negó antes).
+                "settings" -> {
+                    startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        android.net.Uri.fromParts("package", packageName, null)))
+                    result.success(true)
+                }
                 "connected" -> worker.execute {
                     val d = AirPodsControl.connectedAirPods(this)
                     main.post { result.success(d != null) }
