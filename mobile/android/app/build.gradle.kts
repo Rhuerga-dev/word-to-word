@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         // Identificador en Google Play: no se puede cambiar después de subirla.
-        applicationId = "dev.huergalabs.word_to_word"
+        applicationId = "dev.huergalabs.w2w"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
