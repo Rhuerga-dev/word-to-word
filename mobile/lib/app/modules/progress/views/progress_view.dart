@@ -1,63 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../api.dart';
-import '../auth.dart';
-import '../theme.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../data/services/auth_service.dart';
+import '../controllers/progress_controller.dart';
 
 /// Progreso: números claros, liga de la semana y logros.
-class ProgressScreen extends StatefulWidget {
-  const ProgressScreen({super.key});
-  @override
-  State<ProgressScreen> createState() => _ProgressScreenState();
-}
-
-class _ProgressScreenState extends State<ProgressScreen> {
-  Map? _p, _league, _ach;
-  String _error = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final api = Get.find<Api>();
-    try {
-      final r = await Future.wait([api.get('/progress'), api.get('/league'), api.get('/achievements')]);
-      if (mounted) {
-        setState(() {
-          _p = r[0] as Map;
-          _league = r[1] as Map;
-          _ach = r[2] as Map;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-    }
-  }
-
-  Future<void> _visible(bool v) async {
-    try {
-      final r = await Get.find<Api>().put('/league/visibility', {'visible': v});
-      if (mounted) setState(() => _league = r as Map);
-    } catch (_) {}
-  }
+class ProgressView extends GetView<ProgressController> {
+  const ProgressView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final p = _p;
-    if (p == null) return Center(child: _error.isEmpty ? const CircularProgressIndicator() : Text(_error, style: const TextStyle(color: W.bad)));
+    return Obx(() {
+    final p = controller.progress.value;
+    if (p == null) return Center(child: controller.error.value.isEmpty ? const CircularProgressIndicator() : Text(controller.error.value, style: const TextStyle(color: W.bad)));
     final v = p['vocab'] as Map, s = p['speaking'] as Map, mi = p['mistakes'] as Map;
     final sounds = ((p['pronunciation'] as Map)['sounds'] as List).cast<Map>();
-    final l = _league!, a = _ach!;
+    final l = controller.league.value!, a = controller.achievements.value!;
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: controller.load,
       child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
         Row(children: [
           Expanded(child: Text('Progreso', style: W.display(26))),
-          TextButton(onPressed: () => Get.find<Auth>().logout(), child: const Text('Salir')),
+          TextButton(onPressed: () => Get.find<AuthService>().logout(), child: const Text('Salir')),
         ]),
         const SizedBox(height: 10),
         GridView.count(
@@ -97,7 +62,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Aparecer en la liga'),
                 value: l['visible'] == true,
-                onChanged: _visible,
+                onChanged: controller.setVisible,
               ),
             ]),
           ),
@@ -130,6 +95,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ],
       ]),
     );
+    });
   }
 
   Widget _h(String t) => Padding(padding: const EdgeInsets.only(top: 22, bottom: 8), child: Text(t, style: W.display(19)));

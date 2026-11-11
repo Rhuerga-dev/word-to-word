@@ -1,77 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../api.dart';
-import '../theme.dart';
-import 'session_screen.dart';
+import '../../../core/theme/app_theme.dart';
+import '../controllers/path_controller.dart';
 
 /// Camino: unidades del nivel, una abierta a la vez.
-class PathScreen extends StatefulWidget {
-  const PathScreen({super.key});
-  @override
-  State<PathScreen> createState() => _PathScreenState();
-}
-
-class _PathScreenState extends State<PathScreen> {
-  Map<String, dynamic>? _d;
-  String _error = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final r = await Get.find<Api>().get('/path');
-      if (mounted) setState(() => _d = Map<String, dynamic>.from(r as Map));
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-    }
-  }
-
-  Future<void> _continue(Map u) async {
-    final steps = u['steps'] as Map;
-    final api = Get.find<Api>();
-    SessionPlan? plan;
-    if (steps['words'] != true) {
-      try {
-        final r = await api.get('/path/units/${u['id']}/words');
-        final cards = (r['cards'] as List).cast<Map>();
-        if (cards.isNotEmpty) plan = SessionPlan([for (final c in cards) NewStep(c)], title: u['title'] as String, daily: false);
-      } catch (e) {
-        Get.snackbar('Camino', e.toString(), snackPosition: SnackPosition.BOTTOM);
-        return;
-      }
-    }
-    if (plan == null && steps['sound'] != true) {
-      final k = soundKey(u['sound'] as String? ?? '');
-      if (k != null) plan = SessionPlan([for (final w in soundWords[k]!) SoundStep(k, w)], title: u['title'] as String, daily: false);
-    }
-    if (plan == null) {
-      Get.snackbar('Camino', 'El shadowing y la prueba de la unidad se hacen por ahora en la web (w2w.huergalabs.dev).', snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    await Get.to(() => SessionScreen(plan: plan!), fullscreenDialog: true);
-    _load();
-  }
+class PathView extends GetView<PathController> {
+  const PathView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final d = _d;
-    if (d == null) return Center(child: _error.isEmpty ? const CircularProgressIndicator() : Text(_error, style: const TextStyle(color: W.bad)));
+    return Obx(() {
+    final d = controller.data.value;
+    if (d == null) return Center(child: controller.error.value.isEmpty ? const CircularProgressIndicator() : Text(controller.error.value, style: const TextStyle(color: W.bad)));
     final units = (d['units'] as List).cast<Map>();
     final cur = units.indexWhere((u) => u['state'] == 'open');
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: controller.load,
       child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
         Text('TU CAMINO · ${d['level']} ${d['level_name'] ?? ''}'.toUpperCase(), style: const TextStyle(letterSpacing: 1, fontWeight: FontWeight.w700, color: W.muted, fontSize: 13)),
         Text(cur >= 0 ? 'Unidad ${cur + 1} de ${units.length}' : '${d['completed']} de ${units.length} unidades', style: W.display(26)),
         const SizedBox(height: 14),
-        for (final u in units) Padding(padding: const EdgeInsets.only(bottom: 10), child: u['state'] == 'open' ? _Current(u: u, onGo: () => _continue(u)) : _Row(u: u)),
+        for (final u in units) Padding(padding: const EdgeInsets.only(bottom: 10), child: u['state'] == 'open' ? _Current(u: u, onGo: () => controller.continueUnit(u)) : _Row(u: u)),
       ]),
     );
+    });
   }
 }
 

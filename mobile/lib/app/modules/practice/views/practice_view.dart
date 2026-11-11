@@ -1,53 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../api.dart';
-import '../theme.dart';
-import 'session_screen.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../session/models/session_plan.dart';
+import '../controllers/practice_controller.dart';
 
 /// Practicar: elige tú qué hacer. Todo suma puntos.
-class PracticeScreen extends StatefulWidget {
-  const PracticeScreen({super.key});
-  @override
-  State<PracticeScreen> createState() => _PracticeScreenState();
-}
-
-class _PracticeScreenState extends State<PracticeScreen> {
-  List<Map>? _mistakes;
-  List<Map>? _cards;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final api = Get.find<Api>();
-    try {
-      final r = await Future.wait([api.get('/speaking/mistakes'), api.get('/today')]);
-      if (!mounted) return;
-      setState(() {
-        _mistakes = ((r[0] as Map)['mistakes'] as List).cast<Map>();
-        _cards = ((r[1] as Map)['cards'] as List).cast<Map>();
-      });
-    } catch (_) {
-      if (mounted) setState(() => _mistakes ??= const []);
-    }
-  }
-
-  Future<void> _run(List<SessionStep> steps, String title) async {
-    if (steps.isEmpty) return;
-    await Get.to(() => SessionScreen(plan: SessionPlan(steps, title: title, daily: false)), fullscreenDialog: true);
-    _load();
-  }
+class PracticeView extends GetView<PracticeController> {
+  const PracticeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final m = _mistakes ?? const [], cards = _cards ?? const [];
+    return Obx(() {
+    final m = controller.mistakes.value ?? const [], cards = controller.cards.value ?? const [];
     final ph = const ['θ', 'v', 'ɪ', 'æ', 'z'][DateTime.now().day % 5];
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: controller.load,
       child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
         Text('Practicar', style: W.display(26)),
         const Text('Elige tú qué hacer. Todo suma puntos a tu meta.', style: TextStyle(color: W.muted)),
@@ -60,20 +28,21 @@ class _PracticeScreenState extends State<PracticeScreen> {
               leading: const Icon(Icons.replay, color: Color(0xFFA85A00)),
               title: Text('${m.length} ${m.length == 1 ? 'error' : 'errores'} para repasar', style: const TextStyle(fontWeight: FontWeight.w700)),
               trailing: const Text('Repasar', style: TextStyle(color: W.accent, fontWeight: FontWeight.w700)),
-              onTap: () => _run([for (final x in m) MistakeStep(x)], 'Errores'),
+              onTap: () => controller.run([for (final x in m) MistakeStep(x)], 'Errores'),
             ),
           ),
         const SizedBox(height: 8),
         _label('Hablar'),
-        _tile(Icons.timer_outlined, 'Narración', '1 minuto sin parar', () => _run([NarrateStep()], 'Narración')),
+        _tile(Icons.timer_outlined, 'Narración', '1 minuto sin parar', () => controller.run([NarrateStep()], 'Narración')),
         _label('Palabras y sonidos'),
         _tile(Icons.style_outlined, 'Fichas', cards.isEmpty ? 'nada pendiente hoy' : '${cards.length} para hoy',
-            cards.isEmpty ? null : () => _run([for (final c in cards) c['mode'] == 'new' ? NewStep(c) : ReviewStep(c)], 'Fichas')),
-        _tile(Icons.track_changes, 'Pronunciación', '/$ph/ · ${soundWords[ph]!.join(', ')}', () => _run([for (final w in soundWords[ph]!) SoundStep(ph, w)], 'Sonido')),
+            cards.isEmpty ? null : () => controller.run([for (final c in cards) c['mode'] == 'new' ? NewStep(c) : ReviewStep(c)], 'Fichas')),
+        _tile(Icons.track_changes, 'Pronunciación', '/$ph/ · ${soundWords[ph]!.join(', ')}', () => controller.run([for (final w in soundWords[ph]!) SoundStep(ph, w)], 'Sonido')),
         const SizedBox(height: 14),
         const Text('Conversación, Describe la imagen, Shadowing y el chat escrito siguen en la web por ahora.', style: TextStyle(color: W.muted, fontSize: 14)),
       ]),
     );
+    });
   }
 
   Widget _label(String t) => Padding(

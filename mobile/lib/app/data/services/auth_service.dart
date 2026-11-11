@@ -1,11 +1,12 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 
-import 'api.dart';
+import '../../routes/app_routes.dart';
+import '../providers/api_client.dart';
 
 /// Sesión del alumno: el token se guarda cifrado en el teléfono (Keychain / Keystore).
-class Auth extends GetxController {
-  Auth(this.api, {FlutterSecureStorage? storage}) : _storage = storage ?? const FlutterSecureStorage() {
+class AuthService extends GetxService {
+  AuthService(this.api, {FlutterSecureStorage? storage}) : _storage = storage ?? const FlutterSecureStorage() {
     api.onUnauthorized = () => _clear();
   }
 
@@ -13,9 +14,10 @@ class Auth extends GetxController {
   final FlutterSecureStorage _storage;
   final profile = Rxn<Map<String, dynamic>>();
   Map<String, dynamic> config = {};
-  final loading = true.obs;
 
-  bool get loggedIn => api.token != null && profile.value != null;
+  /// Lee primero [profile] (observable) para que Obx siempre se suscriba a él.
+  bool get loggedIn => profile.value != null && api.token != null;
+
   String get firstName {
     final n = (profile.value?['name'] as String? ?? '').trim().split(RegExp(r'\s+')).first;
     return ['Estudiante', 'Invitado'].contains(n) ? '' : n;
@@ -24,10 +26,14 @@ class Auth extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    restore();
+    // Si la sesión se cierra (Salir o token caducado), vuelve al login desde cualquier pantalla.
+    ever<Map<String, dynamic>?>(profile, (p) {
+      if (p == null && Get.currentRoute != Routes.login && Get.currentRoute != Routes.splash) Get.offAllNamed(Routes.login);
+    });
   }
 
-  Future<void> restore() async {
+  /// Recupera la sesión guardada. Devuelve si quedó dentro.
+  Future<bool> restore() async {
     api.token = await _storage.read(key: 'token');
     if (api.token != null) {
       try {
@@ -36,7 +42,7 @@ class Auth extends GetxController {
         await _clear();
       }
     }
-    loading.value = false;
+    return loggedIn;
   }
 
   Future<void> login(String email, String password) async {

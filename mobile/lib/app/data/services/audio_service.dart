@@ -7,13 +7,15 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-import 'api.dart';
+import 'package:get/get.dart';
+
+import '../providers/api_client.dart';
 
 /// Audio de la app: la voz natural (TTS del servidor) y el micrófono.
 ///
 /// En el iPhone se usa la categoría "play and record" permitiendo Bluetooth A2DP: con AirPods puestos, la voz sale
 /// por los AirPods en alta calidad y se graba con el micrófono del iPhone (sin pasar a "modo llamada").
-class AppAudio {
+class AppAudio extends GetxService {
   AppAudio(this.api);
 
   final Api api;
@@ -117,9 +119,11 @@ class AppAudio {
     if (c != null && !c.isCompleted) c.complete();
   }
 
-  Future<void> dispose() async {
-    await _player.dispose();
-    await _rec.dispose();
+  @override
+  void onClose() {
+    _player.dispose();
+    _rec.dispose();
+    super.onClose();
   }
 }
 

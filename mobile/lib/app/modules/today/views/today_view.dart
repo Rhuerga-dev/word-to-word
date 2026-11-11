@@ -3,68 +3,32 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../api.dart';
-import '../auth.dart';
-import '../theme.dart';
-import 'session_screen.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../data/services/auth_service.dart';
+import '../../home/controllers/home_controller.dart';
+import '../controllers/today_controller.dart';
 
 /// Hoy: la meta de puntos y la sesión del día con un solo botón.
-class TodayScreen extends StatefulWidget {
-  const TodayScreen({super.key, required this.onGo});
-  final void Function(int tab) onGo;
-
-  @override
-  State<TodayScreen> createState() => _TodayScreenState();
-}
-
-class _TodayScreenState extends State<TodayScreen> {
-  Map<String, dynamic>? _data;
-  Map<String, dynamic>? _path;
-  String _error = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final api = Get.find<Api>();
-    try {
-      final r = await Future.wait([api.get('/session/today'), api.get('/path').catchError((_) => null)]);
-      if (!mounted) return;
-      setState(() {
-        _data = Map<String, dynamic>.from(r[0] as Map);
-        _path = r[1] == null ? null : Map<String, dynamic>.from(r[1] as Map);
-        _error = '';
-      });
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-    }
-  }
-
-  Future<void> _start() async {
-    final plan = SessionPlan.fromToday(_data!);
-    await Get.to(() => SessionScreen(plan: plan), fullscreenDialog: true);
-    _load();
-  }
+class TodayView extends GetView<TodayController> {
+  const TodayView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final d = _data;
-    if (d == null) {
-      return Center(child: _error.isEmpty ? const CircularProgressIndicator() : Text(_error, style: const TextStyle(color: W.bad)));
-    }
+    return Obx(() {
+      final d = controller.data.value, p = controller.path.value;
+      if (d == null) {
+        return Center(child: controller.error.value.isEmpty ? const CircularProgressIndicator() : Text(controller.error.value, style: const TextStyle(color: W.bad)));
+      }
     final xp = d['xp'] as Map, plan = d['plan'] as Map;
     final reviews = (plan['reviews'] as List).length, fresh = (plan['new'] as List).length, mistakes = (plan['mistakes'] as List).length;
     final sounds = plan['sounds'] as List;
     final goal = (xp['goal'] as num).toInt(), got = (xp['xp'] as num).toInt();
-    final name = Get.find<Auth>().firstName;
+    final name = Get.find<AuthService>().firstName;
     final speak = const {'narrate': ['Hablar 1 min', 'narración del día'], 'picture': ['Hablar 45 s', 'describe una foto'], 'shadowing': ['Shadowing', 'repite como un nativo']}[plan['speak']] ??
         ['Hablar', 'un ejercicio'];
 
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: controller.load,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
@@ -115,15 +79,15 @@ class _TodayScreenState extends State<TodayScreen> {
               const SizedBox(height: 14),
               FilledButton.icon(
                 style: FilledButton.styleFrom(backgroundColor: W.yellow, foregroundColor: W.yellowInk),
-                onPressed: _start,
+                onPressed: controller.start,
                 icon: const Icon(Icons.play_arrow),
                 label: Text((xp['sessions'] as num) > 0 ? 'Otra ronda' : 'Empezar'),
               ),
             ]),
           ),
-          if (_path != null && (_path!['units'] as List).isNotEmpty) ...[
+          if (p != null && (p['units'] as List).isNotEmpty) ...[
             const SizedBox(height: 14),
-            _PathCard(path: _path!, onTap: () => widget.onGo(1)),
+            _PathCard(path: p, onTap: () => Get.find<HomeController>().go(1)),
           ],
           const SizedBox(height: 14),
           Row(children: [
@@ -134,6 +98,7 @@ class _TodayScreenState extends State<TodayScreen> {
         ],
       ),
     );
+    });
   }
 }
 
