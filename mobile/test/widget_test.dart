@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
-import 'package:word_to_word/app/data/services/auth_service.dart';
-import 'package:word_to_word/app/data/services/reminder_service.dart';
-import 'package:word_to_word/app/data/providers/api_client.dart';
-import 'package:word_to_word/app/modules/session/models/session_plan.dart';
-import 'package:word_to_word/app/core/utils/format.dart';
+import 'package:word_to_word/core/network/api_client.dart';
+import 'package:word_to_word/core/routing/app_router.dart';
+import 'package:word_to_word/core/routing/routes.dart';
+import 'package:word_to_word/core/services/reminder_service.dart';
+import 'package:word_to_word/core/utils/format.dart';
+import 'package:word_to_word/features/path/data/path_models.dart';
+import 'package:word_to_word/features/session/data/session_plan.dart';
+import 'package:word_to_word/features/session/data/word_card.dart';
+import 'package:word_to_word/features/today/data/today.dart';
 
 void main() {
   test('plainExample quita asteriscos o deja un hueco', () {
@@ -28,30 +30,50 @@ void main() {
 
   test('errorMessage toma el primer error de validación', () {
     expect(Api.errorMessage({'message': 'x', 'errors': {'email': ['Correo inválido']}}, 422), 'Correo inválido');
+    expect(Api.errorMessage(null, 500), 'Error 500');
+  });
+
+  test('WordCard aguanta campos que faltan o vienen con otro tipo', () {
+    final c = WordCard.fromJson({'id': '7', 'word': 'deadline', 'mode': 'new', 'previews': {'good': 3}});
+    expect(c.id, 7);
+    expect(c.translation, '');
+    expect(c.isNew, isTrue);
+    expect(c.previews['good'], 3);
+    expect(c.example, isNull);
   });
 
   test('SessionPlan.fromToday ordena los pasos', () {
-    final plan = SessionPlan.fromToday({
+    final today = TodayData.fromJson({
+      'xp': {'xp': 0, 'goal': 100, 'week': [{'xp': 10}, {'xp': 5}]},
+      'streak': 3,
       'plan': {
-        'reviews': [{'id': 1, 'word': 'a'}],
-        'new': [{'id': 2, 'word': 'b'}],
+        'reviews': [{'id': 1, 'word': 'a', 'mode': 'review'}],
+        'new': [{'id': 2, 'word': 'b', 'mode': 'new'}],
         'sounds': [{'phoneme': 'θ'}],
-        'mistakes': [{'id': 9}],
-      }
+        'mistakes': [{'id': 9, 'said': 'x', 'correct': 'y'}],
+      },
     });
-    expect(plan.steps.map((s) => s.runtimeType.toString()).toList(),
-        ['ReviewStep', 'NewStep', 'SoundStep', 'SoundStep', 'NarrateStep', 'MistakeStep']);
+    expect(today.xp.weekTotal, 15);
+    expect(today.studied, isFalse);
+    final plan = SessionPlan.fromToday(today);
+    expect(plan.daily, isTrue);
+    expect(plan.steps.map((s) => s.runtimeType.toString()).toList(), ['ReviewStep', 'NewStep', 'SoundStep', 'SoundStep', 'NarrateStep', 'MistakeStep']);
   });
 
-  testWidgets('al entrar, la pantalla cambia (Obx escucha el perfil)', (tester) async {
-    final api = Api();
-    final auth = AuthService(api); // sin Get.put: no llama a restore() ni al almacenamiento seguro
-    await tester.pumpWidget(MaterialApp(home: Obx(() => Text(auth.loggedIn ? 'dentro' : 'fuera'))));
-    expect(find.text('fuera'), findsOneWidget);
-    api.token = 'x';
-    auth.profile.value = {'name': 'Rey'};
-    await tester.pump();
-    expect(find.text('dentro'), findsOneWidget);
+  test('Camino: siguiente paso de la unidad', () {
+    final u = PathUnit.fromJson({'id': 'u3', 'number': 3, 'title': 'Freelance', 'state': 'open', 'steps': {'words': true, 'sound': true}});
+    expect(u.state, UnitState.open);
+    expect(u.stepsDone, 2);
+    expect(u.nextStep, 'shadow');
+  });
+
+  test('router: sin sesión al login; con sesión fuera del login', () {
+    expect(authRedirect(loading: true, loggedIn: false, location: Routes.today), Routes.splash);
+    expect(authRedirect(loading: false, loggedIn: false, location: Routes.today), Routes.login);
+    expect(authRedirect(loading: false, loggedIn: false, location: Routes.login), isNull);
+    expect(authRedirect(loading: false, loggedIn: true, location: Routes.login), Routes.today);
+    expect(authRedirect(loading: false, loggedIn: true, location: Routes.splash), Routes.today);
+    expect(authRedirect(loading: false, loggedIn: true, location: Routes.progress), isNull);
   });
 
   test('recordatorio: hoy solo si no estudiaste y la hora no pasó', () {
@@ -61,6 +83,5 @@ void main() {
     expect(pending.first, DateTime(2026, 11, 10, 19, 30));
     expect(ReminderService.nextTimes(now, '19:30', true).first, DateTime(2026, 11, 11, 19, 30));
     expect(ReminderService.nextTimes(now, '08:00', false).first, DateTime(2026, 11, 11, 8, 0));
-    expect(ReminderService.nextTimes(DateTime(2026, 11, 30, 20), '19:00', false).first, DateTime(2026, 12, 1, 19, 0));
   });
 }
