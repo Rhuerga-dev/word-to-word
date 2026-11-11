@@ -36,11 +36,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Correos en español; los enlaces llevan a la app (/app/), no a vistas de Laravel.
         VerifyEmail::toMailUsing(fn ($notifiable, string $url) => (new MailMessage)
-            ->subject('Confirma tu correo en Word to Word')
+            ->subject('Confirma tu correo en W2W')
             ->greeting('¡Hola, '.$notifiable->name.'!')
             ->line('Confirma tu correo para poder recuperar tu cuenta si olvidas la contraseña.')
             ->action('Confirmar mi correo', $url)
-            ->line('Si no creaste una cuenta en Word to Word, ignora este mensaje.'));
+            ->line('Si no creaste una cuenta en W2W, ignora este mensaje.'));
 
         ResetPassword::toMailUsing(function ($notifiable, string $token) {
             // url() quita la barra final; la añadimos para abrir /app/ directamente.
@@ -50,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
             ]);
 
             return (new MailMessage)
-                ->subject('Crea una contraseña nueva para Word to Word')
+                ->subject('Crea una contraseña nueva para W2W')
                 ->greeting('¡Hola, '.$notifiable->name.'!')
                 ->line('Recibimos una solicitud para cambiar tu contraseña.')
                 ->action('Crear contraseña nueva', $url)

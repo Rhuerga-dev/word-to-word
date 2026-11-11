@@ -50,7 +50,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           padding: const EdgeInsets.all(24),
           children: [
             const SizedBox(height: 40),
-            Text('Word to Word', style: W.display(36)),
+            Text('W2W', style: W.display(36)),
             const SizedBox(height: 8),
             Text(tr('Aprende a hablar inglés con una sesión guiada cada día.'), style: TextStyle(color: W.muted, fontSize: 16)),
             const SizedBox(height: 32),

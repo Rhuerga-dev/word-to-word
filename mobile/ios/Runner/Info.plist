@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Word to Word te escucha para corregir tu pronunciación y conversar en inglés.</string>
+	<string>W2W te escucha para corregir tu pronunciación y conversar en inglés.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

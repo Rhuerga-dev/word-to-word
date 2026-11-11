@@ -25,8 +25,8 @@ class StudyReminder extends Notification
         return (new WebPushMessage)
             ->title($this->title())
             ->body($this->body())
-            ->icon('/app/icons/icon-192.png')
-            ->badge('/app/icons/icon-192.png')
+            ->icon('/app/icons/icon-192.png?v=2')
+            ->badge('/app/icons/icon-192.png?v=2')
             ->tag('daily-reminder')
             ->data(['url' => '/app/'])
             ->options(['TTL' => 6 * 3600]);
@@ -51,6 +51,6 @@ class StudyReminder extends Notification
 
         return $parts
             ? 'Hoy te esperan '.implode(' y ', $parts).'. Son unos minutos.'
-            : 'Abre Word to Word y practica speaking unos minutos.';
+            : 'Abre W2W y practica speaking unos minutos.';
     }
 }

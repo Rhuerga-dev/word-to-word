@@ -1,6 +1,6 @@
 // Service worker de Word to Word: guarda la "cáscara" de la app para que abra rápido.
 // La API (/api/...) nunca se guarda en caché: siempre va a la red.
-const CACHE = "wtw-shell-v27";
+const CACHE = "wtw-shell-v29";
 const SHELL = [
   "/app/",
   "/app/i18n.js?v=5",
@@ -10,9 +10,9 @@ const SHELL = [
   "/app/today.js?v=4",
   "/app/mictest.js?v=1",
   "/app/manifest.webmanifest",
-  "/app/icons/apple-touch-icon.png",
-  "/app/icons/icon-192.png",
-  "/app/icons/icon-512.png",
+  "/app/icons/apple-touch-icon.png?v=2",
+  "/app/icons/icon-192.png?v=2",
+  "/app/icons/icon-512.png?v=2",
 ];
 
 self.addEventListener("install", (e) => {
@@ -61,12 +61,12 @@ self.addEventListener("fetch", (e) => {
 // ===== Recordatorios (notificaciones push) =====
 self.addEventListener("push", (e) => {
   let data = {};
-  try { data = e.data ? e.data.json() : {}; } catch (err) { data = { title: "Word to Word", body: e.data ? e.data.text() : "" }; }
+  try { data = e.data ? e.data.json() : {}; } catch (err) { data = { title: "W2W", body: e.data ? e.data.text() : "" }; }
   const title = data.title || "Hora de practicar inglés";
   e.waitUntil(self.registration.showNotification(title, {
-    body: data.body || "Abre Word to Word y practica unos minutos.",
-    icon: data.icon || "/app/icons/icon-192.png",
-    badge: data.badge || "/app/icons/icon-192.png",
+    body: data.body || "Abre W2W y practica unos minutos.",
+    icon: data.icon || "/app/icons/icon-192.png?v=2",
+    badge: data.badge || "/app/icons/icon-192.png?v=2",
     tag: data.tag || "daily-reminder",
     data: data.data || { url: "/app/" },
   }));

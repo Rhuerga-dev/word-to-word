@@ -19,7 +19,7 @@ class WordToWordApp extends ConsumerWidget {
     final version = ref.watch(translationsProvider); // diccionario del servidor
     Lang.english = english;
     return MaterialApp.router(
-      title: 'Word to Word',
+      title: 'W2W',
       debugShowCheckedModeBanner: false,
       theme: W.theme(),
       routerConfig: ref.watch(routerProvider),
