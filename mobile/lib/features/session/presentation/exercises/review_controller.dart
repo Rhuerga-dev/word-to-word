@@ -6,6 +6,7 @@ import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../../../core/utils/format.dart';
+import '../../../../core/widgets/aid_box.dart';
 
 class ReviewState {
   const ReviewState({this.shown = false, this.busy = false, this.grade, this.error, this.xp = 0});
@@ -28,6 +29,8 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
 
   /// "help": en el escalón 1 la traducción; después, una pista en inglés (definición o ejemplo).
   Future<void> _help(HandsFreeController hf) async {
+    final aid = aidOf(card);
+    if (aid != null && aid.isNotEmpty) return hf.say(aid, lang: 'es');
     if (_step == 1) return hf.say(card.translation, lang: 'es');
     final hint = card.englishOnly ? card.example : (card.definition ?? card.example);
     if (hint != null) await hf.say(plainExample(hint, cloze: card.englishOnly));
@@ -70,6 +73,8 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
       final g = parseGrade(h.text);
       if (g != null) {
         await rate(g);
+        final aid = aidOf(card);
+        if (g == 'again' && aid != null && aid.isNotEmpty) await hf.say(aid, lang: 'es');
         return state.outcome;
       }
     }

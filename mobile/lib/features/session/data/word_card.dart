@@ -12,6 +12,9 @@ class WordCard {
     this.englishOnly = false,
     this.hideTranslation = false,
     this.noSpanish = false,
+    this.aid,
+    this.fails = 0,
+    this.level = 0,
     this.isNew = false,
     this.previews = const {},
   });
@@ -29,6 +32,10 @@ class WordCard {
   /// Escalera de español: la traducción no se muestra de entrada (2–3) o no se muestra nunca (4).
   final bool hideTranslation;
   final bool noSpanish;
+
+  /// Tu escena AID (Acción Irracional Detallada) para recordarla; [fails] veces seguidas olvidada.
+  final String? aid;
+  final int fails, level;
   final bool isNew;
 
   /// Días hasta el próximo repaso según la nota: again, hard, good, easy.
@@ -44,6 +51,9 @@ class WordCard {
         englishOnly: asBool(j['english_only']),
         hideTranslation: asBool(j['hide_translation']),
         noSpanish: asBool(j['no_spanish']),
+        aid: asStringOrNull(j['aid']),
+        fails: asInt(j['fails']),
+        level: asInt(j['level']),
         isNew: j['mode'] == 'new',
         previews: {for (final e in asMap(j['previews']).entries) e.key: asInt(e.value)},
       );

@@ -11,6 +11,7 @@ import '../../features/progress/presentation/progress_page.dart';
 import '../../features/session/data/session_plan.dart';
 import '../../features/session/presentation/session_page.dart';
 import '../../features/today/presentation/today_page.dart';
+import '../../features/words/presentation/words_page.dart';
 import 'routes.dart';
 
 /// Decide a dónde va cada ruta según la sesión. Pura, para poder probarla sin pantallas.
@@ -48,6 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [GoRoute(path: Routes.progress, builder: (_, __) => const ProgressPage())]),
         ],
       ),
+      GoRoute(path: Routes.words, parentNavigatorKey: rootKey, builder: (_, __) => const WordsPage()),
       GoRoute(
         path: Routes.session,
         parentNavigatorKey: rootKey,

@@ -7,6 +7,9 @@ abstract class Routes {
   static const practice = '/practice';
   static const progress = '/progress';
 
+  /// Tus palabras: el plan del día de fichas con repaso espaciado.
+  static const words = '/words';
+
   /// La sesión recibe su SessionPlan en `extra`.
   static const session = '/session';
 }

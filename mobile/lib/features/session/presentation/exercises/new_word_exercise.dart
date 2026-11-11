@@ -12,6 +12,7 @@ import 'exercise_outcome.dart';
 import 'new_word_controller.dart';
 import '../../../../core/l10n/tr.dart';
 import '../../../../core/widgets/spanish_peek.dart';
+import '../../../../core/widgets/aid_box.dart';
 
 /// Palabra nueva estilo Libreta: la escuchas, la dices y la marcas como aprendida.
 class NewWordExercise extends ConsumerStatefulWidget {
@@ -61,8 +62,9 @@ class _NewWordExerciseState extends ConsumerState<NewWordExercise> {
             if (c.exampleEs != null) Text(c.exampleEs!, style: const TextStyle(color: W.muted)),
           ],
         ]),
+        AidBox(card: c),
         const SizedBox(height: 14),
-        Text(tr('Dila en voz alta dos veces y úsala en una frase tuya.'), style: TextStyle(color: W.muted)),
+        Text(tr('Dila en voz alta dos veces y úsala en una frase tuya.'), style: const TextStyle(color: W.muted)),
       ],
     );
   }

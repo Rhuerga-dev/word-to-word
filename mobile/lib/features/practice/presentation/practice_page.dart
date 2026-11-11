@@ -46,7 +46,7 @@ class PracticePage extends ConsumerWidget {
           _tile(Icons.timer_outlined, tr('Narración'), tr('1 minuto sin parar'), () => run(const [NarrateStep()], tr('Narración'))),
           _label(tr('Palabras y sonidos')),
           _tile(Icons.style_outlined, tr('Fichas'), d.cards.isEmpty ? tr('nada pendiente hoy') : tr('{0} para hoy', [d.cards.length]),
-              d.cards.isEmpty ? null : () => run([for (final c in d.cards) c.isNew ? NewStep(c) : ReviewStep(c)], tr('Fichas'))),
+              () => context.push(Routes.words)),
           _tile(Icons.track_changes, tr('Pronunciación'), '/$ph/ · ${soundWords[ph]!.join(', ')}', () => run(SessionPlan.sound(ph).steps, tr('Sonido'))),
           const SizedBox(height: 14),
           Text(tr('Conversación, Describe la imagen, Shadowing y el chat escrito siguen en la web por ahora.'), style: TextStyle(color: W.muted, fontSize: 14)),

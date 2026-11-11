@@ -104,6 +104,17 @@ class _TodayBody extends ConsumerWidget {
               ),
           ]),
         ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: const CircleAvatar(backgroundColor: Color(0xFFFFF6C7), child: Icon(Icons.style, color: Color(0xFFB4560A))),
+            title: Text(tr('Tus palabras'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(tr('Nuevas de hoy y repasos que tocan, con tu escena AID')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(Routes.words),
+          ),
+        ),
         if (path != null && path!.units.isNotEmpty) ...[
           const SizedBox(height: 12),
           _PathCard(path: path!, onTap: () => context.go(Routes.path)),
@@ -112,7 +123,7 @@ class _TodayBody extends ConsumerWidget {
         Row(children: [
           Expanded(child: _Mini(tr('Hablaste hoy'), '${d.minutes} min'.replaceAll('.', ','))),
           const SizedBox(width: 10),
-          Expanded(child: _Mini('Esta semana', '${xp.weekTotal} XP')),
+          Expanded(child: _Mini(tr('Esta semana'), '${xp.weekTotal} XP')),
         ]),
       ],
     );

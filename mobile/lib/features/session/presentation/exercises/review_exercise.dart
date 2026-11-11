@@ -12,6 +12,7 @@ import 'exercise_outcome.dart';
 import 'review_controller.dart';
 import '../../../../core/l10n/tr.dart';
 import '../../../../core/widgets/spanish_peek.dart';
+import '../../../../core/widgets/aid_box.dart';
 
 /// Ficha de repaso estilo Libreta: la dices en voz alta, ves la respuesta y te pones nota.
 class ReviewExercise extends ConsumerStatefulWidget {
@@ -24,6 +25,8 @@ class ReviewExercise extends ConsumerStatefulWidget {
 }
 
 class _ReviewExerciseState extends ConsumerState<ReviewExercise> {
+  bool _hint = false;
+
   static const _grades = [('again', 'Olvidé'), ('hard', 'Difícil'), ('good', 'Bien'), ('easy', 'Fácil')];
   static const _defaultDays = {'again': 1, 'hard': 1, 'good': 3, 'easy': 7};
 
@@ -87,9 +90,15 @@ class _ReviewExerciseState extends ConsumerState<ReviewExercise> {
             else
               Text('= ${c.translation}', style: W.hand(28)),
           ] else
-            Padding(padding: EdgeInsets.only(top: 12), child: Text(tr(c.hideTranslation ? 'Explícalo en voz alta en inglés antes de ver la respuesta.' : 'Dilo en voz alta antes de ver la respuesta.'), style: TextStyle(color: W.muted))),
+            Padding(padding: const EdgeInsets.only(top: 12), child: Text(tr(c.hideTranslation ? 'Explícalo en voz alta en inglés antes de ver la respuesta.' : 'Dilo en voz alta antes de ver la respuesta.'), style: const TextStyle(color: W.muted))),
         ],
+        // Pista AID antes de ver la respuesta.
+        if (!s.shown && (aidOf(c)?.isNotEmpty ?? false))
+          _hint
+              ? Padding(padding: const EdgeInsets.only(top: 10), child: Text('💡 ${aidOf(c)}', style: W.hand(22, color: W.streak)))
+              : TextButton.icon(onPressed: () => setState(() => _hint = true), icon: const Icon(Icons.lightbulb_outline), label: Text(tr('¿Necesitas una pista?'))),
       ]),
+      if (s.shown) AidBox(card: c, nudge: (s.grade == 'again' || c.fails >= 2) && !(aidOf(c)?.isNotEmpty ?? false)),
     ]);
   }
 }
