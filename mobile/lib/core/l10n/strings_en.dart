@@ -232,4 +232,10 @@ const stringsEn = <String, String>{
   "Oído: reconoce {0} palabra al oírla": "Listening: recognize {0} word by ear",
   "Oído: reconoce {0} palabras al oírlas": "Listening: recognize {0} words by ear",
   "de oído": "by ear",
+  "AirPods": "AirPods",
+  "Mantener la cancelación de ruido al hablar": "Keep noise cancellation when you speak",
+  "Apaga la detección de conversación de los AirPods mientras practicas y la vuelve a dejar como estaba al terminar.": "Turns off the AirPods' conversation detection while you practice and restores it when you finish.",
+  "Experimental: funciona en Android 16 QPR3 o más nuevo (Pixel, OnePlus, Oppo, realme). En otros teléfonos no hace nada.": "Experimental: works on Android 16 QPR3 or newer (Pixel, OnePlus, Oppo, realme). On other phones it does nothing.",
+  "Hace falta el permiso de dispositivos cercanos (Bluetooth).": "The nearby devices (Bluetooth) permission is needed.",
+  "Activado. Funcionará cuando practiques con los AirPods conectados.": "On. It will work when you practice with your AirPods connected.",
 };

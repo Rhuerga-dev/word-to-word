@@ -11,6 +11,7 @@ import '../data/progress_models.dart';
 import '../data/progress_repository.dart';
 import 'progress_providers.dart';
 import '../../../core/l10n/tr.dart';
+import '../../../core/services/airpods_service.dart';
 
 /// Progreso: números claros, recordatorio, liga de la semana y logros.
 class ProgressPage extends ConsumerWidget {
@@ -48,6 +49,10 @@ class ProgressPage extends ConsumerWidget {
             for (final t in p.todo) Padding(padding: const EdgeInsets.only(top: 8), child: Text(t)),
             _h('Tu español'),
             const _SpanishCard(),
+            if (AirPodsService.supported) ...[
+              _h(tr('AirPods')),
+              const _AirPodsCard(),
+            ],
             _h(tr('Recordatorio diario')),
             _ReminderCard(studiedToday: p.speakingToday > 0),
             _h(tr('Liga de la semana')),
@@ -280,6 +285,49 @@ class _SpanishCardState extends ConsumerState<_SpanishCard> {
           if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_msg, style: const TextStyle(color: W.bad))),
         ]),
       ),
+    );
+  }
+}
+
+/// AirPods en Android: apagar la detección de conversación durante la práctica (opcional, experimental).
+class _AirPodsCard extends ConsumerStatefulWidget {
+  const _AirPodsCard();
+
+  @override
+  ConsumerState<_AirPodsCard> createState() => _AirPodsCardState();
+}
+
+class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
+  String _msg = '';
+
+  Future<void> _toggle(bool on) async {
+    final svc = ref.read(airPodsProvider.notifier);
+    final ok = await svc.setEnabled(on);
+    var msg = '';
+    if (on && !ok) msg = tr('Hace falta el permiso de dispositivos cercanos (Bluetooth).');
+    if (on && ok && !await svc.connected()) msg = tr('Activado. Funcionará cuando practiques con los AirPods conectados.');
+    if (mounted) setState(() => _msg = msg);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final on = ref.watch(airPodsProvider);
+    return Card(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SwitchListTile(
+          title: Text(tr('Mantener la cancelación de ruido al hablar')),
+          subtitle: Text(tr('Apaga la detección de conversación de los AirPods mientras practicas y la vuelve a dejar como estaba al terminar.')),
+          value: on,
+          onChanged: _toggle,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Text(
+            _msg.isNotEmpty ? _msg : tr('Experimental: funciona en Android 16 QPR3 o más nuevo (Pixel, OnePlus, Oppo, realme). En otros teléfonos no hace nada.'),
+            style: const TextStyle(color: W.muted, fontSize: 13),
+          ),
+        ),
+      ]),
     );
   }
 }

@@ -7,6 +7,7 @@ import '../../today/presentation/today_providers.dart';
 import '../data/session_plan.dart';
 import '../data/session_repository.dart';
 import 'exercises/exercise_outcome.dart';
+import '../../../core/services/airpods_service.dart';
 
 /// Avance de una sesión.
 class SessionState {
@@ -36,7 +37,13 @@ class SessionController extends AutoDisposeFamilyNotifier<SessionState, SessionP
   int get minutes => DateTime.now().difference(started).inMinutes;
 
   @override
-  SessionState build(SessionPlan plan) => const SessionState();
+  SessionState build(SessionPlan plan) {
+    // AirPods (Android, si lo activaste): que no se quite la cancelación de ruido cada vez que hablas.
+    final airpods = ref.read(airPodsProvider.notifier);
+    airpods.sessionStarted();
+    ref.onDispose(airpods.sessionEnded);
+    return const SessionState();
+  }
 
   /// Un ejercicio terminó (con el dedo o por voz): se suman sus puntos y se pasa al siguiente.
   void done(ExerciseOutcome o) {
