@@ -52,6 +52,7 @@ function tdRender() {
     <section class="td-card" aria-labelledby="tdTitle">
       <h2 id="tdTitle">${x.sessions ? "Otra ronda" : "Sesión de hoy"} <small>unos 10 min</small></h2>
       <div class="td-steps">
+        ${(p.ear || []).length ? `<div class="td-step"><b>Oído · ${p.ear.length} ${p.ear.length === 1 ? "palabra" : "palabras"}</b><span>reconócelas al oírlas</span></div>` : ""}
         ${p.reviews.length || p.new.length ? `<div class="td-step"><b>${p.reviews.length + p.new.length} fichas</b><span>${p.reviews.length} repasos · ${p.new.length} nuevas</span></div>` : `<div class="td-step done"><b>Fichas</b><span>al día</span></div>`}
         ${sound ? `<div class="td-step"><b>Sonido /${esc(sound.phoneme)}/</b><span>tu más débil</span></div>` : `<div class="td-step"><b>Pronunciación</b><span>una palabra difícil</span></div>`}
         <div class="td-step"><b>${esc(sp1[0])}</b><span>${esc(sp1[1])}</span></div>
@@ -199,6 +200,8 @@ async function sessStart() {
   let d = td.data;
   try { d = td.data = await api("/session/today"); } catch (e) { if (!d) { td.error = e.message; return tdRender(); } }
   const p = d.plan, steps = [];
+  // Primero el oído, con la cabeza fresca: reconocer al escuchar, sin texto y sin traducir.
+  (p.ear || []).forEach(e => steps.push({ type: "ear", item: e }));
   p.reviews.forEach(c => steps.push({ type: "review", card: c }));
   p.new.forEach(c => steps.push({ type: "new", card: c }));
   const sound = tdSound(p);
@@ -233,7 +236,7 @@ function sessNext() {
   sessProgress();
   const st = sess.steps[sess.i];
   if (!st) return sess.custom ? sessEndCustom() : sessEnd();
-  ({ review: sessReview, new: sessNew, sound: sessSoundStep, speak: sessSpeak, mistakes: sessMistakes })[st.type](st);
+  ({ ear: sessEar, review: sessReview, new: sessNew, sound: sessSoundStep, speak: sessSpeak, mistakes: sessMistakes })[st.type](st);
 }
 
 function sessQuit() {
@@ -296,6 +299,61 @@ function sessActions(html) {
   let a = $("sessActions");
   if (!a) { a = document.createElement("div"); a.id = "sessActions"; a.className = "sess-actions"; $("sessionView").insertBefore(a, $("sessSheet")); }
   a.innerHTML = html; a.hidden = !html;
+}
+
+// ---------- Oído: oyes una palabra que ya aprendiste (sin verla) y eliges qué significa, rápido ----------
+const EAR_FAST_MS = 3000;
+function earPlay(text) {
+  if (useTts()) return playTts(text, "en", false).catch(() => earBrowser(text));
+  return earBrowser(text);
+}
+function earBrowser(text) {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window)) return resolve();
+    const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; if (voice) u.voice = voice; u.rate = 0.9;
+    u.onend = u.onerror = () => resolve(); speechSynthesis.cancel(); speechSynthesis.speak(u);
+    setTimeout(resolve, 3000 + text.length * 120);
+  });
+}
+function sessEar(st) {
+  const e = st.item, first = sess.steps.findIndex(x => x.type === "ear") === sess.i;
+  let tEnd = 0, answered = false;
+  sessStage(`<span class="sess-kind">Oído · ¿qué oíste?</span>
+    ${first ? `<p class="note">Escucha la palabra y elige qué significa. Rápido, sin traducir: así la reconocerás cuando te la digan.</p>` : ""}
+    <button type="button" class="ear-play" id="earPlay" aria-label="Oír otra vez">${ICON_SPK}</button>
+    <p class="note" id="earHint">Escuchando…</p>
+    <div class="ear-opts" id="earOpts" hidden>${e.options.map((o, i) => `<button type="button" class="ear-opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>
+    <div id="earReveal"></div>`);
+  sessActions("");
+  const play = async () => {
+    $("earPlay").classList.add("on"); $("earHint").textContent = "Escuchando…";
+    await earPlay(e.word);
+    if (!$("earPlay")) return;
+    $("earPlay").classList.remove("on");
+    tEnd = Date.now();
+    $("earOpts").hidden = false;
+    $("earHint").textContent = "¿Qué significa? Toca la respuesta.";
+  };
+  $("earPlay").onclick = () => { if (!answered) play(); else earPlay(e.word); };
+  $("earOpts").querySelectorAll(".ear-opt").forEach(b => b.onclick = async () => {
+    if (answered || !tEnd) return;
+    answered = true;
+    const i = +b.dataset.i, ok = i === e.answer, ms = Date.now() - tEnd;
+    $("earOpts").querySelectorAll(".ear-opt").forEach(x => { x.disabled = true; if (+x.dataset.i === e.answer) x.classList.add("ok"); });
+    if (!ok) b.classList.add("bad");
+    $("earReveal").innerHTML = `<p class="sess-word" style="font-size:36px">${esc(e.word)}</p>${e.example ? `<p class="sess-ex">${esc(e.example)}</p>` : ""}`;
+    $("earHint").textContent = "";
+    sess.graded++; if (ok) sess.right++;
+    let r = {}; try { r = await api(`/words/${e.id}/ear`, { method: "POST", body: { ok, ms } }); } catch (err) { r = { error: err.message }; }
+    sessAdd(r.xp_gained);
+    const secs = (ms / 1000).toFixed(1).replace(".", ",");
+    const fast = ok && ms <= EAR_FAST_MS;
+    sessSheet(r.error ? `<h3>No se guardó</h3><p>${esc(r.error)}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`
+      : `<h3>${fast ? (r.automatic ? "¡Automática! 🎧" : "¡Al oído!") : ok ? "Bien, pero tardaste" : "Era esta"} ${r.xp_gained ? "+" + r.xp_gained + " XP" : ""}</h3>`
+        + `<p>${fast ? "La reconociste en " + secs + " s." : ok ? secs + " s: aún la traduces. Mañana otra vez." : "Mañana la vuelves a oír."}</p>`
+        + `<button type="button" class="primary sess-big" data-next>Continuar</button>`, fast ? "ok" : ok ? "ok" : "bad");
+  });
+  play();
 }
 
 // Palabra nueva: la ves, la oyes y la marcas como aprendida.

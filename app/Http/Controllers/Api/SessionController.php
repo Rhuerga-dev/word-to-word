@@ -27,6 +27,9 @@ class SessionController extends Controller
 
     public const MISTAKES = 3;
 
+    /** Palabras por oído al empezar (el primer paso: reconocerlas al escucharlas). */
+    public const EAR = 5;
+
     /** Ejercicio de hablar de cada día (se rota). */
     public const SPEAK_MODES = ['narrate', 'picture', 'shadowing'];
 
@@ -61,6 +64,8 @@ class SessionController extends Controller
             'xp' => $this->xp->today($user),
             'streak' => $this->srs->stats($user)['streak'],
             'plan' => [
+                // Primero el oído, con la cabeza fresca: palabras que ya aprendiste, solo con sonido.
+                'ear' => app(\App\Services\EarService::class)->due($user, self::EAR, $step),
                 'reviews' => $reviews->values(),
                 'new' => $new->values(),
                 'sounds' => $sounds,

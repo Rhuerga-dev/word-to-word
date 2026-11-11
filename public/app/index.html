@@ -715,6 +715,16 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 .mic-test .mt-tips li{padding:8px 10px;border-radius:10px;background:rgba(183,121,31,.16);color:inherit}
 .mic-test .note{overflow-wrap:anywhere}
 .mic-test .mt-bad{color:#c43c3c;font-weight:700}
+
+/* Oído: oír la palabra y elegir su significado */
+.ear-play{width:120px;height:120px;border-radius:50%;margin:10px auto;display:flex;align-items:center;justify-content:center;background:var(--accent,#1f4fd1);color:#fff;border:0;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.ear-play svg{width:52px;height:52px}
+.ear-play.on{box-shadow:0 0 0 10px rgba(31,79,209,.25),0 6px 0 rgba(0,0,0,.25)}
+.ear-opts{display:grid;gap:10px;width:100%}
+.ear-opt{min-height:56px;padding:12px 14px;border-radius:14px;font-size:17px;text-align:left;line-height:1.3}
+.ear-opt.ok{border-color:#1e8a55;background:rgba(30,138,85,.15)}
+.ear-opt.bad{border-color:#c43c3c;background:rgba(196,60,60,.15)}
+@media (prefers-reduced-motion:no-preference){.ear-play.on{transition:box-shadow .3s}}
 </style>
 
 <div class="wrap">
@@ -883,6 +893,6 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 <script src="/app/app.js?v=14"></script>
 <script src="/app/speak.js?v=10"></script>
 <script src="/app/progress.js?v=4"></script>
-<script src="/app/today.js?v=4"></script>
+<script src="/app/today.js?v=5"></script>
 <script src="/app/mictest.js?v=3"></script>
 </body></html>

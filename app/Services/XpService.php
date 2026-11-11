@@ -14,12 +14,12 @@ class XpService
     /** Puntos por acción y tope diario de cada fuente. */
     public const POINTS = [
         'learn' => 5, 'review' => 3, 'review_again' => 1, 'mistake' => 5, 'mistake_fail' => 1,
-        'pronunciation' => 1, 'lab' => 15, 'session' => 10, 'unit' => 50,
+        'pronunciation' => 1, 'lab' => 15, 'session' => 10, 'unit' => 50, 'ear' => 2,
     ];
 
     public const DAILY_CAP = [
         'learn' => 250, 'review' => 300, 'review_again' => 50, 'mistake' => 150, 'mistake_fail' => 20,
-        'pronunciation' => 60, 'lab' => 60, 'session' => 30, 'speak' => 300, 'unit' => 100,
+        'pronunciation' => 60, 'lab' => 60, 'session' => 30, 'speak' => 300, 'unit' => 100, 'ear' => 100,
     ];
 
     public function __construct(private SrsService $srs) {}

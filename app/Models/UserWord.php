@@ -9,7 +9,7 @@ class UserWord extends Model
 {
     protected $fillable = [
         'user_id', 'word_id', 'level', 'next_review', 'introduced_at',
-        'fails', 'reviews', 'aid', 'best_pron_score', 'last_pron_score',
+        'fails', 'reviews', 'aid', 'best_pron_score', 'last_pron_score', 'ear_level', 'ear_next', 'ear_ms',
     ];
 
     protected function casts(): array
@@ -17,6 +17,7 @@ class UserWord extends Model
         return [
             'next_review' => 'date',
             'introduced_at' => 'date',
+            'ear_next' => 'date:Y-m-d',
         ];
     }
 

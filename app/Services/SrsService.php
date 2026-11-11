@@ -175,6 +175,8 @@ class SrsService
         return [
             'today' => $today->toDateString(),
             'learned' => (clone $learned)->count(),
+            // Las que reconoces de oído sin pensar (ejercicio de Oído).
+            'ear_automatic' => (clone $learned)->where('ear_level', '>=', \App\Services\EarService::AUTOMATIC_LEVEL)->count(),
             'mastered' => (clone $learned)->where('level', '>=', config('vocab.mastered_level'))->count(),
             'total_words' => Word::whereNotNull('translation')->count(),
             'streak' => $streakAlive ? $user->streak : 0,
