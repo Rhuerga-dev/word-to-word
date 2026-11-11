@@ -11,6 +11,25 @@ use RuntimeException;
  */
 class ClaudeService
 {
+    /** Idioma de las explicaciones al alumno: es · simple (inglés sencillo) · en (escalera de español). */
+    private string $lang = 'es';
+
+    public function explainIn(string $lang): static
+    {
+        $this->lang = in_array($lang, ['es', 'simple', 'en'], true) ? $lang : 'es';
+
+        return $this;
+    }
+
+    private function inLang(): string
+    {
+        return match ($this->lang) {
+            'simple' => 'in very simple English (short sentences, common words)',
+            'en' => 'in English',
+            default => 'in Spanish',
+        };
+    }
+
     public function enabled(): bool
     {
         return filled(config('vocab.anthropic.key'));
@@ -165,15 +184,16 @@ TXT;
     {
         $level = $level ?: 'A2-B1';
         $types = implode(', ', array_keys(config('speaking.mistake_categories')));
+        $in = $this->inLang();
         $system = <<<TXT
 You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
 The student spoke for about one minute about: "{$topic}". What you get is a speech-to-text transcript: ignore punctuation, capitalization and spelling.
 Answer with exactly these lines:
 - A line starting with "COMMENT:" in simple English: 1-2 friendly sentences reacting to WHAT they said (not the grammar).
 - A line starting with "BETTER:" with a more natural version of what they said, same ideas, same level, max 70 words.
-- A line starting with "FEEDBACK:" in Spanish: one encouraging sentence about how they did.
+- A line starting with "FEEDBACK:" {$in}: one encouraging sentence about how they did.
 - For each real mistake (max 5, the most useful ones), a line exactly like:
-  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words> | <type>
+  FIX: <the student's words> => <the natural correct version> | <why, {$in}, max 12 words> | <type>
   where <type> is one of: {$types}
 TXT;
         $out = self::parseTurn($this->message($system, [['role' => 'user', 'content' => $text]], 900), 5);
@@ -193,6 +213,7 @@ TXT;
     {
         $level = $level ?: 'A2-B1';
         $types = implode(', ', array_keys(config('speaking.mistake_categories')));
+        $in = $this->inLang();
         $system = <<<TXT
 You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
 The student looked at the attached photo and described it out loud. You get a speech-to-text transcript: ignore punctuation, capitalization and spelling.
@@ -200,9 +221,9 @@ Answer with exactly these lines:
 - "COMMENT:" in simple English, 1-2 friendly sentences about how well they described the photo (what they saw and what they missed).
 - Up to 5 lines "MISSED: <useful English word or short phrase for something clearly visible that they did not name> | <Spanish translation> | <short example sentence about the photo with the word between *asterisks*>". Prefer common, useful words for their level.
 - "BETTER:" a natural description of the photo at their level using their ideas plus the missed words, max 70 words.
-- "FEEDBACK:" in Spanish, one encouraging sentence.
+- "FEEDBACK:" {$in}, one encouraging sentence.
 - For each real grammar or word mistake (max 4), a line exactly like:
-  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words> | <type>
+  FIX: <the student's words> => <the natural correct version> | <why, {$in}, max 12 words> | <type>
   where <type> is one of: {$types}
 TXT;
         $messages = [['role' => 'user', 'content' => [
@@ -268,6 +289,7 @@ TXT;
     {
         $level = $level ?: 'A2-B1';
         $transcript = collect($messages)->map(fn ($m) => ($m['role'] === 'user' ? 'STUDENT' : 'PARTNER').': '.$m['content'])->implode("\n");
+        $in = $this->inLang();
         $system = <<<TXT
 You grade a speaking test of a Spanish-speaking adult learner of English, level {$level} (CEFR).
 Situation: {$situation}. The student's lines are speech-to-text transcripts: ignore punctuation, capitalization and spelling.
@@ -275,7 +297,7 @@ Grade ONLY the student's lines from 0 to 10 for THEIR level: could they handle t
 and be understood? Grammar mistakes matter only when they block understanding. 6 = handled it well enough for their level.
 Answer with exactly two lines:
 SCORE: <0-10>
-FEEDBACK: <in Spanish, max 3 short sentences: what went well and the one thing to improve>
+FEEDBACK: <{$in}, max 3 short sentences: what went well and the one thing to improve>
 TXT;
         $text = $this->message($system, [['role' => 'user', 'content' => "Transcript:\n".$transcript]], 300);
         $score = preg_match('/SCORE:\s*(\d+)/i', $text, $m) ? max(0, min(10, (int) $m[1])) : 0;
@@ -305,6 +327,7 @@ TXT;
         $input = $voice
             ? 'The student is SPEAKING: their messages are speech-to-text transcripts. Ignore punctuation, capitalization and spelling; correct only grammar, word choice and natural phrasing.'
             : 'The student is typing.';
+        $in = $this->inLang();
         $system = <<<TXT
 You are an English speaking partner for a Spanish-speaking adult (Latin American) who lives in Miami. Their level is about {$level} (CEFR).
 Role-play: {$role}
@@ -313,9 +336,9 @@ Target words of the day (use them only when it fits naturally; praise the studen
 Rules:
 - Keep each reply short (1-3 sentences, spoken style) and end with ONE question so the student keeps talking.
 - Use simple, natural American English for their level. If the student seems lost, rephrase more simply.
-- After your reply, add a line starting with "FEEDBACK:" written in Spanish: a short, encouraging note about the student's last message (max 2 sentences).
+- After your reply, add a line starting with "FEEDBACK:" written {$in}: a short, encouraging note about the student's last message (max 2 sentences).
 - Then, for each real mistake in the student's last message (max 2, skip tiny ones), add a line exactly like:
-  FIX: <the student's words> => <the natural correct version> | <why, in Spanish, max 12 words> | <type>
+  FIX: <the student's words> => <the natural correct version> | <why, {$in}, max 12 words> | <type>
   where <type> is one of: {$types}
 - Then add a line starting with "USED:" listing the target words the student used correctly in their last message, comma separated (or "none").
 TXT;

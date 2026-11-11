@@ -14,6 +14,8 @@ Schedule::command('tts:prune')->daily()->withoutOverlapping();
 Schedule::command('units:sync')->dailyAt('04:00')->withoutOverlapping();
 
 Schedule::command('words:define --limit=200')->dailyAt('04:10')->withoutOverlapping();
+// Escalera de español: las palabras que aún nadie estudia también reciben definición en inglés (las más comunes primero).
+Schedule::command('words:define --all --limit=200')->dailyAt('04:40')->withoutOverlapping();
 
 // Borra de la base de datos los tokens de la API ya caducados.
 Schedule::command('sanctum:prune-expired --hours=24')->daily();

@@ -88,5 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/speaking/mistakes', [SpeakingController::class, 'mistakes']);
     Route::post('/speaking/mistakes/{mistake}/review', [SpeakingController::class, 'review'])->middleware('throttle:60,1');
     // Solo transcribir: órdenes de voz y notas del modo manos libres de la app.
+    // Escalera de español.
+    Route::get('/spanish', [\App\Http\Controllers\Api\SpanishController::class, 'show']);
+    Route::put('/spanish', [\App\Http\Controllers\Api\SpanishController::class, 'update']);
+    Route::post('/spanish/use', [\App\Http\Controllers\Api\SpanishController::class, 'use'])->middleware('throttle:60,1');
+    Route::post('/spanish/translate', [\App\Http\Controllers\Api\SpanishController::class, 'translate'])->middleware('throttle:30,1');
     Route::post('/speech/transcribe', [SpeakingController::class, 'transcribe'])->middleware('throttle:60,1');
 });

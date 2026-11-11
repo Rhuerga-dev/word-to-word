@@ -60,6 +60,7 @@ class User extends Authenticatable implements MustVerifyEmail
                 'time' => $this->reminder_time,
                 'timezone' => $this->timezone,
             ],
+            'spanish' => app(\App\Services\SpanishService::class)->summary($this),
         ];
     }
 }

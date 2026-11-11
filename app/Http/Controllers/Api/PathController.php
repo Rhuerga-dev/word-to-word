@@ -33,7 +33,7 @@ class PathController extends Controller
         $known = UserWord::where('user_id', $user->id)->whereNotNull('introduced_at')->pluck('word_id')->flip();
         $cards = $this->units->words($this->units->find($unit))
             ->reject(fn (Word $w) => isset($known[$w->id]))->take(5)
-            ->map(fn (Word $w) => StudyController::cardFor($w, null, 'new', $this->srs))->values();
+            ->map(fn (Word $w) => StudyController::cardFor($w, null, 'new', $this->srs, app(\App\Services\SpanishService::class)->step($user)))->values();
 
         return ['unit' => $unit, 'cards' => $cards];
     }
@@ -78,7 +78,7 @@ class PathController extends Controller
         }
 
         try {
-            [$score, $feedback] = $claude->gradeConversation($data['messages'], (string) config("speaking.scenarios.{$u['scenario']}.title"), $user->cefr_level);
+            [$score, $feedback] = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->gradeConversation($data['messages'], (string) config("speaking.scenarios.{$u['scenario']}.title"), $user->cefr_level);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'La IA no respondió. Intenta otra vez.');

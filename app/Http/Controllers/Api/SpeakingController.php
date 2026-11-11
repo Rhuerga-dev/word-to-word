@@ -119,7 +119,7 @@ class SpeakingController extends Controller
         $user = $request->user();
 
         try {
-            $out = $claude->narration($session->topic ?? 'free topic', $data['text'], $user->cefr_level);
+            $out = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->narration($session->topic ?? 'free topic', $data['text'], $user->cefr_level);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'La IA no respondió. Intenta otra vez.');
@@ -187,7 +187,7 @@ class SpeakingController extends Controller
         $session->update(['topic' => mb_substr('photo: '.$data['image_url'], 0, 200)]);
 
         try {
-            $out = $claude->describePicture($data['image_url'], $data['text'], $user->cefr_level);
+            $out = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->describePicture($data['image_url'], $data['text'], $user->cefr_level);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'La IA no respondió. Intenta otra vez.');

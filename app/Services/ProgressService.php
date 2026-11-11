@@ -94,6 +94,8 @@ class ProgressService
             ],
         ];
 
+        $data['spanish'] = app(SpanishService::class)->summary($user);
+
         return $data + ['todo' => $this->todo($data)];
     }
 
@@ -129,6 +131,10 @@ class ProgressService
         $top = $d['mistakes']['by_category'][0] ?? null;
         if ($top && $top['count'] >= 3 && $top['category'] !== 'other') {
             $add('🧭', "Tu error más repetido: {$top['label']} ({$top['count']}). Fíjate en eso al hablar.");
+        }
+        $sp = $d['spanish'] ?? null;
+        if ($sp && $sp['step'] >= 2 && $sp['today'] > 0) {
+            $add('🇪🇸', "Hoy pediste español {$sp['today']} ".($sp['today'] === 1 ? 'vez' : 'veces').'. Mañana intenta explicarlo en inglés con otras palabras.');
         }
         $reaction = $d['speaking']['reaction'];
         if ($reaction && end($reaction) > 3) {

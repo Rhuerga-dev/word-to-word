@@ -38,8 +38,9 @@ class SessionController extends Controller
         $today = $this->srs->today($user);
         $q = $this->srs->queue($user);
 
-        $reviews = $q['reviews']->take(self::REVIEWS)->map(fn (UserWord $uw) => StudyController::cardFor($uw->word, $uw, 'review', $this->srs));
-        $new = $q['new']->take(self::NEW_WORDS)->map(fn (Word $w) => StudyController::cardFor($w, null, 'new', $this->srs));
+        $step = app(\App\Services\SpanishService::class)->step($user);
+        $reviews = $q['reviews']->take(self::REVIEWS)->map(fn (UserWord $uw) => StudyController::cardFor($uw->word, $uw, 'review', $this->srs, $step));
+        $new = $q['new']->take(self::NEW_WORDS)->map(fn (Word $w) => StudyController::cardFor($w, null, 'new', $this->srs, $step));
 
         // Sonidos que toca practicar (el más débil primero); la app elige el primero que tenga ejercicios.
         $sounds = DB::table('phoneme_errors')->where('user_id', $user->id)->whereNull('mastered_on')

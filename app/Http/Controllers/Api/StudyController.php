@@ -176,7 +176,8 @@ class StudyController extends Controller
 
     // ---------- helpers ----------
 
-    public static function cardFor(Word $word, ?UserWord $uw, string $mode, SrsService $srs): array
+    /** $spanishStep: escalón de la escalera de español (config/spanish.php); decide cuánto español trae la ficha. */
+    public static function cardFor(Word $word, ?UserWord $uw, string $mode, SrsService $srs, int $spanishStep = 1): array
     {
         return [
             'id' => $word->id,
@@ -187,8 +188,12 @@ class StudyController extends Controller
             'example_es' => $word->example_es,
             'definition' => $word->definition,
             // Ficha avanzada: se recuerda la palabra desde el inglés (definición + frase con hueco), sin traducir.
-            'english_only' => $mode === 'review' && ($uw?->level ?? 0) >= config('vocab.english_only_level', 3)
-                && str_contains((string) $word->example, '*'),
+            // Desde el escalón 3 todos los repasos son así (si la palabra tiene definición).
+            'english_only' => $mode === 'review' && str_contains((string) $word->example, '*')
+                && (($uw?->level ?? 0) >= config('vocab.english_only_level', 3) || ($spanishStep >= 3 && filled($word->definition))),
+            // Escalón 2+: la traducción se ve solo al pedirla; escalón 4: no hay.
+            'hide_translation' => $spanishStep >= 2,
+            'no_spanish' => $spanishStep >= 4,
             'category' => $word->category,
             'family' => $word->family(),
             'mode' => $mode,
@@ -203,7 +208,9 @@ class StudyController extends Controller
 
     private function card(Word $word, ?UserWord $uw, string $mode): array
     {
-        return self::cardFor($word, $uw, $mode, $this->srs);
+        $user = request()->user();
+
+        return self::cardFor($word, $uw, $mode, $this->srs, $user ? app(\App\Services\SpanishService::class)->step($user) : 1);
     }
 
     private function userWord(Request $request, Word $word, bool $mustBeIntroduced = false): UserWord

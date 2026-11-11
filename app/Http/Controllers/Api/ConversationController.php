@@ -47,7 +47,7 @@ class ConversationController extends Controller
             ->orderByDesc('count')->limit(3)->pluck('phoneme')->implode(', ');
 
         try {
-            $out = $claude->converse($data['messages'], $targets->all(), $weak ?: null,
+            $out = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->converse($data['messages'], $targets->all(), $weak ?: null,
                 $data['scenario'] ?? 'free', (bool) ($data['voice'] ?? false), $user->cefr_level);
         } catch (Throwable $e) {
             report($e);
