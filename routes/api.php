@@ -18,12 +18,16 @@ Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])-
 Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
 Route::get('/config', [StudyController::class, 'config']);
 
+// Traducciones de la interfaz (web y app).
+Route::get('/i18n/{lang}', [\App\Http\Controllers\Api\I18nController::class, 'show'])->middleware('throttle:60,1');
+
 // "Probar la demo": alumno de ejemplo solo para este visitante (se borra en 24 h).
 Route::post('/auth/demo', [\App\Http\Controllers\Api\DemoController::class, 'store'])->middleware('throttle:demo');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/i18n/missing', [\App\Http\Controllers\Api\I18nController::class, 'missing'])->middleware('throttle:10,1');
     Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->middleware('throttle:3,1');
 
     // Niveles MCER: prueba inicial, progreso y examen para subir.

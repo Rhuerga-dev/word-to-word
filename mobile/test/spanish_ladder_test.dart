@@ -17,6 +17,19 @@ void main() {
     expect(tr('Texto que no está'), 'Texto que no está');
   });
 
+  test('tr: manda el diccionario del servidor y avisa de lo que falta', () {
+    final missing = <String>[];
+    Lang.english = true;
+    Lang.remote = {'Hoy': 'Today!'};
+    Lang.onMissing = missing.add;
+    expect(tr('Hoy'), 'Today!');
+    expect(tr('Camino'), 'Path'); // respaldo de la app
+    expect(tr('Algo nuevo'), 'Algo nuevo');
+    expect(missing, ['Algo nuevo']);
+    Lang.remote = const {};
+    Lang.onMissing = null;
+  });
+
   test('perfil: la escalera de español viene en /me', () {
     final p = UserProfile.fromJson({
       'name': 'Ana',

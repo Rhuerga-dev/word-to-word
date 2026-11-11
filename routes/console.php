@@ -22,3 +22,6 @@ Schedule::command('sanctum:prune-expired --hours=24')->daily();
 
 // Borra los alumnos de la demo de más de 24 horas (también se hace al crear uno nuevo).
 Schedule::call(fn () => app(\App\Services\DemoService::class)->cleanup())->hourly()->name('demo-cleanup')->withoutOverlapping();
+
+// Textos de la interfaz que las apps no encontraron: se traducen con la IA y van a lang/en.json.
+Schedule::command('i18n:translate')->everyTenMinutes()->withoutOverlapping();

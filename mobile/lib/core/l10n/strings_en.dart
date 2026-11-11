@@ -1,4 +1,5 @@
-/// Textos de la interfaz en inglés (escalones 3 y 4 de la escalera de español). La clave es el texto en español.
+/// Copia de respaldo de las traducciones al inglés, para la primera vez sin conexión.
+/// La fuente es el servidor (lang/en.json, GET /api/i18n/en): lo que llega de allí manda.
 const stringsEn = <String, String>{
   " (tú)": " (you)",
   "1 minuto sin parar": "1 minute non-stop",
