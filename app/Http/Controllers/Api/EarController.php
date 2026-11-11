@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\UserWord;
 use App\Models\Word;
 use App\Services\EarService;
-use App\Services\SpanishService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
 
@@ -22,9 +21,19 @@ class EarController extends Controller
         $limit = (int) ($request->validate(['limit' => ['sometimes', 'integer', 'min:1', 'max:20']])['limit'] ?? 10);
 
         return [
-            'items' => $this->ear->due($user, $limit, app(SpanishService::class)->step($user)),
+            'items' => $this->ear->due($user, $limit),
             'automatic' => $this->ear->automaticCount($user),
         ];
+    }
+
+    /** GET /words/lookup?w=…: una palabra de una definición que no entiendes. */
+    public function lookup(Request $request)
+    {
+        $data = $request->validate(['w' => ['required', 'string', 'max:40']]);
+        $r = EarService::lookup($data['w'], app(\App\Services\ClaudeService::class));
+        abort_unless($r, 404, 'No tengo esa palabra.');
+
+        return $r;
     }
 
     /** POST /words/{word}/ear: si la reconociste y cuánto tardaste desde que terminó de sonar. */

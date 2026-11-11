@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/words/{word}/review', [StudyController::class, 'review']);
     Route::post('/words/{word}/ear', [\App\Http\Controllers\Api\EarController::class, 'answer'])->middleware('throttle:120,1');
     Route::get('/ear', [\App\Http\Controllers\Api\EarController::class, 'index']);
+    Route::get('/words/lookup', [\App\Http\Controllers\Api\EarController::class, 'lookup'])->middleware('throttle:60,1');
 
     Route::put('/words/{word}/aid', [AidController::class, 'update']);
     Route::post('/words/{word}/aid/suggest', [AidController::class, 'suggest'])->middleware('throttle:20,1');

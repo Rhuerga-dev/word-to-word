@@ -65,7 +65,7 @@ class SessionController extends Controller
             'streak' => $this->srs->stats($user)['streak'],
             'plan' => [
                 // Primero el oído, con la cabeza fresca: palabras que ya aprendiste, solo con sonido.
-                'ear' => app(\App\Services\EarService::class)->due($user, self::EAR, $step),
+                'ear' => app(\App\Services\EarService::class)->due($user, self::EAR),
                 'reviews' => $reviews->values(),
                 'new' => $new->values(),
                 'sounds' => $sounds,

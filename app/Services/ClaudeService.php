@@ -176,6 +176,49 @@ TXT;
     }
 
     /**
+     * Significados fáciles para reconocer palabras de oído, de menos a más difícil:
+     * gloss (1–3 palabras muy básicas), emoji (si lo muestra claro) y una definición con palabras muy comunes.
+     *
+     * @param  array<int, string>  $words
+     * @return array<string, array{gloss: ?string, emoji: ?string, easy: ?string}>
+     */
+    public function simplify(array $words): array
+    {
+        $list = implode("\n", $words);
+        $prompt = <<<TXT
+For each English word below, help a beginner who does NOT know much English understand it.
+Give:
+- "gloss": 1 to 3 VERY simple English words that show the meaning (like "last day", "paper with price", "money for a house"). A1 level only.
+- "emoji": ONE emoji only if it shows the meaning clearly; otherwise null.
+- "easy": a definition of max 10 words using ONLY the 1000 most common English words.
+Never use the word itself or any form of it. Use the most common meaning.
+Answer ONLY with a JSON object: {"word": {"gloss": "...", "emoji": "..." or null, "easy": "..."}, ...}, keys exactly as given.
+
+Words:
+{$list}
+TXT;
+        $text = $this->message('You explain English words with the simplest possible English.', [['role' => 'user', 'content' => $prompt]], 4000);
+        $start = strpos($text, '{');
+        $end = strrpos($text, '}');
+        $data = $start !== false && $end !== false ? json_decode(substr($text, $start, $end - $start + 1), true) : null;
+        if (! is_array($data)) {
+            throw new RuntimeException('La respuesta no traía JSON válido.');
+        }
+        $out = [];
+        foreach ($data as $word => $m) {
+            if (is_array($m)) {
+                $out[$word] = [
+                    'gloss' => is_string($m['gloss'] ?? null) ? trim($m['gloss']) : null,
+                    'emoji' => is_string($m['emoji'] ?? null) && trim($m['emoji']) !== '' ? trim($m['emoji']) : null,
+                    'easy' => is_string($m['easy'] ?? null) ? trim($m['easy']) : null,
+                ];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
      * Correcciones de una narración de un minuto: comentario, versión más natural y errores (máx. 5).
      *
      * @return array{reply: string, better: ?string, feedback: ?string, used: array, mistakes: array}

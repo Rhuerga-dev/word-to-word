@@ -25,3 +25,8 @@ Schedule::call(fn () => app(\App\Services\DemoService::class)->cleanup())->hourl
 
 // Textos de la interfaz que las apps no encontraron: se traducen con la IA y van a lang/en.json.
 Schedule::command('i18n:translate')->everyTenMinutes()->withoutOverlapping();
+
+// Oído: significados muy fáciles para las palabras que ya se aprendieron (cada hora, poco a poco).
+Schedule::command('words:simplify --limit=100')->hourly()->withoutOverlapping();
+// Y las palabras más comunes (las que salen dentro de las definiciones), poco a poco.
+Schedule::command('words:simplify --all --limit=100')->hourlyAt(30)->withoutOverlapping();
