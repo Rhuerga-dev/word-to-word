@@ -656,6 +656,40 @@ body[data-nav="progress"] .wrap{max-width:1040px}
 .pg-a small{font-size:12px}
 .pg-a.on{border-style:solid;color:var(--ink)}
 .pg-a.on .i{background:var(--hl);color:var(--hl-ink)}
+
+/* ===== Responsivo: escritorio con barra lateral, tablet y teléfonos pequeños ===== */
+/* Todas las pestañas con el mismo ancho */
+body[data-nav] .wrap{max-width:1040px}
+body:not([data-nav="progress"]) .grid{max-width:none}
+/* Tablet: la barra de abajo flota; que no tape el final del contenido */
+@media (min-width:821px){ body[data-nav] #appView{padding-bottom:104px} }
+/* Escritorio: navegación a la izquierda y Hoy en dos columnas */
+@media (min-width:1024px){
+  body[data-nav]{padding-left:calc(220px + 32px)}
+  .bnav{top:0;bottom:0;right:auto;width:220px;max-width:none;margin:0;border:none;border-right:1px solid var(--line);border-radius:0;box-shadow:none;
+    grid-template-columns:minmax(0,1fr);grid-auto-rows:min-content;align-content:start;gap:4px;padding:calc(24px + env(safe-area-inset-top,0px)) 12px 24px}
+  .bnav button{grid-template-columns:24px minmax(0,1fr);justify-items:start;align-items:center;gap:12px;font-size:16px;padding:10px 14px;min-height:48px}
+  .bnav button[aria-current="page"]{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+  body[data-nav] #appView{padding-bottom:32px}
+  #todayView.tday{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);grid-auto-flow:row dense;gap:16px 24px;align-items:start}
+  #todayView>.td-top,#todayView>.warnbox{grid-column:1/-1}
+  #todayView>.td-card{grid-column:1;grid-row:span 3}
+  #todayView>.td-goal,#todayView>.td-link,#todayView>.td-row{grid-column:2}
+  .pr-tiles{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+}
+/* Teléfonos: el chat escrito pone el texto arriba y los botones debajo */
+@media (max-width:480px){
+  .compose{grid-template-columns:auto minmax(0,1fr)}
+  .compose textarea{grid-column:1/-1;min-height:72px}
+}
+/* Teléfonos pequeños (320–360 px) */
+@media (max-width:360px){
+  .td-steps{grid-template-columns:minmax(0,1fr)}
+  .td-goal b{font-size:22px}
+  .sess-grades{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pr-tiles{grid-template-columns:minmax(0,1fr)}
+  .bnav button{font-size:11px}
+}
 </style>
 
 <div class="wrap">
