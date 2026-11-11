@@ -53,6 +53,21 @@ class SpeakingTest extends TestCase
         return UploadedFile::fake()->createWithContent('voz.wav', str_repeat("\0", 2000));
     }
 
+    public function test_transcribe_returns_only_the_text_for_voice_commands(): void
+    {
+        Http::fake(['*' => Http::response($this->azureWords([['good', 0, 300]]))]);
+        $this->post('/api/speech/transcribe', ['audio' => $this->wav()], ['Accept' => 'application/json'])
+            ->assertOk()->assertJsonPath('text', 'good.');
+        $this->postJson('/api/speech/transcribe', [])->assertUnprocessable();
+        $this->assertSame(0, SpeakingSession::count());
+    }
+
+    public function test_transcribe_needs_azure(): void
+    {
+        config(['vocab.azure_speech.key' => null]);
+        $this->post('/api/speech/transcribe', ['audio' => $this->wav()], ['Accept' => 'application/json'])->assertStatus(503);
+    }
+
     public function test_lists_the_situations_and_starts_a_session(): void
     {
         $ids = array_column($this->getJson('/api/speaking/scenarios')->assertOk()->json('scenarios'), 'id');

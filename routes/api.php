@@ -87,4 +87,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/speaking/sessions/{session}/finish', [SpeakingController::class, 'finish']);
     Route::get('/speaking/mistakes', [SpeakingController::class, 'mistakes']);
     Route::post('/speaking/mistakes/{mistake}/review', [SpeakingController::class, 'review'])->middleware('throttle:60,1');
+    // Solo transcribir: órdenes de voz y notas del modo manos libres de la app.
+    Route::post('/speech/transcribe', [SpeakingController::class, 'transcribe'])->middleware('throttle:60,1');
 });

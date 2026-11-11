@@ -55,6 +55,21 @@ class SpeakingController extends Controller
         return response()->json(['id' => $session->id, 'scenario' => $session->scenario, 'topic' => $topic, 'seconds' => $seconds], 201);
     }
 
+    /** Solo transcribe un audio corto (hasta ~15 s): órdenes de voz y notas del modo manos libres de la app. */
+    public function transcribe(Request $request, PronunciationService $pron)
+    {
+        abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
+        $request->validate(['audio' => ['required', 'file', 'max:1024']]);
+        try {
+            $text = $pron->transcribe($request->file('audio')->get())['text'];
+        } catch (Throwable $e) {
+            report($e);
+            abort(502, 'No se pudo entender el audio ahora. Intenta otra vez.');
+        }
+
+        return ['text' => $text];
+    }
+
     /**
      * Lo que dijiste en un turno. Con Azure se manda el audio y el servidor lo transcribe y mide el ritmo.
      * Sin Azure (navegador), se manda el texto reconocido y cuánto duró: se estima el ritmo.

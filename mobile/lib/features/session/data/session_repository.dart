@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/offline_cache.dart';
 import '../../../core/utils/json.dart';
 import '../../today/data/today.dart';
 import 'word_card.dart';
@@ -51,14 +52,25 @@ class SessionResult {
 
 /// Todo lo que hacen los ejercicios contra el servidor.
 class SessionRepository {
-  SessionRepository(this._api);
+  SessionRepository(this._api, this._cache);
   final Api _api;
+  final OfflineCache _cache;
+
+  /// Sin conexión, las fichas no se pierden: se guardan y se suben al volver (sin puntos al momento).
+  Future<int> _postOrQueue(String path, [Map<String, dynamic>? body]) async {
+    try {
+      return asInt(asMap(await _api.post(path, body))['xp_gained']);
+    } on ApiException catch (e) {
+      if (!e.isNetwork) rethrow;
+      await _cache.enqueue(path, body);
+      return 0;
+    }
+  }
 
   /// Nota a una ficha (again · hard · good · easy). Devuelve los puntos ganados.
-  Future<int> review(int cardId, String grade) async =>
-      asInt(asMap(await _api.post('/words/$cardId/review', {'grade': grade}))['xp_gained']);
+  Future<int> review(int cardId, String grade) => _postOrQueue('/words/$cardId/review', {'grade': grade});
 
-  Future<int> learn(int cardId) async => asInt(asMap(await _api.post('/words/$cardId/learn'))['xp_gained']);
+  Future<int> learn(int cardId) => _postOrQueue('/words/$cardId/learn');
 
   /// Puntuación (0–100) del sonido [phoneme] al decir [word].
   Future<int> assess(String word, String phoneme, Uint8List wav) async {
@@ -97,4 +109,4 @@ class SessionRepository {
   Future<SessionResult> complete() async => SessionResult.fromJson(asMap(await _api.post('/session/complete')));
 }
 
-final sessionRepositoryProvider = Provider<SessionRepository>((ref) => SessionRepository(ref.watch(apiProvider)));
+final sessionRepositoryProvider = Provider<SessionRepository>((ref) => SessionRepository(ref.watch(apiProvider), ref.watch(offlineCacheProvider)));

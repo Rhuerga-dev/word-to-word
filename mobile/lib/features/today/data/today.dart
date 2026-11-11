@@ -33,6 +33,7 @@ class TodayData {
     required this.sounds,
     required this.speak,
     required this.mistakes,
+    this.offline = false,
   });
 
   final XpToday xp;
@@ -48,9 +49,12 @@ class TodayData {
   final String speak;
   final List<Mistake> mistakes;
 
+  /// Viene de lo guardado (sin conexión): solo se pueden hacer las fichas.
+  final bool offline;
+
   bool get studied => xp.xp > 0;
 
-  factory TodayData.fromJson(Map<String, dynamic> j) {
+  factory TodayData.fromJson(Map<String, dynamic> j, {bool offline = false}) {
     final plan = asMap(j['plan']);
     return TodayData(
       xp: XpToday.fromJson(asMap(j['xp'])),
@@ -61,6 +65,7 @@ class TodayData {
       sounds: [for (final s in asMaps(plan['sounds'])) asString(s['phoneme'])],
       speak: asString(plan['speak'], 'narrate'),
       mistakes: listOf(plan['mistakes'], Mistake.fromJson),
+      offline: offline,
     );
   }
 }

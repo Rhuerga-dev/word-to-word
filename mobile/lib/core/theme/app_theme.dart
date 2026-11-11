@@ -15,8 +15,26 @@ class W {
   static const muted = Color(0xFF4D5A6B);
   static const line = Color(0xFFD3DBE6);
 
+  // Dirección "Llamada": la voz en el centro.
+  static const navy = Color(0xFF0F2A86);
+  static const blueDeep = Color(0xFF163A9E);
+  static const mist = Color(0xFFC8D6FF);
+  static const ringLight = Color(0xFFDFE7FF);
+  static const ringMid = Color(0xFFB9CBFF);
+  static const callBg = Color(0xFFF1F4FC);
+
+  // Fichas estilo "Libreta".
+  static const paper = Color(0xFFF9FBFE);
+  static const rule = Color(0xFFDDE6F3);
+  static const cardTop = Color(0xFFE88F8F);
+  static const inkBlue = Color(0xFF2747B8);
+  static const streak = Color(0xFFB4560A);
+
   static TextStyle display(double size, {Color? color, FontWeight weight = FontWeight.w800}) =>
       GoogleFonts.bricolageGrotesque(fontSize: size, fontWeight: weight, color: color ?? ink, height: 1.1);
+
+  /// Letra a mano para las notas del coach en las fichas.
+  static TextStyle hand(double size, {Color color = inkBlue}) => GoogleFonts.caveat(fontSize: size, fontWeight: FontWeight.w600, color: color, height: 1.2);
 
   static ThemeData theme() {
     final base = ThemeData(

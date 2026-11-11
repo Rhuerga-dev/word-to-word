@@ -10,6 +10,9 @@ class ApiException implements Exception {
   ApiException(this.message, [this.status = 0]);
   final String message;
   final int status;
+
+  /// Sin respuesta del servidor (sin internet o tiempo agotado).
+  bool get isNetwork => status == 0;
   @override
   String toString() => message;
 }

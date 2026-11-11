@@ -6,6 +6,7 @@ import '../../progress/presentation/progress_providers.dart';
 import '../../today/presentation/today_providers.dart';
 import '../data/session_plan.dart';
 import '../data/session_repository.dart';
+import 'exercises/exercise_outcome.dart';
 
 /// Avance de una sesión.
 class SessionState {
@@ -37,10 +38,15 @@ class SessionController extends AutoDisposeFamilyNotifier<SessionState, SessionP
   @override
   SessionState build(SessionPlan plan) => const SessionState();
 
-  void gain(int xp) => state = state.copyWith(xp: state.xp + xp);
-
-  void graded(bool ok, int xp) =>
-      state = state.copyWith(graded: state.graded + 1, right: state.right + (ok ? 1 : 0), xp: state.xp + xp);
+  /// Un ejercicio terminó (con el dedo o por voz): se suman sus puntos y se pasa al siguiente.
+  void done(ExerciseOutcome o) {
+    state = state.copyWith(
+      xp: state.xp + o.xp,
+      graded: state.graded + (o.graded ? 1 : 0),
+      right: state.right + (o.graded && o.ok ? 1 : 0),
+    );
+    next();
+  }
 
   void next() {
     if (state.index + 1 >= plan.steps.length) {

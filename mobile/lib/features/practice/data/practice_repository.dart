@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/offline_cache.dart';
 import '../../../core/utils/json.dart';
 import '../../session/data/word_card.dart';
 
@@ -12,13 +13,18 @@ class PracticeData {
 }
 
 class PracticeRepository {
-  PracticeRepository(this._api);
+  PracticeRepository(this._api, this._cache);
   final Api _api;
+  final OfflineCache _cache;
 
-  Future<PracticeData> fetch() async {
-    final r = await Future.wait([_api.get('/speaking/mistakes'), _api.get('/today')]);
-    return PracticeData(mistakes: listOf(asMap(r[0])['mistakes'], Mistake.fromJson), cards: listOf(asMap(r[1])['cards'], WordCard.fromJson));
-  }
+  Future<PracticeData> fetch() => _cache.fetch(
+        'practice',
+        () async {
+          final r = await Future.wait([_api.get('/speaking/mistakes'), _api.get('/today')]);
+          return {'mistakes': asMap(r[0])['mistakes'], 'cards': asMap(r[1])['cards']};
+        },
+        (j, _) => PracticeData(mistakes: listOf(asMap(j)['mistakes'], Mistake.fromJson), cards: listOf(asMap(j)['cards'], WordCard.fromJson)),
+      );
 }
 
-final practiceRepositoryProvider = Provider<PracticeRepository>((ref) => PracticeRepository(ref.watch(apiProvider)));
+final practiceRepositoryProvider = Provider<PracticeRepository>((ref) => PracticeRepository(ref.watch(apiProvider), ref.watch(offlineCacheProvider)));

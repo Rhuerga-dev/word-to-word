@@ -35,6 +35,7 @@ class DemoGuard
         'api/words/*/aid/suggest' => 10,
         'api/words/*/pronunciation' => 40,
         'api/pronunciation/assess' => 60,
+        'api/speech/transcribe' => 200,
         'api/tts' => 400,
     ];
 
@@ -50,6 +51,7 @@ class DemoGuard
         'api/words/*/aid/suggest' => 40,
         'api/words/*/pronunciation' => 200,
         'api/pronunciation/assess' => 300,
+        'api/speech/transcribe' => 1500,
         'api/tts' => 2000,
     ];
 
@@ -65,6 +67,7 @@ class DemoGuard
         'api/words/*/aid/suggest' => 400,
         'api/words/*/pronunciation' => 3000,
         'api/pronunciation/assess' => 3000,
+        'api/speech/transcribe' => 15000,
         'api/tts' => 20000,
     ];
 

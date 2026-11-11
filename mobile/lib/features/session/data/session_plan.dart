@@ -67,6 +67,11 @@ class SessionPlan {
     ], daily: true);
   }
 
+  /// Sin conexión: solo las fichas (lo demás necesita el servidor para escucharte).
+  factory SessionPlan.offline(TodayData d) {
+    return SessionPlan([for (final c in d.reviews) ReviewStep(c), for (final c in d.newCards) NewStep(c)], title: 'Fichas sin conexión');
+  }
+
   static SessionPlan sound(String phoneme, {String? title}) =>
       SessionPlan([for (final w in soundWords[phoneme]!) SoundStep(phoneme, w)], title: title);
 }

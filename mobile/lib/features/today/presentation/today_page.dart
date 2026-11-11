@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
+import '../../../core/services/hands_free.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../path/data/path_models.dart';
 import '../../path/presentation/path_providers.dart';
@@ -41,71 +42,72 @@ class _TodayBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final xp = d.xp;
     final name = ref.watch(authControllerProvider).valueOrNull?.firstName ?? '';
+    final handsFree = ref.watch(handsFreeProvider.select((h) => h.on));
     final cards = d.reviews.length + d.newCards.length;
-    final speak = const {'narrate': ('Hablar 1 min', 'narración del día'), 'picture': ('Hablar 45 s', 'describe una foto'), 'shadowing': ('Shadowing', 'repite como un nativo')}[d.speak] ??
-        ('Hablar', 'un ejercicio');
+    final hour = DateTime.now().hour;
+    final hello = hour < 12 ? 'Buenos días' : (hour < 20 ? 'Buenas tardes' : 'Buenas noches');
+    final speak = const {'narrate': 'Contar tu día durante un minuto', 'picture': 'Describir una foto', 'shadowing': 'Repetir como un nativo'}[d.speak] ?? 'Hablar un minuto';
+    final agenda = <(String, String)>[
+      if (cards > 0) ('Calentamiento con $cards ${cards == 1 ? 'ficha' : 'fichas'}', '${(cards * 15 / 60).ceil()} min'),
+      if (!d.offline) ('El sonido /${d.sounds.isNotEmpty ? d.sounds.first : defaultSound()}/', '2 min'),
+      if (!d.offline) (speak, '2 min'),
+      if (!d.offline && d.mistakes.isNotEmpty) ('Dices bien ${d.mistakes.length} ${d.mistakes.length == 1 ? 'error' : 'errores'} de ayer', '1 min'),
+    ];
+    final plan = d.offline ? SessionPlan.offline(d) : SessionPlan.fromToday(d);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
       children: [
         Row(children: [
-          Text('Word to Word', style: W.display(20)),
-          const Spacer(),
-          _Chip(icon: Icons.local_fire_department, color: const Color(0xFFE8790C), text: '${d.streak}'),
-          const SizedBox(width: 8),
-          _Chip(icon: Icons.bolt, color: W.accent, text: '${xp.total} XP'),
+          Expanded(child: Text(name.isEmpty ? hello : '$hello, $name', style: const TextStyle(fontSize: 17, color: W.muted))),
+          const Icon(Icons.local_fire_department, color: Color(0xFFE8790C), size: 20),
+          const SizedBox(width: 4),
+          Text('${d.streak} ${d.streak == 1 ? 'día' : 'días'}', style: const TextStyle(fontWeight: FontWeight.w700, color: W.streak)),
         ]),
-        const SizedBox(height: 20),
-        Row(children: [
-          SizedBox(width: 76, height: 76, child: CustomPaint(painter: _Ring(math.min(1, xp.xp / xp.goal)))),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(name.isEmpty ? 'Hola' : 'Hola, $name', style: const TextStyle(color: W.muted)),
-              Text('${xp.xp} de ${xp.goal} XP', style: W.display(26)),
-              Text(xp.goalMet ? '¡Meta de hoy cumplida!' : 'Te faltan ${xp.goal - xp.xp} XP para tu meta', style: const TextStyle(color: W.muted)),
-            ]),
-          ),
-        ]),
+        const SizedBox(height: 22),
+        Center(child: _MicRings(progress: math.min(1, xp.xp / xp.goal))),
         const SizedBox(height: 18),
+        Text(xp.sessions > 0 ? 'Otra ronda' : 'Tu sesión de hoy', textAlign: TextAlign.center, style: W.display(30)),
+        const SizedBox(height: 6),
+        Text(
+          xp.goalMet ? '¡Meta de hoy cumplida! ${xp.xp} XP. Otra ronda suma más.' : 'Unos 10 minutos con tu coach. Llevas ${xp.xp} de ${xp.goal} XP hoy.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, color: W.muted, height: 1.4),
+        ),
+        const SizedBox(height: 18),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(backgroundColor: W.yellow, foregroundColor: W.yellowInk, shape: const StadiumBorder(), minimumSize: const Size.fromHeight(58)),
+          onPressed: plan.steps.isEmpty ? null : () => context.push(Routes.session, extra: plan),
+          icon: Icon(handsFree ? Icons.headphones : Icons.play_arrow),
+          label: Text(xp.sessions > 0 ? 'Empezar otra ronda' : 'Empezar la sesión'),
+        ),
+        const SizedBox(height: 6),
+        SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+          title: const Text('Manos libres', style: TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: const Text('La app habla, te escucha y sigue sola. Ideal con AirPods.'),
+          value: handsFree,
+          onChanged: (v) => ref.read(handsFreeProvider.notifier).setOn(v),
+        ),
+        const SizedBox(height: 6),
         Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: W.accent, borderRadius: BorderRadius.circular(20)),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Text(xp.sessions > 0 ? 'Otra ronda' : 'Sesión de hoy', style: W.display(24, color: Colors.white)),
-              const Spacer(),
-              const Text('unos 10 min', style: TextStyle(color: Colors.white70)),
-            ]),
-            const SizedBox(height: 14),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 2.4,
-              children: [
-                _Step(cards > 0 ? '$cards fichas' : 'Fichas', cards > 0 ? '${d.reviews.length} repasos · ${d.newCards.length} nuevas' : 'al día'),
-                _Step(d.sounds.isNotEmpty ? 'Sonido /${d.sounds.first}/' : 'Pronunciación', 'tu más débil'),
-                _Step(speak.$1, speak.$2),
-                _Step(d.mistakes.isNotEmpty ? '${d.mistakes.length} ${d.mistakes.length == 1 ? 'error' : 'errores'}' : 'Errores',
-                    d.mistakes.isNotEmpty ? 'dilos bien' : 'ninguno pendiente'),
-              ],
-            ),
-            const SizedBox(height: 14),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(backgroundColor: W.yellow, foregroundColor: W.yellowInk),
-              onPressed: () => context.push(Routes.session, extra: SessionPlan.fromToday(d)),
-              icon: const Icon(Icons.play_arrow),
-              label: Text(xp.sessions > 0 ? 'Otra ronda' : 'Empezar'),
-            ),
+            const Text('En la sesión', style: TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            if (agenda.isEmpty) const Text('Todo al día. Puedes practicar lo que quieras.', style: TextStyle(color: W.muted)),
+            for (final (what, time) in agenda)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(children: [Expanded(child: Text(what, style: const TextStyle(fontSize: 15))), Text(time, style: const TextStyle(color: W.muted))]),
+              ),
           ]),
         ),
         if (path != null && path!.units.isNotEmpty) ...[
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           _PathCard(path: path!, onTap: () => context.go(Routes.path)),
         ],
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         Row(children: [
           Expanded(child: _Mini('Hablaste hoy', '${d.minutes} min'.replaceAll('.', ','))),
           const SizedBox(width: 10),
@@ -116,35 +118,29 @@ class _TodayBody extends ConsumerWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.icon, required this.color, required this.text});
-  final IconData icon;
-  final Color color;
-  final String text;
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: W.card, borderRadius: BorderRadius.circular(99), border: Border.all(color: W.line)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontWeight: FontWeight.w700, color: color)),
-        ]),
-      );
-}
+/// El círculo del coach: anillos azules con el micrófono; el borde verde es la meta de hoy.
+class _MicRings extends StatelessWidget {
+  const _MicRings({required this.progress});
+  final double progress;
 
-class _Step extends StatelessWidget {
-  const _Step(this.title, this.sub);
-  final String title, sub;
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: .14), borderRadius: BorderRadius.circular(12)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
-          Text(sub, style: const TextStyle(color: Colors.white70, fontSize: 12.5), maxLines: 1, overflow: TextOverflow.ellipsis),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 220,
+      height: 220,
+      child: Stack(alignment: Alignment.center, children: [
+        Container(decoration: const BoxDecoration(shape: BoxShape.circle, color: W.ringLight)),
+        CustomPaint(size: const Size(220, 220), painter: _Ring(progress)),
+        Container(width: 164, height: 164, decoration: const BoxDecoration(shape: BoxShape.circle, color: W.ringMid)),
+        Container(
+          width: 108,
+          height: 108,
+          decoration: const BoxDecoration(shape: BoxShape.circle, color: W.accent),
+          child: const Icon(Icons.mic, color: Colors.white, size: 46),
+        ),
+      ]),
+    );
+  }
 }
 
 class _Mini extends StatelessWidget {
@@ -203,7 +199,7 @@ class _Ring extends CustomPainter {
     final rect = Offset.zero & size;
     final p = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 9
+      ..strokeWidth = 8
       ..strokeCap = StrokeCap.round;
     canvas.drawArc(rect.deflate(5), 0, math.pi * 2, false, p..color = W.line);
     canvas.drawArc(rect.deflate(5), -math.pi / 2, math.pi * 2 * value, false, p..color = W.good);
