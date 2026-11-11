@@ -724,6 +724,13 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 .ear-opt{min-height:56px;padding:12px 14px;border-radius:14px;font-size:17px;text-align:left;line-height:1.3}
 .ear-opt.ok{border-color:#1e8a55;background:rgba(30,138,85,.15)}
 .ear-opt.bad{border-color:#c43c3c;background:rgba(196,60,60,.15)}
+.ear-ladder{display:flex;gap:6px;margin:6px 0 2px}
+.ear-ladder i{flex:1;height:6px;border-radius:9px;background:rgba(127,127,127,.25)}
+.ear-ladder i.on{background:var(--accent,#1f4fd1)}
+.ear-opt.lens{cursor:default}
+.ear-w{display:inline-block;padding:1px 3px;margin:1px 0;border-radius:6px;border-bottom:2px dotted currentColor;cursor:pointer}
+.ear-w:hover,.ear-w:focus{background:rgba(31,79,209,.15)}
+.ear-look{padding:10px 12px;border-radius:12px;background:rgba(31,79,209,.12);font-size:17px}
 @media (prefers-reduced-motion:no-preference){.ear-play.on{transition:box-shadow .3s}}
 </style>
 
@@ -893,6 +900,6 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 <script src="/app/app.js?v=14"></script>
 <script src="/app/speak.js?v=10"></script>
 <script src="/app/progress.js?v=4"></script>
-<script src="/app/today.js?v=5"></script>
+<script src="/app/today.js?v=6"></script>
 <script src="/app/mictest.js?v=3"></script>
 </body></html>
