@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/env.dart';
+import '../../core/l10n/tr.dart';
 
 /// Error de la API con el mensaje que da el servidor (en español).
 class ApiException implements Exception {
@@ -66,12 +67,12 @@ class Api {
       final status = e.response?.statusCode ?? 0;
       if (status == 401) {
         onUnauthorized?.call();
-        throw ApiException('Tu sesión expiró. Entra otra vez.', 401);
+        throw ApiException(tr('Tu sesión expiró. Entra otra vez.'), 401);
       }
       if (e.response != null) throw ApiException(errorMessage(e.response!.data, status), status);
       throw ApiException(switch (e.type) {
-        DioExceptionType.connectionTimeout || DioExceptionType.sendTimeout || DioExceptionType.receiveTimeout => 'El servidor tardó demasiado. Prueba otra vez.',
-        _ => 'Sin conexión. Revisa tu internet.',
+        DioExceptionType.connectionTimeout || DioExceptionType.sendTimeout || DioExceptionType.receiveTimeout => tr('El servidor tardó demasiado. Prueba otra vez.'),
+        _ => tr('Sin conexión. Revisa tu internet.'),
       });
     }
   }

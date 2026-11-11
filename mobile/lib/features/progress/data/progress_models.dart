@@ -1,3 +1,4 @@
+import '../../../core/l10n/tr.dart';
 import '../../../core/utils/json.dart';
 import '../../session/data/word_card.dart';
 
@@ -10,7 +11,7 @@ class SoundProgress {
   final bool mastered;
   final int errors;
 
-  String get label => mastered ? 'Dominado' : const {'g': 'Guiado', 'p': 'Práctica', 'd': 'Dominio'}[tier] ?? '';
+  String get label => tr(mastered ? 'Dominado' : const {'g': 'Guiado', 'p': 'Práctica', 'd': 'Dominio'}[tier] ?? '');
 }
 
 /// GET /progress (solo lo que muestra la app).

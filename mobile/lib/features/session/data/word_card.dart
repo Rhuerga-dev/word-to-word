@@ -10,6 +10,8 @@ class WordCard {
     this.exampleEs,
     this.definition,
     this.englishOnly = false,
+    this.hideTranslation = false,
+    this.noSpanish = false,
     this.isNew = false,
     this.previews = const {},
   });
@@ -23,6 +25,10 @@ class WordCard {
 
   /// Fichas maduras: se muestran solo en inglés (definición y hueco), sin traducir.
   final bool englishOnly;
+
+  /// Escalera de español: la traducción no se muestra de entrada (2–3) o no se muestra nunca (4).
+  final bool hideTranslation;
+  final bool noSpanish;
   final bool isNew;
 
   /// Días hasta el próximo repaso según la nota: again, hard, good, easy.
@@ -36,6 +42,8 @@ class WordCard {
         exampleEs: asStringOrNull(j['example_es']),
         definition: asStringOrNull(j['definition']),
         englishOnly: asBool(j['english_only']),
+        hideTranslation: asBool(j['hide_translation']),
+        noSpanish: asBool(j['no_spanish']),
         isNew: j['mode'] == 'new',
         previews: {for (final e in asMap(j['previews']).entries) e.key: asInt(e.value)},
       );

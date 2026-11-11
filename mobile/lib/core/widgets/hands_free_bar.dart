@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/hands_free.dart';
 import '../theme/app_theme.dart';
+import '../../core/l10n/tr.dart';
 
 /// La barra del modo manos libres: qué está pasando, las órdenes de voz y "Pausar".
 class HandsFreeBar extends ConsumerWidget {
@@ -12,7 +13,7 @@ class HandsFreeBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(handsFreeProvider);
     final (label, icon) = switch (s.phase) {
-      HfPhase.speaking => ('Tu coach habla', Icons.volume_up),
+      HfPhase.speaking => (tr('Tu coach habla'), Icons.volume_up),
       HfPhase.listening => ('Te escucho', Icons.mic),
       HfPhase.thinking => ('Pensando…', Icons.more_horiz),
       HfPhase.idle => ('Manos libres', Icons.headphones),
@@ -60,7 +61,7 @@ class HandsFreeBar extends ConsumerWidget {
           OutlinedButton(
             style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Color(0xFF5B7FE6), width: 2), shape: const StadiumBorder(), minimumSize: const Size.fromHeight(48)),
             onPressed: () => ref.read(handsFreeProvider.notifier).pause(),
-            child: const Text('Pausar manos libres', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(tr('Pausar manos libres'), style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         ]),
       ),

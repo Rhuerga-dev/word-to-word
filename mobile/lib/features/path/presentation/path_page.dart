@@ -9,6 +9,7 @@ import '../../session/data/session_plan.dart';
 import '../data/path_models.dart';
 import '../data/path_repository.dart';
 import 'path_providers.dart';
+import '../../../core/l10n/tr.dart';
 
 /// Camino: unidades del nivel, una abierta a la vez.
 class PathPage extends ConsumerWidget {
@@ -32,7 +33,7 @@ class PathPage extends ConsumerWidget {
       if (k != null) plan = SessionPlan.sound(k, title: u.title);
     }
     if (plan == null) {
-      messenger.showSnackBar(const SnackBar(content: Text('El shadowing y la prueba de la unidad se hacen por ahora en la web (w2w.huergalabs.dev).')));
+      messenger.showSnackBar(SnackBar(content: Text(tr('El shadowing y la prueba de la unidad se hacen por ahora en la web (w2w.huergalabs.dev).'))));
       return;
     }
     if (context.mounted) context.push(Routes.session, extra: plan);
@@ -48,8 +49,8 @@ class PathPage extends ConsumerWidget {
         return RefreshIndicator(
           onRefresh: () => ref.refresh(pathProvider.future),
           child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
-            Text('TU CAMINO · ${d.level} ${d.levelName}'.toUpperCase(), style: const TextStyle(letterSpacing: 1, fontWeight: FontWeight.w700, color: W.muted, fontSize: 13)),
-            Text(cur >= 0 ? 'Unidad ${cur + 1} de ${d.units.length}' : '${d.completed} de ${d.units.length} unidades', style: W.display(26)),
+            Text(tr('TU CAMINO · {0} {1}', [d.level, d.levelName]).toUpperCase(), style: const TextStyle(letterSpacing: 1, fontWeight: FontWeight.w700, color: W.muted, fontSize: 13)),
+            Text(cur >= 0 ? tr('Unidad {0} de {1}', [cur + 1, d.units.length]) : tr('{0} de {1} unidades', [d.completed, d.units.length]), style: W.display(26)),
             const SizedBox(height: 14),
             for (final u in d.units)
               Padding(
@@ -82,7 +83,7 @@ class _Row extends StatelessWidget {
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('${u.number} · ${u.title}', style: TextStyle(fontWeight: FontWeight.w700, color: done ? W.ink : W.muted)),
-            Text(done ? 'Completada' : 'Se abre al pasar la prueba anterior', style: const TextStyle(fontSize: 13, color: W.muted)),
+            Text(done ? 'Completada' : tr('Se abre al pasar la prueba anterior'), style: const TextStyle(fontSize: 13, color: W.muted)),
           ]),
         ),
       ]),
@@ -98,10 +99,10 @@ class _Current extends StatelessWidget {
   Widget build(BuildContext context) {
     final next = u.nextStep;
     final items = <(String, String)>[
-      ('words', 'Palabras: ${u.preview.join(', ')} (${u.wordsLearned} de ${u.wordsNeed})'),
-      ('sound', 'Sonido /${u.sound}/'),
-      ('shadow', 'Shadowing de la unidad'),
-      ('test', 'Prueba: ${u.scenarioTitle}${u.testScore != null ? ' · mejor nota ${u.testScore}/10' : ''}'),
+      ('words', tr('Palabras: {0} ({1} de {2})', [u.preview.join(', '), u.wordsLearned, u.wordsNeed])),
+      ('sound', tr('Sonido /{0}/', [u.sound])),
+      ('shadow', tr('Shadowing de la unidad')),
+      ('test', u.testScore != null ? tr('Prueba: {0} · mejor nota {1}/10', [u.scenarioTitle, u.testScore]) : tr('Prueba: {0}', [u.scenarioTitle])),
     ];
     return Container(
       padding: const EdgeInsets.all(16),
@@ -109,7 +110,7 @@ class _Current extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
           Expanded(child: Text('${u.number} · ${u.title}', style: W.display(21))),
-          Text('${u.stepsDone} de 4', style: const TextStyle(color: W.accent, fontWeight: FontWeight.w700)),
+          Text(tr('{0} de 4', [u.stepsDone]), style: const TextStyle(color: W.accent, fontWeight: FontWeight.w700)),
         ]),
         const SizedBox(height: 10),
         for (final (k, label) in items)
@@ -136,7 +137,7 @@ class _Current extends StatelessWidget {
         if (u.testFeedback != null && u.steps['test'] != true)
           Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(u.testFeedback!, style: const TextStyle(color: W.muted, fontSize: 14))),
         const SizedBox(height: 4),
-        FilledButton(onPressed: onGo, child: const Text('Continuar la unidad')),
+        FilledButton(onPressed: onGo, child: Text(tr('Continuar la unidad'))),
       ]),
     );
   }

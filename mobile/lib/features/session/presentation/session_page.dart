@@ -19,6 +19,7 @@ import 'exercises/sound_controller.dart';
 import 'exercises/sound_exercise.dart';
 import 'session_controller.dart';
 import 'session_summary.dart';
+import '../../../core/l10n/tr.dart';
 
 /// Una sesión: barra de progreso arriba y un ejercicio a la vez. Con manos libres, todo sigue solo por voz.
 class SessionPage extends ConsumerWidget {
@@ -39,7 +40,7 @@ class SessionPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
             child: Row(children: [
-              IconButton(tooltip: 'Salir', icon: const Icon(Icons.close), onPressed: () {
+              IconButton(tooltip: tr('Salir'), icon: const Icon(Icons.close), onPressed: () {
                 ref.read(handsFreeProvider.notifier).pause();
                 context.pop();
               }),
@@ -128,7 +129,7 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
       outcome = ExerciseOutcome.skipped;
     } catch (e) {
       hf.pause();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Manos libres en pausa: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Manos libres en pausa: {0}', [e]))));
     } finally {
       _running = false;
       if (ref.read(handsFreeProvider).on) hf.idle();

@@ -9,6 +9,7 @@ import '../../../../core/widgets/step_page.dart';
 import '../../data/session_plan.dart';
 import 'exercise_outcome.dart';
 import 'sound_controller.dart';
+import '../../../../core/l10n/tr.dart';
 
 /// Sonido débil: dices la palabra hasta que el sonido sale bien.
 class SoundExercise extends ConsumerStatefulWidget {
@@ -34,22 +35,22 @@ class _SoundExerciseState extends ConsumerState<SoundExercise> {
     final w = widget.step;
     return StepPage(
       bottom: s.finished
-          ? FeedbackBar(ok: s.passed, title: s.passed ? '¡Bien dicho!' : 'Sigue practicándolo', detail: '/${w.phoneme}/ al ${s.pct}%', onNext: () => widget.onDone(s.outcome))
+          ? FeedbackBar(ok: s.passed, title: s.passed ? tr('¡Bien dicho!') : tr('Sigue practicándolo'), detail: '/${w.phoneme}/ al ${s.pct}%', onNext: () => widget.onDone(s.outcome))
           : Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 MicButton(recording: s.recording, onPressed: s.recording ? null : ref.read(provider.notifier).attempt),
                 const SizedBox(height: 10),
-                const Text('Toca y dila en voz alta', style: TextStyle(color: W.muted)),
+                Text(tr('Toca y dila en voz alta'), style: TextStyle(color: W.muted)),
               ]),
             ),
       children: [
-        stepKind('Pronunciación: el sonido /${w.phoneme}/'),
+        stepKind(tr('Pronunciación: el sonido /{0}/', [w.phoneme])),
         Row(children: [
           Flexible(child: Text(w.word, style: W.display(46))),
-          IconButton(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up), onPressed: () => ref.read(audioProvider).say(w.word, slow: true)),
+          IconButton(tooltip: tr('Escuchar'), icon: const Icon(Icons.volume_up), onPressed: () => ref.read(audioProvider).say(w.word, slow: true)),
         ]),
-        if (s.pct != null) Text('Último intento: ${s.pct}%', style: const TextStyle(color: W.muted)),
+        if (s.pct != null) Text(tr('Último intento: {0}%', [s.pct]), style: const TextStyle(color: W.muted)),
         const SizedBox(height: 10),
         if (s.msg.isNotEmpty) Text(s.msg, style: const TextStyle(color: W.warn)),
       ],

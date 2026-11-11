@@ -10,6 +10,8 @@ import '../../../../core/widgets/step_page.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
 import 'review_controller.dart';
+import '../../../../core/l10n/tr.dart';
+import '../../../../core/widgets/spanish_peek.dart';
 
 /// Ficha de repaso estilo Libreta: la dices en voz alta, ves la respuesta y te pones nota.
 class ReviewExercise extends ConsumerStatefulWidget {
@@ -40,12 +42,12 @@ class _ReviewExerciseState extends ConsumerState<ReviewExercise> {
     if (s.finished) {
       bottom = FeedbackBar(
         ok: s.outcome.ok,
-        title: s.error != null ? 'No se guardó' : (s.grade == 'again' ? 'La repasarás pronto' : '¡Bien!'),
-        detail: s.error ?? '${c.word} · ${c.translation}',
+        title: s.error != null ? tr('No se guardó') : (s.grade == 'again' ? tr('La repasarás pronto') : tr('¡Bien!')),
+        detail: s.error ?? (c.hideTranslation ? '${c.word}${c.definition != null ? ' · ${c.definition}' : ''}' : '${c.word} · ${c.translation}'),
         onNext: () => widget.onDone(s.outcome),
       );
     } else if (!s.shown) {
-      bottom = bottomPad(FilledButton(onPressed: ctl.reveal, child: const Text('Ver la respuesta')));
+      bottom = bottomPad(FilledButton(onPressed: ctl.reveal, child: Text(tr('Ver la respuesta'))));
     } else {
       bottom = bottomPad(Row(children: [
         for (final (g, label) in _grades)
@@ -56,7 +58,7 @@ class _ReviewExerciseState extends ConsumerState<ReviewExercise> {
                 onPressed: s.busy ? null : () => ctl.rate(g),
                 style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10), backgroundColor: g == 'good' ? W.yellow : Colors.white),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text(label, style: const TextStyle(fontWeight: FontWeight.w700, color: W.ink)),
+                  Text(tr(label), style: const TextStyle(fontWeight: FontWeight.w700, color: W.ink)),
                   Text(days(c.previews[g] ?? _defaultDays[g]!), style: const TextStyle(fontSize: 11, color: W.muted)),
                 ]),
               ),
@@ -65,7 +67,7 @@ class _ReviewExerciseState extends ConsumerState<ReviewExercise> {
       ]));
     }
     return StepPage(bottom: bottom, children: [
-      stepKind(en && !s.shown ? 'Solo inglés: ¿qué palabra falta?' : 'Repaso: ¿qué significa?'),
+      stepKind(en && !s.shown ? tr('Solo inglés: ¿qué palabra falta?') : tr('Repaso: ¿qué significa?')),
       NotebookCard(children: [
         if (en && !s.shown) ...[
           if (c.definition != null) Text(c.definition!, style: W.display(22, weight: FontWeight.w600)),
@@ -74,15 +76,18 @@ class _ReviewExerciseState extends ConsumerState<ReviewExercise> {
         ] else ...[
           Row(children: [
             Expanded(child: Text(c.word, style: W.display(42))),
-            IconButton.outlined(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up, color: W.accent), onPressed: () => ref.read(audioProvider).say(c.word)),
+            IconButton.outlined(tooltip: tr('Escuchar'), icon: const Icon(Icons.volume_up, color: W.accent), onPressed: () => ref.read(audioProvider).say(c.word)),
           ]),
           if (s.shown) ...[
             const SizedBox(height: 6),
             Text(plainExample(c.example), style: const TextStyle(fontSize: 19, height: 1.8)),
-            Text('= ${en && c.definition != null ? c.definition! : c.translation}', style: W.hand(28)),
-            if (en) Text(c.translation, style: W.hand(22, color: W.streak)),
+            if ((en || c.hideTranslation) && c.definition != null) Text('= ${c.definition!}', style: W.hand(28)),
+            if (en || c.hideTranslation)
+              SpanishPeek(child: Text(c.translation, style: W.hand(22, color: W.streak)))
+            else
+              Text('= ${c.translation}', style: W.hand(28)),
           ] else
-            const Padding(padding: EdgeInsets.only(top: 12), child: Text('Dilo en voz alta antes de ver la respuesta.', style: TextStyle(color: W.muted))),
+            Padding(padding: EdgeInsets.only(top: 12), child: Text(tr(c.hideTranslation ? 'Explícalo en voz alta en inglés antes de ver la respuesta.' : 'Dilo en voz alta antes de ver la respuesta.'), style: TextStyle(color: W.muted))),
         ],
       ]),
     ]);

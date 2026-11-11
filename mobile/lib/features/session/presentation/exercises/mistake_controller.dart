@@ -7,6 +7,7 @@ import '../../../../core/services/hands_free.dart';
 import '../../data/session_repository.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
+import '../../../../core/l10n/tr.dart';
 
 class MistakeState {
   const MistakeState({this.recording = false, this.review, this.tries = 0, this.msg = '', this.xp = 0});
@@ -34,7 +35,7 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
   Future<bool> _check(Uint8List wav) async {
     final r = await ref.read(sessionRepositoryProvider).reviewMistake(mistake.id, wav);
     if (r.silent) {
-      state = state.copyWith(msg: 'No se entendió. Prueba otra vez.');
+      state = state.copyWith(msg: tr('No se entendió. Prueba otra vez.'));
       return false;
     }
     state = state.copyWith(review: r, tries: state.tries + 1, xp: state.xp + r.xpGained, msg: '');
@@ -47,7 +48,7 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
     try {
       final rec = await audio.record(maxMs: 15000, silenceMs: 1400);
       if (!rec.heard) {
-        state = state.copyWith(msg: 'No te oí. Habla un poco más cerca.');
+        state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
       } else if (await _check(rec.wav)) {
         await audio.say(mistake.correct);
       }

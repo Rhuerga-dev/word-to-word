@@ -5,6 +5,7 @@ import '../../../../core/utils/format.dart';
 import '../../data/session_repository.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
+import '../../../auth/presentation/auth_controller.dart';
 
 class NewWordState {
   const NewWordState({this.saved, this.busy = false, this.xp = 0});
@@ -37,7 +38,12 @@ class NewWordController extends AutoDisposeFamilyNotifier<NewWordState, WordCard
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {
     if (state.finished) return state.outcome;
     await hf.say(card.word);
-    await hf.say(card.translation, lang: 'es');
+    // Escalera de español: la traducción solo en el escalón 1; después, la definición en inglés.
+    if (ref.read(spanishProvider).step == 1) {
+      await hf.say(card.translation, lang: 'es');
+    } else if (card.definition != null) {
+      await hf.say('It means: ${card.definition}');
+    }
     if (card.example != null) await hf.say(plainExample(card.example));
     await hf.say('Now you. Say ${card.word} twice.');
     for (var i = 0; i < 3; i++) {

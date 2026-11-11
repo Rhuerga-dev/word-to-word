@@ -3,6 +3,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+import '../../core/l10n/tr.dart';
 
 /// Recordatorio diario de estudio con notificaciones locales: el teléfono las programa a tu hora
 /// (la misma que en la web) y se salta el día si ya estudiaste. Funciona sin internet.
@@ -11,19 +12,19 @@ import 'package:timezone/timezone.dart' as tz;
 /// o terminas una sesión; así, si hoy ya estudiaste, el aviso de hoy desaparece.
 class ReminderService {
   static const days = 10;
-  static const _channel = AndroidNotificationDetails(
+  static AndroidNotificationDetails get _channel => AndroidNotificationDetails(
     'study_reminder',
-    'Recordatorio de estudio',
-    channelDescription: 'El aviso diario para hacer tu sesión de inglés.',
+    tr('Recordatorio de estudio'),
+    channelDescription: tr('El aviso diario para hacer tu sesión de inglés.'),
     importance: Importance.high,
     priority: Priority.high,
     icon: 'ic_stat_mic',
   );
-  static const _messages = [
-    ('Tu sesión de hoy te espera', 'Son unos 10 minutos: tus fichas, un sonido y un minuto hablando.'),
-    ('¿Un minuto de inglés?', 'Abre la app y habla un minuto sin parar. Todo suma a tu racha.'),
-    ('No pierdas la racha', 'Todavía no has practicado hoy. Una sesión corta basta.'),
-    ('Hora de hablar inglés', 'Repasa tus fichas y di bien tus errores de ayer.'),
+  static List<(String, String)> get _messages => [
+    (tr('Tu sesión de hoy te espera'), tr('Son unos 10 minutos: tus fichas, un sonido y un minuto hablando.')),
+    (tr('¿Un minuto de inglés?'), tr('Abre la app y habla un minuto sin parar. Todo suma a tu racha.')),
+    (tr('No pierdas la racha'), tr('Todavía no has practicado hoy. Una sesión corta basta.')),
+    (tr('Hora de hablar inglés'), tr('Repasa tus fichas y di bien tus errores de ayer.')),
   ];
 
   final _plugin = FlutterLocalNotificationsPlugin();
@@ -72,7 +73,7 @@ class ReminderService {
           title,
           body,
           tz.TZDateTime.from(at, tz.UTC),
-          const NotificationDetails(android: _channel, iOS: DarwinNotificationDetails()),
+          NotificationDetails(android: _channel, iOS: const DarwinNotificationDetails()),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         );
       }

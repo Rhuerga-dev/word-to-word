@@ -7,6 +7,8 @@ import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
 import '../../data/session_repository.dart';
 import 'exercise_outcome.dart';
+import '../../../../core/l10n/tr.dart';
+import '../../../auth/presentation/auth_controller.dart';
 
 enum NarrationPhase { loading, ready, recording, waiting, done, error }
 
@@ -49,7 +51,7 @@ class NarrationController extends AutoDisposeNotifier<NarrationState> {
     final topic = state.topic!;
     state = state.copyWith(phase: NarrationPhase.waiting);
     final text = await _repo.sendTurn(topic.sessionId, wav, reactionMs: reactionMs);
-    if (text.isEmpty) throw ApiException('No se entendió lo que dijiste. Prueba otra vez, un poco más alto.');
+    if (text.isEmpty) throw ApiException(tr('No se entendió lo que dijiste. Prueba otra vez, un poco más alto.'));
     final fb = await _repo.narration(topic.sessionId, text);
     await _repo.finishSpeaking(topic.sessionId);
     state = state.copyWith(phase: NarrationPhase.done, feedback: fb, said: text);
@@ -61,14 +63,18 @@ class NarrationController extends AutoDisposeNotifier<NarrationState> {
     if (topic == null) return create();
     try {
       await audio.say(topic.en);
-      await audio.say('Habla un minuto. Empieza ya.', lang: 'es');
+      if (ref.read(spanishProvider).hideTranslation) {
+        await audio.say('Talk for one minute. Start now.');
+      } else {
+        await audio.say('Habla un minuto. Empieza ya.', lang: 'es');
+      }
       state = state.copyWith(phase: NarrationPhase.recording);
       final t0 = DateTime.now();
       int? reaction;
       final r = await audio.record(maxMs: 58000, silenceMs: 4000, onVoice: () => reaction = DateTime.now().difference(t0).inMilliseconds);
-      if (!r.heard) throw ApiException('No te oí. Acércate al micrófono y prueba otra vez.');
+      if (!r.heard) throw ApiException(tr('No te oí. Acércate al micrófono y prueba otra vez.'));
       await _process(r.wav, reactionMs: reaction);
-      if (state.feedback?.comment != null) await audio.say(state.feedback!.comment!, lang: 'es');
+      if (state.feedback?.comment != null) await audio.say(state.feedback!.comment!, lang: ref.read(spanishProvider).coachVoice);
     } catch (e) {
       _fail(e);
     }
@@ -98,7 +104,7 @@ class NarrationController extends AutoDisposeNotifier<NarrationState> {
         return ExerciseOutcome.skipped;
       }
       final fb = state.feedback!;
-      if (fb.comment != null) await hf.say(fb.comment!, lang: 'es');
+      if (fb.comment != null) await hf.say(fb.comment!, lang: ref.read(spanishProvider).coachVoice);
       if (fb.better != null) {
         await hf.say('A more natural way:');
         await hf.say(fb.better!);

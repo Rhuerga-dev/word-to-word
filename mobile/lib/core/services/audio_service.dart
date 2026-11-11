@@ -10,6 +10,7 @@ import 'package:record/record.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../network/api_client.dart';
+import '../../core/l10n/tr.dart';
 
 /// Audio de la app: la voz natural (TTS del servidor) y el micrófono.
 ///
@@ -75,7 +76,7 @@ class AppAudio {
   /// Devuelve el WAV (16 kHz mono) y si se oyó voz. [onVoice] avisa cuando empiezas a hablar.
   Future<Recording> record({int maxMs = 6000, int silenceMs = 1200, void Function()? onVoice}) async {
     await _configure();
-    if (!await _rec.hasPermission()) throw ApiException('Permite el micrófono en Ajustes para hablar con la app.');
+    if (!await _rec.hasPermission()) throw ApiException(tr('Permite el micrófono en Ajustes para hablar con la app.'));
     final dir = await getTemporaryDirectory();
     final path = '${dir.path}/voz_${DateTime.now().millisecondsSinceEpoch}.wav';
     await _rec.start(

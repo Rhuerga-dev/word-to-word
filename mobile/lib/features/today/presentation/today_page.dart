@@ -14,6 +14,7 @@ import '../../path/presentation/path_providers.dart';
 import '../../session/data/session_plan.dart';
 import '../data/today.dart';
 import 'today_providers.dart';
+import '../../../core/l10n/tr.dart';
 
 /// Hoy: la meta de puntos y la sesión del día con un solo botón.
 class TodayPage extends ConsumerWidget {
@@ -45,13 +46,13 @@ class _TodayBody extends ConsumerWidget {
     final handsFree = ref.watch(handsFreeProvider.select((h) => h.on));
     final cards = d.reviews.length + d.newCards.length;
     final hour = DateTime.now().hour;
-    final hello = hour < 12 ? 'Buenos días' : (hour < 20 ? 'Buenas tardes' : 'Buenas noches');
-    final speak = const {'narrate': 'Contar tu día durante un minuto', 'picture': 'Describir una foto', 'shadowing': 'Repetir como un nativo'}[d.speak] ?? 'Hablar un minuto';
+    final hello = hour < 12 ? tr('Buenos días') : (hour < 20 ? tr('Buenas tardes') : tr('Buenas noches'));
+    final speak = {'narrate': tr('Contar tu día durante un minuto'), 'picture': tr('Describir una foto'), 'shadowing': tr('Repetir como un nativo')}[d.speak] ?? tr('Hablar un minuto');
     final agenda = <(String, String)>[
-      if (cards > 0) ('Calentamiento con $cards ${cards == 1 ? 'ficha' : 'fichas'}', '${(cards * 15 / 60).ceil()} min'),
-      if (!d.offline) ('El sonido /${d.sounds.isNotEmpty ? d.sounds.first : defaultSound()}/', '2 min'),
+      if (cards > 0) (trn(cards, 'Calentamiento con {0} ficha', 'Calentamiento con {0} fichas'), '${(cards * 15 / 60).ceil()} min'),
+      if (!d.offline) (tr('El sonido /{0}/', [d.sounds.isNotEmpty ? d.sounds.first : defaultSound()]), '2 min'),
       if (!d.offline) (speak, '2 min'),
-      if (!d.offline && d.mistakes.isNotEmpty) ('Dices bien ${d.mistakes.length} ${d.mistakes.length == 1 ? 'error' : 'errores'} de ayer', '1 min'),
+      if (!d.offline && d.mistakes.isNotEmpty) (trn(d.mistakes.length, 'Dices bien {0} error de ayer', 'Dices bien {0} errores de ayer'), '1 min'),
     ];
     final plan = d.offline ? SessionPlan.offline(d) : SessionPlan.fromToday(d);
     return ListView(
@@ -61,15 +62,15 @@ class _TodayBody extends ConsumerWidget {
           Expanded(child: Text(name.isEmpty ? hello : '$hello, $name', style: const TextStyle(fontSize: 17, color: W.muted))),
           const Icon(Icons.local_fire_department, color: Color(0xFFE8790C), size: 20),
           const SizedBox(width: 4),
-          Text('${d.streak} ${d.streak == 1 ? 'día' : 'días'}', style: const TextStyle(fontWeight: FontWeight.w700, color: W.streak)),
+          Text(trn(d.streak, '{0} día', '{0} días'), style: const TextStyle(fontWeight: FontWeight.w700, color: W.streak)),
         ]),
         const SizedBox(height: 22),
         Center(child: _MicRings(progress: math.min(1, xp.xp / xp.goal))),
         const SizedBox(height: 18),
-        Text(xp.sessions > 0 ? 'Otra ronda' : 'Tu sesión de hoy', textAlign: TextAlign.center, style: W.display(30)),
+        Text(xp.sessions > 0 ? tr('Otra ronda') : tr('Tu sesión de hoy'), textAlign: TextAlign.center, style: W.display(30)),
         const SizedBox(height: 6),
         Text(
-          xp.goalMet ? '¡Meta de hoy cumplida! ${xp.xp} XP. Otra ronda suma más.' : 'Unos 10 minutos con tu coach. Llevas ${xp.xp} de ${xp.goal} XP hoy.',
+          xp.goalMet ? tr('¡Meta de hoy cumplida! {0} XP. Otra ronda suma más.', [xp.xp]) : tr('Unos 10 minutos con tu coach. Llevas {0} de {1} XP hoy.', [xp.xp, xp.goal]),
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 16, color: W.muted, height: 1.4),
         ),
@@ -78,13 +79,13 @@ class _TodayBody extends ConsumerWidget {
           style: FilledButton.styleFrom(backgroundColor: W.yellow, foregroundColor: W.yellowInk, shape: const StadiumBorder(), minimumSize: const Size.fromHeight(58)),
           onPressed: plan.steps.isEmpty ? null : () => context.push(Routes.session, extra: plan),
           icon: Icon(handsFree ? Icons.headphones : Icons.play_arrow),
-          label: Text(xp.sessions > 0 ? 'Empezar otra ronda' : 'Empezar la sesión'),
+          label: Text(xp.sessions > 0 ? tr('Empezar otra ronda') : tr('Empezar la sesión')),
         ),
         const SizedBox(height: 6),
         SwitchListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-          title: const Text('Manos libres', style: TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: const Text('La app habla, te escucha y sigue sola. Ideal con AirPods.'),
+          title: Text(tr('Manos libres'), style: const TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text(tr('La app habla, te escucha y sigue sola. Ideal con AirPods.')),
           value: handsFree,
           onChanged: (v) => ref.read(handsFreeProvider.notifier).setOn(v),
         ),
@@ -93,9 +94,9 @@ class _TodayBody extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const Text('En la sesión', style: TextStyle(fontWeight: FontWeight.w700)),
+            Text(tr('En la sesión'), style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
-            if (agenda.isEmpty) const Text('Todo al día. Puedes practicar lo que quieras.', style: TextStyle(color: W.muted)),
+            if (agenda.isEmpty) Text(tr('Todo al día. Puedes practicar lo que quieras.'), style: TextStyle(color: W.muted)),
             for (final (what, time) in agenda)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
@@ -109,7 +110,7 @@ class _TodayBody extends ConsumerWidget {
         ],
         const SizedBox(height: 12),
         Row(children: [
-          Expanded(child: _Mini('Hablaste hoy', '${d.minutes} min'.replaceAll('.', ','))),
+          Expanded(child: _Mini(tr('Hablaste hoy'), '${d.minutes} min'.replaceAll('.', ','))),
           const SizedBox(width: 10),
           Expanded(child: _Mini('Esta semana', '${xp.weekTotal} XP')),
         ]),
@@ -177,8 +178,8 @@ class _PathCard extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Camino ${path.level} · ${cur == null ? 'completo' : 'Unidad ${cur.number}'}', style: const TextStyle(color: W.muted, fontSize: 13)),
-                Text(cur == null ? '¡Todas las unidades hechas!' : cur.title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(cur == null ? tr('Camino {0} · completo', [path.level]) : tr('Camino {0} · Unidad {1}', [path.level, cur.number]), style: const TextStyle(color: W.muted, fontSize: 13)),
+                Text(cur == null ? tr('¡Todas las unidades hechas!') : cur.title, style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
                 LinearProgressIndicator(value: steps / 4, color: W.good, backgroundColor: W.line, minHeight: 6, borderRadius: BorderRadius.circular(9)),
               ]),

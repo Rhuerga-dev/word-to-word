@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/tr.dart';
 import '../theme/app_theme.dart';
 
 /// Dibuja un AsyncValue: rueda mientras carga, el error con "Reintentar", o los datos.
@@ -22,7 +23,7 @@ class AsyncView<T> extends StatelessWidget {
               Text('$e', textAlign: TextAlign.center, style: const TextStyle(color: W.bad)),
               if (onRetry != null) ...[
                 const SizedBox(height: 12),
-                FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
+                FilledButton(onPressed: onRetry, child: Text(tr('Reintentar'))),
               ],
             ]),
           ),

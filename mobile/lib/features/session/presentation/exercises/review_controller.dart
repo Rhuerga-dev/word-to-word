@@ -4,6 +4,8 @@ import '../../../../core/services/hands_free.dart';
 import '../../data/session_repository.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
+import '../../../auth/presentation/auth_controller.dart';
+import '../../../../core/utils/format.dart';
 
 class ReviewState {
   const ReviewState({this.shown = false, this.busy = false, this.grade, this.error, this.xp = 0});
@@ -21,6 +23,15 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
 
   @override
   ReviewState build(WordCard card) => const ReviewState();
+
+  int get _step => ref.read(spanishProvider).step;
+
+  /// "help": en el escalón 1 la traducción; después, una pista en inglés (definición o ejemplo).
+  Future<void> _help(HandsFreeController hf) async {
+    if (_step == 1) return hf.say(card.translation, lang: 'es');
+    final hint = card.englishOnly ? card.example : (card.definition ?? card.example);
+    if (hint != null) await hf.say(plainExample(hint, cloze: card.englishOnly));
+  }
 
   void reveal() => state = ReviewState(shown: true, busy: state.busy);
 
@@ -40,11 +51,18 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
     final question = card.englishOnly && card.definition != null ? '${card.definition}. What is the word?' : card.word;
     await hf.say(question);
     for (var i = 0; i < 3; i++) {
-      if (!await handleCommand(hf, await hf.listen(), onHelp: () => hf.say(card.translation, lang: 'es'))) break;
+      if (!await handleCommand(hf, await hf.listen(), onHelp: () => _help(hf))) break;
     }
     reveal();
     if (card.englishOnly) await hf.say(card.word);
-    await hf.say(card.translation, lang: 'es');
+    // Escalera de español: desde el escalón 2 la respuesta se dice en inglés (definición), sin traducir.
+    if (_step == 1) {
+      await hf.say(card.translation, lang: 'es');
+    } else if (!card.englishOnly && card.definition != null) {
+      await hf.say('It means: ${card.definition}');
+    } else if (card.example != null) {
+      await hf.say(plainExample(card.example));
+    }
     for (var i = 0; i < 2; i++) {
       await hf.say(i == 0 ? 'Again, hard, good or easy?' : 'Say again, hard, good or easy.');
       final h = await hf.listen(maxMs: 4000, silenceMs: 900);

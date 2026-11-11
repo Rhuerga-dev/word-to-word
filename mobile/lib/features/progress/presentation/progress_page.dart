@@ -6,9 +6,11 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../auth/data/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../spanish/data/spanish_repository.dart';
 import '../data/progress_models.dart';
 import '../data/progress_repository.dart';
 import 'progress_providers.dart';
+import '../../../core/l10n/tr.dart';
 
 /// Progreso: números claros, recordatorio, liga de la semana y logros.
 class ProgressPage extends ConsumerWidget {
@@ -25,8 +27,8 @@ class ProgressPage extends ConsumerWidget {
           onRefresh: () => ref.refresh(progressProvider.future),
           child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
             Row(children: [
-              Expanded(child: Text('Progreso', style: W.display(26))),
-              TextButton(onPressed: () => ref.read(authControllerProvider.notifier).logout(), child: const Text('Salir')),
+              Expanded(child: Text(tr('Progreso'), style: W.display(26))),
+              TextButton(onPressed: () => ref.read(authControllerProvider.notifier).logout(), child: Text(tr('Salir'))),
             ]),
             const SizedBox(height: 10),
             GridView.count(
@@ -37,21 +39,23 @@ class ProgressPage extends ConsumerWidget {
               crossAxisSpacing: 10,
               childAspectRatio: 1.7,
               children: [
-                _stat('${p.wordsLearned}', 'palabras aprendidas'),
-                _stat('${p.speakingMinutes}', 'minutos hablando'),
-                _stat('${p.streak}', 'días seguidos'),
-                _stat('${p.mistakesMastered}', 'errores superados'),
+                _stat('${p.wordsLearned}', tr('palabras aprendidas')),
+                _stat('${p.speakingMinutes}', tr('minutos hablando')),
+                _stat('${p.streak}', tr('días seguidos')),
+                _stat('${p.mistakesMastered}', tr('errores superados')),
               ],
             ),
             for (final t in p.todo) Padding(padding: const EdgeInsets.only(top: 8), child: Text(t)),
-            _h('Recordatorio diario'),
+            _h('Tu español'),
+            const _SpanishCard(),
+            _h(tr('Recordatorio diario')),
             _ReminderCard(studiedToday: p.speakingToday > 0),
-            _h('Liga de la semana'),
+            _h(tr('Liga de la semana')),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text(l.myRank == null ? 'Aún sin puntos esta semana' : 'Vas en el puesto ${l.myRank} de ${l.players} · quedan ${l.daysLeft} días',
+                  Text(l.myRank == null ? tr('Aún sin puntos esta semana') : tr('Vas en el puesto {0} de {1} · quedan {2} días', [l.myRank, l.players, l.daysLeft]),
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 8),
                   for (final r in l.top)
@@ -59,13 +63,13 @@ class ProgressPage extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(vertical: 3),
                       child: Row(children: [
                         SizedBox(width: 28, child: Text('${r.rank}', style: const TextStyle(color: W.muted))),
-                        Expanded(child: Text('${r.name}${r.me ? ' (tú)' : ''}', style: TextStyle(fontWeight: r.me ? FontWeight.w700 : FontWeight.w400))),
+                        Expanded(child: Text('${r.name}${r.me ? tr(' (tú)') : ''}', style: TextStyle(fontWeight: r.me ? FontWeight.w700 : FontWeight.w400))),
                         Text('${r.xp} XP'),
                       ]),
                     ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Aparecer en la liga'),
+                    title: Text(tr('Aparecer en la liga')),
                     value: l.visible,
                     onChanged: (v) async {
                       await ref.read(progressRepositoryProvider).setLeagueVisible(v);
@@ -75,7 +79,7 @@ class ProgressPage extends ConsumerWidget {
                 ]),
               ),
             ),
-            _h('Logros · ${a.unlocked} de ${a.total}'),
+            _h(tr('Logros · {0} de {1}', [a.unlocked, a.total])),
             Wrap(spacing: 8, runSpacing: 8, children: [
               for (final x in a.list)
                 Tooltip(
@@ -98,7 +102,7 @@ class ProgressPage extends ConsumerWidget {
                 ),
             ],
             if (p.mistakesByCategory.isNotEmpty) ...[
-              _h('Tus errores por tipo'),
+              _h(tr('Tus errores por tipo')),
               for (final (label, count) in p.mistakesByCategory) Text('$label: $count'),
             ],
           ]),
@@ -107,7 +111,7 @@ class ProgressPage extends ConsumerWidget {
     );
   }
 
-  Widget _h(String t) => Padding(padding: const EdgeInsets.only(top: 22, bottom: 8), child: Text(t, style: W.display(19)));
+  Widget _h(String t) => Padding(padding: const EdgeInsets.only(top: 22, bottom: 8), child: Text(tr(t), style: W.display(19)));
 
   Widget _stat(String n, String label) => Container(
         padding: const EdgeInsets.all(12),
@@ -135,13 +139,13 @@ class _ReminderCardState extends ConsumerState<_ReminderCard> {
     final rem = ref.read(reminderServiceProvider);
     setState(() => _msg = '');
     if (on && !await rem.requestPermission()) {
-      setState(() => _msg = 'Activa las notificaciones de W2W en los ajustes del teléfono.');
+      setState(() => _msg = tr('Activa las notificaciones de W2W en los ajustes del teléfono.'));
       return;
     }
     try {
       await ref.read(authControllerProvider.notifier).saveReminder(enabled: on, time: time, timezone: await rem.timezoneName());
       await rem.sync(enabled: on, time: time, studiedToday: widget.studiedToday);
-      _msg = on ? 'Te avisaremos a las $time si no has estudiado.' : '';
+      _msg = on ? tr('Te avisaremos a las {0} si no has estudiado.', [time]) : '';
     } catch (e) {
       _msg = e.toString();
     }
@@ -153,7 +157,7 @@ class _ReminderCardState extends ConsumerState<_ReminderCard> {
     final t = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: int.tryParse(cur[0]) ?? 19, minute: int.tryParse(cur.length > 1 ? cur[1] : '0') ?? 0),
-      helpText: 'Hora del recordatorio',
+      helpText: tr('Hora del recordatorio'),
     );
     if (t != null) await _save(true, '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}');
   }
@@ -164,15 +168,115 @@ class _ReminderCardState extends ConsumerState<_ReminderCard> {
     return Card(
       child: Column(children: [
         SwitchListTile(
-          title: const Text('Avisarme si no he estudiado'),
-          subtitle: Text(r.enabled ? 'A las ${r.time}' : 'Desactivado'),
+          title: Text(tr('Avisarme si no he estudiado')),
+          subtitle: Text(r.enabled ? tr('A las {0}', [r.time]) : tr('Desactivado')),
           value: r.enabled,
           onChanged: (v) => _save(v, r.time),
         ),
         if (r.enabled)
-          ListTile(leading: const Icon(Icons.schedule), title: const Text('Cambiar la hora'), trailing: const Icon(Icons.chevron_right), onTap: () => _pickTime(r)),
+          ListTile(leading: const Icon(Icons.schedule), title: Text(tr('Cambiar la hora')), trailing: const Icon(Icons.chevron_right), onTap: () => _pickTime(r)),
         if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: Text(_msg, style: const TextStyle(color: W.muted))),
       ]),
+    );
+  }
+}
+
+/// La escalera de español: en qué escalón estás, cuánto español pediste y la opción de elegir el escalón.
+class _SpanishCard extends ConsumerStatefulWidget {
+  const _SpanishCard();
+
+  @override
+  ConsumerState<_SpanishCard> createState() => _SpanishCardState();
+}
+
+class _SpanishCardState extends ConsumerState<_SpanishCard> {
+  static const _names = ['Con español', 'Primero inglés', 'Interfaz en inglés', 'Solo inglés'];
+  static const _info = [
+    'Traducción a la vista y explicaciones en español.',
+    'Definición en inglés; el español solo si lo pides.',
+    'La app en inglés y español con límite diario.',
+    'Sin español: todo se explica en inglés.',
+  ];
+  bool _busy = false;
+  String _msg = '';
+
+  Future<void> _set(int? step) async {
+    setState(() => _busy = true);
+    try {
+      final sp = await ref.read(spanishRepositoryProvider).setStep(step);
+      ref.read(authControllerProvider.notifier).setSpanish(sp);
+      ref.invalidate(progressProvider);
+      _msg = '';
+    } catch (e) {
+      _msg = '$e';
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sp = ref.watch(spanishProvider);
+    final auto = sp.autoStep ?? sp.step;
+    Widget stat(String n, String label) => Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(n, style: W.display(22, color: W.accent)),
+            Text(tr(label), style: const TextStyle(color: W.muted, fontSize: 13)),
+          ]),
+        );
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Row(children: [
+            for (var i = 1; i <= 4; i++)
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  height: 8,
+                  decoration: BoxDecoration(color: i <= sp.step ? W.accent : W.line, borderRadius: BorderRadius.circular(9)),
+                ),
+              ),
+          ]),
+          const SizedBox(height: 10),
+          Text('${tr('Escalón')} ${sp.step} · ${tr(_names[sp.step - 1])}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+          Text(tr(_info[sp.step - 1]), style: const TextStyle(color: W.muted)),
+          const SizedBox(height: 4),
+          Text(tr('Pensar en inglés es dejar de pasar por el español: cada escalón te quita un poco.'), style: const TextStyle(color: W.muted, fontSize: 13)),
+          const SizedBox(height: 12),
+          Row(children: [
+            stat(sp.limit != null ? '${sp.today} / ${sp.limit}' : '${sp.today}', 'veces hoy'),
+            stat('${sp.week}', 'esta semana'),
+            stat('${sp.streak}', sp.streak == 1 ? 'día sin español' : 'días sin español'),
+          ]),
+          if (sp.reaction != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                sp.translating
+                    ? tr('Tardas {0} s en empezar a hablar: señal de que traduces mentalmente. Prueba «Respuesta rápida» en Hablar.', [sp.reaction])
+                    : tr('Empiezas a hablar en {0} s de media. Menos de {1} s es buena señal.', [sp.reaction, 2.5]),
+                style: TextStyle(color: sp.translating ? W.warn : W.muted),
+              ),
+            ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<int>(
+            key: ValueKey(sp.auto ? 0 : sp.step),
+            initialValue: sp.auto ? 0 : sp.step,
+            decoration: InputDecoration(labelText: tr('Escalón')),
+            items: [
+              DropdownMenuItem(
+                value: 0,
+                child: Text(auto > sp.base
+                    ? tr('Automático (ahora: escalón {0}, subiste por usar poco español)', [auto])
+                    : tr('Automático (ahora: escalón {0}, según tu nivel)', [auto]), overflow: TextOverflow.ellipsis),
+              ),
+              for (var i = 1; i <= 4; i++) DropdownMenuItem(value: i, child: Text('$i · ${tr(_names[i - 1])}')),
+            ],
+            onChanged: _busy ? null : (v) => _set(v == 0 ? null : v),
+          ),
+          if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_msg, style: const TextStyle(color: W.bad))),
+        ]),
+      ),
     );
   }
 }

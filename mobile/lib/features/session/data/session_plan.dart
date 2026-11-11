@@ -1,5 +1,6 @@
 import '../../today/data/today.dart';
 import 'word_card.dart';
+import '../../../core/l10n/tr.dart';
 
 /// Dos palabras por sonido difícil (las mismas ideas que el Taller de la web).
 const soundWords = <String, List<String>>{
@@ -69,7 +70,7 @@ class SessionPlan {
 
   /// Sin conexión: solo las fichas (lo demás necesita el servidor para escucharte).
   factory SessionPlan.offline(TodayData d) {
-    return SessionPlan([for (final c in d.reviews) ReviewStep(c), for (final c in d.newCards) NewStep(c)], title: 'Fichas sin conexión');
+    return SessionPlan([for (final c in d.reviews) ReviewStep(c), for (final c in d.newCards) NewStep(c)], title: tr('Fichas sin conexión'));
   }
 
   static SessionPlan sound(String phoneme, {String? title}) =>

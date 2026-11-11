@@ -6,6 +6,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/step_page.dart';
 import 'exercise_outcome.dart';
 import 'narration_controller.dart';
+import '../../../../core/l10n/tr.dart';
+import '../../../../core/widgets/spanish_peek.dart';
 
 /// Narración del día, estilo "Llamada": fondo azul, el tema grande y lo que dijiste con su corrección.
 class NarrationExercise extends ConsumerWidget {
@@ -19,13 +21,13 @@ class NarrationExercise extends ConsumerWidget {
     const light = TextStyle(color: W.mist, fontSize: 14);
     final white = FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: W.accent, shape: const StadiumBorder());
     final bottom = switch (s.phase) {
-      NarrationPhase.ready => bottomPad(FilledButton.icon(style: white, onPressed: ctl.go, icon: const Icon(Icons.mic), label: const Text('Empezar a hablar'))),
-      NarrationPhase.recording => bottomPad(FilledButton(style: white, onPressed: ctl.stop, child: const Text('Terminé de hablar'))),
-      NarrationPhase.done => bottomPad(FilledButton(style: white, onPressed: () => onDone(ExerciseOutcome.skipped), child: const Text('Continuar'))),
+      NarrationPhase.ready => bottomPad(FilledButton.icon(style: white, onPressed: ctl.go, icon: const Icon(Icons.mic), label: Text(tr('Empezar a hablar')))),
+      NarrationPhase.recording => bottomPad(FilledButton(style: white, onPressed: ctl.stop, child: Text(tr('Terminé de hablar')))),
+      NarrationPhase.done => bottomPad(FilledButton(style: white, onPressed: () => onDone(ExerciseOutcome.skipped), child: Text(tr('Continuar')))),
       NarrationPhase.error => bottomPad(Row(children: [
-          Expanded(child: OutlinedButton(style: OutlinedButton.styleFrom(foregroundColor: Colors.white), onPressed: () => onDone(ExerciseOutcome.skipped), child: const Text('Saltar'))),
+          Expanded(child: OutlinedButton(style: OutlinedButton.styleFrom(foregroundColor: Colors.white), onPressed: () => onDone(ExerciseOutcome.skipped), child: Text(tr('Saltar')))),
           const SizedBox(width: 10),
-          Expanded(child: FilledButton(style: white, onPressed: s.topic == null ? ctl.create : ctl.go, child: const Text('Otra vez'))),
+          Expanded(child: FilledButton(style: white, onPressed: s.topic == null ? ctl.create : ctl.go, child: Text(tr('Otra vez')))),
         ])),
       _ => null,
     };
@@ -34,23 +36,23 @@ class NarrationExercise extends ConsumerWidget {
       child: DefaultTextStyle.merge(
         style: const TextStyle(color: Colors.white),
         child: StepPage(bottom: bottom, children: [
-          stepKind('Narración del día: un minuto', color: W.mist),
+          stepKind(tr('Narración del día: un minuto'), color: W.mist),
           if (s.topic != null) ...[
-            const Text('Tu coach', style: light),
+            Text(tr('Tu coach'), style: light),
             Text(s.topic!.en, style: const TextStyle(fontSize: 22, height: 1.35, color: Colors.white)),
-            Text(s.topic!.es, style: light),
+            SpanishPeek(kind: 'hint', color: W.mist, child: Text(s.topic!.es, style: light)),
             const SizedBox(height: 22),
           ],
           switch (s.phase) {
             NarrationPhase.loading => const Center(child: CircularProgressIndicator(color: Colors.white)),
-            NarrationPhase.ready => const Text('Hablas un minuto sin parar, sin preparar nada. Si te quedas en blanco, describe lo que ves y sigue.', style: TextStyle(fontSize: 17, color: Colors.white)),
-            NarrationPhase.recording => Text('Te escucho…', style: W.display(32, color: W.yellow)),
-            NarrationPhase.waiting => const Text('Revisando lo que dijiste…', style: TextStyle(fontSize: 17, color: Colors.white)),
+            NarrationPhase.ready => Text(tr('Hablas un minuto sin parar, sin preparar nada. Si te quedas en blanco, describe lo que ves y sigue.'), style: TextStyle(fontSize: 17, color: Colors.white)),
+            NarrationPhase.recording => Text(tr('Te escucho…'), style: W.display(32, color: W.yellow)),
+            NarrationPhase.waiting => Text(tr('Revisando lo que dijiste…'), style: TextStyle(fontSize: 17, color: Colors.white)),
             NarrationPhase.error => Text(s.error, style: const TextStyle(color: W.yellow, fontSize: 16)),
             NarrationPhase.done => const SizedBox.shrink(),
           },
           if (s.phase == NarrationPhase.done && fb != null) ...[
-            const Text('Tú', style: light),
+            Text(tr('Tú'), style: light),
             Text(s.said, style: W.display(24, color: Colors.white, weight: FontWeight.w600)),
             const SizedBox(height: 14),
             for (final (said, correct) in fb.fixes)
@@ -64,16 +66,19 @@ class NarrationExercise extends ConsumerWidget {
                   TextSpan(text: correct, style: const TextStyle(color: W.yellow, fontWeight: FontWeight.w700)),
                 ])),
               ),
-            if (fb.comment != null) Text(fb.comment!, style: const TextStyle(fontSize: 16, color: Colors.white)),
+            if (fb.comment != null) ...[
+              Text(fb.comment!, style: const TextStyle(fontSize: 16, color: Colors.white)),
+              TranslateButton(text: fb.comment!, color: W.mist),
+            ],
             if (fb.better != null) ...[
               const SizedBox(height: 14),
-              const Text('Así sonaría más natural', style: light),
+              Text(tr('Así sonaría más natural'), style: light),
               Text(fb.better!, style: const TextStyle(fontSize: 17, height: 1.5, color: Colors.white)),
               TextButton.icon(
                 style: TextButton.styleFrom(foregroundColor: Colors.white),
                 onPressed: () => ref.read(audioProvider).say(fb.better!),
                 icon: const Icon(Icons.volume_up),
-                label: const Text('Escuchar'),
+                label: Text(tr('Escuchar')),
               ),
             ],
           ],

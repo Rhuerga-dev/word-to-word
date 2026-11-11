@@ -10,6 +10,8 @@ import '../../../../core/widgets/step_page.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
 import 'new_word_controller.dart';
+import '../../../../core/l10n/tr.dart';
+import '../../../../core/widgets/spanish_peek.dart';
 
 /// Palabra nueva estilo Libreta: la escuchas, la dices y la marcas como aprendida.
 class NewWordExercise extends ConsumerStatefulWidget {
@@ -35,22 +37,32 @@ class _NewWordExerciseState extends ConsumerState<NewWordExercise> {
     final c = widget.card;
     return StepPage(
       bottom: s.finished
-          ? FeedbackBar(ok: s.saved!, title: s.saved! ? '¡Nueva palabra!' : 'No se guardó', detail: s.saved! ? 'Mañana la repasas.' : null, onNext: () => widget.onDone(s.outcome))
-          : bottomPad(FilledButton(onPressed: s.busy ? null : ref.read(provider.notifier).learn, child: const Text('La tengo'))),
+          ? FeedbackBar(ok: s.saved!, title: s.saved! ? tr('¡Nueva palabra!') : tr('No se guardó'), detail: s.saved! ? tr('Mañana la repasas.') : null, onNext: () => widget.onDone(s.outcome))
+          : bottomPad(FilledButton(onPressed: s.busy ? null : ref.read(provider.notifier).learn, child: Text(tr('La tengo')))),
       children: [
-        stepKind('Palabra nueva'),
+        stepKind(tr('Palabra nueva')),
         NotebookCard(children: [
           Row(children: [
             Expanded(child: Highlight(c.word, style: W.display(42))),
-            IconButton.outlined(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up, color: W.accent), onPressed: () => ref.read(audioProvider).say(c.word)),
+            IconButton.outlined(tooltip: tr('Escuchar'), icon: const Icon(Icons.volume_up, color: W.accent), onPressed: () => ref.read(audioProvider).say(c.word)),
           ]),
           const SizedBox(height: 8),
           Text(plainExample(c.example), style: const TextStyle(fontSize: 19, height: 1.8)),
-          Text('= ${c.translation}', style: W.hand(28)),
-          if (c.exampleEs != null) Text(c.exampleEs!, style: const TextStyle(color: W.muted)),
+          if (c.hideTranslation && c.definition != null) Text('= ${c.definition!}', style: W.hand(28)),
+          if (c.hideTranslation)
+            SpanishPeek(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(c.translation, style: W.hand(24, color: W.streak)),
+                if (c.exampleEs != null) Text(c.exampleEs!, style: const TextStyle(color: W.muted)),
+              ]),
+            )
+          else ...[
+            Text('= ${c.translation}', style: W.hand(28)),
+            if (c.exampleEs != null) Text(c.exampleEs!, style: const TextStyle(color: W.muted)),
+          ],
         ]),
         const SizedBox(height: 14),
-        const Text('Dila en voz alta dos veces y úsala en una frase tuya.', style: TextStyle(color: W.muted)),
+        Text(tr('Dila en voz alta dos veces y úsala en una frase tuya.'), style: TextStyle(color: W.muted)),
       ],
     );
   }

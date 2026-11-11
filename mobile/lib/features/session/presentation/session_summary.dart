@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/step_page.dart';
 import '../data/session_repository.dart';
+import '../../../core/l10n/tr.dart';
 
 /// Fin de la sesión: puntos, aciertos, tiempo, racha y logros nuevos.
 class SessionSummary extends StatelessWidget {
@@ -30,28 +31,28 @@ class SessionSummary extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          Text(title == null ? '¡Sesión completa!' : '¡Listo!', textAlign: TextAlign.center, style: W.display(32)),
+          Text(title == null ? tr('¡Sesión completa!') : tr('¡Listo!'), textAlign: TextAlign.center, style: W.display(32)),
           if (x != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text(x.goalMet ? 'Cumpliste tu meta de hoy' : 'Llevas ${x.xp} de ${x.goal} XP hoy', textAlign: TextAlign.center, style: const TextStyle(color: W.muted)),
+              child: Text(x.goalMet ? tr('Cumpliste tu meta de hoy') : tr('Llevas {0} de {1} XP hoy', [x.xp, x.goal]), textAlign: TextAlign.center, style: const TextStyle(color: W.muted)),
             ),
           const SizedBox(height: 20),
           Row(children: [
-            _tile('PUNTOS', '+${xp + r.xpGained}', W.accent),
+            _tile(tr('PUNTOS'), '+${xp + r.xpGained}', W.accent),
             const SizedBox(width: 8),
-            _tile('FICHAS BIEN', graded == 0 ? '—' : '${(right * 100 / graded).round()}%', W.good),
+            _tile(tr('FICHAS BIEN'), graded == 0 ? '—' : '${(right * 100 / graded).round()}%', W.good),
             const SizedBox(width: 8),
-            _tile('TIEMPO', '${minutes < 1 ? 1 : minutes} min', const Color(0xFFC0640C)),
+            _tile(tr('TIEMPO'), '${minutes < 1 ? 1 : minutes} min', const Color(0xFFC0640C)),
           ]),
-          if (r.streak != null) Padding(padding: const EdgeInsets.only(top: 18), child: Text('🔥 ${r.streak} días seguidos', textAlign: TextAlign.center, style: W.display(20))),
+          if (r.streak != null) Padding(padding: const EdgeInsets.only(top: 18), child: Text(tr('🔥 {0} días seguidos', [r.streak]), textAlign: TextAlign.center, style: W.display(20))),
           if (r.learned > 0) Text('✓ ${r.learned} palabras nuevas'),
-          if (r.mistakesOk > 0) Text('✓ ${r.mistakesOk} errores dichos bien'),
+          if (r.mistakesOk > 0) Text(tr('✓ {0} errores dichos bien', [r.mistakesOk])),
           for (final a in r.achievements)
-            Padding(padding: const EdgeInsets.only(top: 10), child: Text('🏅 ¡Nuevo logro! ${a.title} · ${a.desc}', style: const TextStyle(color: W.good, fontWeight: FontWeight.w700))),
+            Padding(padding: const EdgeInsets.only(top: 10), child: Text(tr('🏅 ¡Nuevo logro! {0} · {1}', [a.title, a.desc]), style: const TextStyle(color: W.good, fontWeight: FontWeight.w700))),
         ]),
       ),
-      bottomPad(FilledButton(onPressed: () => context.pop(), child: const Text('Continuar'))),
+      bottomPad(FilledButton(onPressed: () => context.pop(), child: Text(tr('Continuar')))),
     ]);
   }
 

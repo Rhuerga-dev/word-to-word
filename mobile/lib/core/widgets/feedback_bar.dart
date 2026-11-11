@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../../core/l10n/tr.dart';
 
 /// Franja de abajo con la respuesta y "Continuar".
 class FeedbackBar extends StatelessWidget {
@@ -20,7 +21,7 @@ class FeedbackBar extends StatelessWidget {
         Text(title, style: W.display(22, color: c)),
         if (detail != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(detail!)),
         const SizedBox(height: 12),
-        FilledButton(onPressed: onNext, child: const Text('Continuar')),
+        FilledButton(onPressed: onNext, child: Text(tr('Continuar'))),
       ]),
     );
   }

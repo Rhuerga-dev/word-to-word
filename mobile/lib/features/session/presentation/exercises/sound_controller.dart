@@ -7,6 +7,7 @@ import '../../../../core/services/hands_free.dart';
 import '../../data/session_plan.dart';
 import '../../data/session_repository.dart';
 import 'exercise_outcome.dart';
+import '../../../../core/l10n/tr.dart';
 
 class SoundState {
   const SoundState({this.recording = false, this.tries = 0, this.pct, this.msg = ''});
@@ -34,7 +35,7 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
   Future<void> _assess(Uint8List wav) async {
     final pct = await ref.read(sessionRepositoryProvider).assess(word, phoneme, wav);
     final tries = state.tries + 1;
-    state = state.copyWith(pct: pct, tries: tries, msg: pct < 80 && tries < 3 ? 'Sonido al $pct%: escúchala otra vez y exagera el movimiento.' : '');
+    state = state.copyWith(pct: pct, tries: tries, msg: pct < 80 && tries < 3 ? tr('Sonido al {0}%: escúchala otra vez y exagera el movimiento.', [pct]) : '');
   }
 
   /// Con el dedo: graba y puntúa.
@@ -44,7 +45,7 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
     try {
       final r = await audio.record(maxMs: 3500, silenceMs: 700);
       if (!r.heard) {
-        state = state.copyWith(msg: 'No te oí. Habla un poco más cerca.');
+        state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
       } else {
         await _assess(r.wav);
         if (!state.finished) audio.say(word, slow: true);

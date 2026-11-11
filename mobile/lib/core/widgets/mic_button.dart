@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../../core/l10n/tr.dart';
 
 /// Botón grande de micrófono.
 class MicButton extends StatelessWidget {
@@ -11,7 +12,7 @@ class MicButton extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Semantics(
           button: true,
-          label: recording ? 'Grabando' : 'Hablar',
+          label: recording ? 'Grabando' : tr('Hablar'),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onPressed,
