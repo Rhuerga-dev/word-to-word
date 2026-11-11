@@ -47,7 +47,7 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
     state = state.copyWith(recording: true, msg: '');
     try {
       final rec = await audio.record(maxMs: 15000, silenceMs: 1400);
-      if (!rec.heard) {
+      if (!rec.heard && !rec.maybeVoice) {
         state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
       } else if (await _check(rec.wav)) {
         await audio.say(mistake.correct);

@@ -72,9 +72,9 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   String _last = '';
   String _lastLang = 'en';
 
-  /// Escuchas seguidas sin oírte. A la segunda se pausa: nunca se avanza ni se califica sin tu respuesta.
+  /// Escuchas seguidas sin oírte. A la tercera se pausa: nunca se avanza ni se califica sin tu respuesta.
   int _silent = 0;
-  static const maxSilent = 2;
+  static const maxSilent = 3;
 
   AppAudio get _audio => ref.read(audioProvider);
 
@@ -124,13 +124,9 @@ class HandsFreeController extends Notifier<HandsFreeState> {
     state = state.copyWith(phase: HfPhase.listening, heard: '');
     final r = await _audio.record(maxMs: maxMs, silenceMs: silenceMs);
     _check();
-    if (!r.heard) {
-      state = state.copyWith(phase: HfPhase.idle);
-      if (++_silent >= maxSilent) await _pauseForSilence();
-      return Heard('', null, wav: r.wav, silent: true);
-    }
-    _silent = 0;
+    if (!r.heard && !r.maybeVoice) return _nothing(r.wav);
     if (!transcribe) {
+      if (r.heard) _silent = 0; // con voz baja, lo decide el servidor al evaluarlo
       state = state.copyWith(phase: HfPhase.thinking);
       return Heard('', null, wav: r.wav);
     }
@@ -140,8 +136,18 @@ class HandsFreeController extends Notifier<HandsFreeState> {
       text = asString(asMap(await ref.read(apiProvider).upload('/speech/transcribe', r.wav))['text']);
     } catch (_) {}
     _check();
+    // Voz baja: solo cuenta si el servidor entendió algo; si no, era ruido.
+    if (!r.heard && text.trim().isEmpty) return _nothing(r.wav);
+    _silent = 0;
     state = state.copyWith(heard: text);
     return Heard(text, parseCommand(text), wav: r.wav);
+  }
+
+  /// No te oyó. A la tercera vez seguida se pausa (nunca se avanza ni se califica sin tu respuesta).
+  Future<Heard> _nothing(Uint8List wav) async {
+    state = state.copyWith(phase: HfPhase.idle);
+    if (++_silent >= maxSilent) await _pauseForSilence();
+    return Heard('', null, wav: wav, silent: true);
   }
 
   void idle() => state = state.copyWith(phase: HfPhase.idle);

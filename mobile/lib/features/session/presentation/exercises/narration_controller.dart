@@ -72,7 +72,7 @@ class NarrationController extends AutoDisposeNotifier<NarrationState> {
       final t0 = DateTime.now();
       int? reaction;
       final r = await audio.record(maxMs: 58000, silenceMs: 4000, onVoice: () => reaction = DateTime.now().difference(t0).inMilliseconds);
-      if (!r.heard) throw ApiException(tr('No te oí. Acércate al micrófono y prueba otra vez.'));
+      if (!r.heard && !r.maybeVoice) throw ApiException(tr('No te oí. Acércate al micrófono y prueba otra vez.'));
       await _process(r.wav, reactionMs: reaction);
       if (state.feedback?.comment != null) await audio.say(state.feedback!.comment!, lang: ref.read(spanishProvider).coachVoice);
     } catch (e) {

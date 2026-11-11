@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:word_to_word/core/l10n/tr.dart';
+import 'package:word_to_word/core/services/audio_service.dart';
 import 'package:word_to_word/features/auth/data/user_profile.dart';
 import 'package:word_to_word/features/session/data/word_card.dart';
 
@@ -48,5 +51,13 @@ void main() {
     final c = WordCard.fromJson({'id': 1, 'word': 'post', 'translation': 'correo', 'hide_translation': true, 'no_spanish': true});
     expect(c.hideTranslation, isTrue);
     expect(c.noSpanish, isTrue);
+  });
+
+  test('voz baja: no se da por silencio si hubo algo por encima del ruido', () {
+    final empty = Uint8List(0);
+    expect(Recording(empty, false, 1000, peakDb: -42, floorDb: -60).maybeVoice, isTrue);
+    expect(Recording(empty, false, 1000, peakDb: -57, floorDb: -60).maybeVoice, isFalse); // solo ruido
+    expect(Recording(empty, false, 1000, peakDb: -70, floorDb: -72).maybeVoice, isFalse);
+    expect(Recording(empty, true, 1000, peakDb: -20, floorDb: -60).maybeVoice, isFalse); // ya se oyó
   });
 }

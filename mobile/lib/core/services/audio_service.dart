@@ -87,14 +87,17 @@ class AppAudio {
     var heard = false;
     var silentSince = DateTime.now();
     final floor = <double>[];
-    var threshold = -38.0;
+    var threshold = -40.0;
+    var peak = -160.0;
     final done = _stopRec = Completer<void>();
     final sub = _rec.onAmplitudeChanged(const Duration(milliseconds: 120)).listen((a) {
       final db = a.current;
-      // Umbral según el ruido de fondo de los primeros ~0,4 s.
+      if (db > peak) peak = db;
+      // Umbral según el ruido de fondo de los primeros ~0,4 s (el más bajo, por si ya empezaste a hablar).
+      // Más sensible que antes: con la reducción de ruido de Android la voz llega bastante baja.
       if (floor.length < 3 && !heard) {
         floor.add(db);
-        if (floor.length == 3) threshold = (floor.reduce((x, y) => x < y ? x : y) + 14).clamp(-50.0, -28.0);
+        if (floor.length == 3) threshold = (floor.reduce((x, y) => x < y ? x : y) + 10).clamp(-52.0, -34.0);
       }
       if (db > threshold) {
         if (!heard) onVoice?.call();
@@ -111,7 +114,8 @@ class AppAudio {
     final file = File(out ?? path);
     final bytes = file.existsSync() ? await file.readAsBytes() : Uint8List(0);
     if (file.existsSync()) await file.delete();
-    return Recording(bytes, heard, DateTime.now().difference(started).inMilliseconds);
+    final floorDb = floor.isEmpty ? -160.0 : floor.reduce((x, y) => x < y ? x : y);
+    return Recording(bytes, heard, DateTime.now().difference(started).inMilliseconds, peakDb: peak, floorDb: floorDb);
   }
 
   /// "Ya terminé": corta la grabación sin esperar el silencio.
@@ -127,10 +131,16 @@ class AppAudio {
 }
 
 class Recording {
-  Recording(this.wav, this.heard, this.ms);
+  Recording(this.wav, this.heard, this.ms, {this.peakDb = -160, this.floorDb = -160});
   final Uint8List wav;
   final bool heard;
   final int ms;
+
+  /// Lo más fuerte que se oyó y el ruido de fondo (dB). Sirve para no dar por "silencio" una voz baja.
+  final double peakDb, floorDb;
+
+  /// Hubo algo por encima del ruido aunque no llegara al umbral: puede ser tu voz, hablando bajo.
+  bool get maybeVoice => !heard && peakDb > floorDb + 6 && peakDb > -55;
 }
 
 final audioProvider = Provider<AppAudio>((ref) {

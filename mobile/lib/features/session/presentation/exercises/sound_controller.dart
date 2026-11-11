@@ -44,7 +44,7 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
     state = state.copyWith(recording: true, msg: '');
     try {
       final r = await audio.record(maxMs: 3500, silenceMs: 700);
-      if (!r.heard) {
+      if (!r.heard && !r.maybeVoice) {
         state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
       } else {
         await _assess(r.wav);
