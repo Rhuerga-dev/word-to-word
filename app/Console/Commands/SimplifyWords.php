@@ -8,7 +8,8 @@ use Illuminate\Console\Command;
 use Throwable;
 
 /**
- * Significados fáciles (gloss, emoji, definición sencilla) para el ejercicio de Oído.
+ * Lo que necesita el ejercicio de Oído para cada palabra, escrito por la IA:
+ * significado fácil (gloss, emoji, definición sencilla) y lo que se repite (frase corta y oración larga).
  * Primero las palabras que los alumnos ya aprendieron (son las que suenan en Oído).
  *
  *   php artisan words:simplify            (hasta 100 de las aprendidas)
@@ -18,7 +19,7 @@ class SimplifyWords extends Command
 {
     protected $signature = 'words:simplify {--limit=100} {--batch=25} {--all : También las que nadie estudia todavía}';
 
-    protected $description = 'Agrega significados muy fáciles en inglés (para reconocer palabras de oído)';
+    protected $description = 'Significados muy fáciles y frases para repetir (ejercicio de Oído)';
 
     public function handle(ClaudeService $claude): int
     {
@@ -27,7 +28,7 @@ class SimplifyWords extends Command
 
             return self::SUCCESS;
         }
-        $query = Word::whereNull('gloss')->whereNotNull('translation');
+        $query = Word::whereNotNull('translation')->where(fn ($q) => $q->whereNull('gloss')->orWhereNull('phrase'));
         if (! $this->option('all')) {
             $query->whereIn('id', fn ($q) => $q->select('word_id')->from('user_words')->whereNotNull('introduced_at'));
         }
@@ -46,19 +47,37 @@ class SimplifyWords extends Command
                 if (! $m) {
                     continue;
                 }
-                // Si menciona la palabra, delataría la respuesta: se descarta ese campo.
-                $leaks = fn (?string $t) => $t !== null && preg_match('/\b'.preg_quote(mb_strtolower($w->word), '/').'/u', mb_strtolower($t));
-                $w->update([
-                    // '' = ya se intentó (no se repite cada hora).
-                    'gloss' => $m['gloss'] && ! $leaks($m['gloss']) ? mb_substr($m['gloss'], 0, 60) : '',
-                    'emoji' => $m['emoji'] ? mb_substr($m['emoji'], 0, 16) : null,
-                    'definition_easy' => $m['easy'] && ! $leaks($m['easy']) ? mb_substr($m['easy'], 0, 255) : null,
-                ]);
+                $w->update(self::fields($w, $m));
                 $done++;
             }
         }
-        $this->info("Significados fáciles: {$done} de {$pending->count()}.");
+        $this->info("Palabras preparadas para Oído: {$done} de {$pending->count()}.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Valida lo que escribió la IA. El significado no puede decir la palabra (delataría la respuesta);
+     * la frase y la oración sí tienen que contenerla. '' = ya se intentó (no se repite cada hora).
+     *
+     * @param  array{gloss: ?string, emoji: ?string, easy: ?string, phrase?: ?string, long?: ?string}  $m
+     */
+    public static function fields(Word $w, array $m): array
+    {
+        $root = mb_strtolower($w->word);
+        $stem = mb_strlen($root) > 4 ? mb_substr($root, 0, -1) : $root; // rent/rents, deadline/deadlines, make/making
+        $has = fn (?string $t) => $t !== null && preg_match('/\b'.preg_quote($stem, '/').'/u', mb_strtolower($t));
+        $out = [];
+        if ($w->gloss === null) {
+            $out['gloss'] = $m['gloss'] && ! $has($m['gloss']) ? mb_substr($m['gloss'], 0, 60) : '';
+            $out['emoji'] = $m['emoji'] ? mb_substr($m['emoji'], 0, 16) : null;
+            $out['definition_easy'] = $m['easy'] && ! $has($m['easy']) ? mb_substr($m['easy'], 0, 255) : $w->definition_easy;
+        }
+        if ($w->phrase === null) {
+            $out['phrase'] = ($m['phrase'] ?? null) && $has($m['phrase']) && str_word_count($m['phrase']) <= 6 ? mb_substr($m['phrase'], 0, 80) : '';
+            $out['sentence_long'] = ($m['long'] ?? null) && $has($m['long']) ? mb_substr($m['long'], 0, 255) : null;
+        }
+
+        return $out;
     }
 }

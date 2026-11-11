@@ -180,7 +180,7 @@ TXT;
      * gloss (1–3 palabras muy básicas), emoji (si lo muestra claro) y una definición con palabras muy comunes.
      *
      * @param  array<int, string>  $words
-     * @return array<string, array{gloss: ?string, emoji: ?string, easy: ?string}>
+     * @return array<string, array{gloss: ?string, emoji: ?string, easy: ?string, phrase: ?string, long: ?string}>
      */
     public function simplify(array $words): array
     {
@@ -191,8 +191,10 @@ Give:
 - "gloss": 1 to 3 VERY simple English words that show the meaning (like "last day", "paper with price", "money for a house"). A1 level only.
 - "emoji": ONE emoji only if it shows the meaning clearly; otherwise null.
 - "easy": a definition of max 10 words using ONLY the 1000 most common English words.
-Never use the word itself or any form of it. Use the most common meaning.
-Answer ONLY with a JSON object: {"word": {"gloss": "...", "emoji": "..." or null, "easy": "..."}, ...}, keys exactly as given.
+- "phrase": a very common short phrase of 2 to 5 words that CONTAINS the word (like "pay the rent", "meet the deadline").
+- "long": one natural spoken sentence of 12 to 18 words that CONTAINS the word, with simple everyday vocabulary.
+In gloss, emoji and easy never use the word itself or any form of it. Use the most common meaning.
+Answer ONLY with a JSON object: {"word": {"gloss": "...", "emoji": "..." or null, "easy": "...", "phrase": "...", "long": "..."}, ...}, keys exactly as given.
 
 Words:
 {$list}
@@ -211,6 +213,8 @@ TXT;
                     'gloss' => is_string($m['gloss'] ?? null) ? trim($m['gloss']) : null,
                     'emoji' => is_string($m['emoji'] ?? null) && trim($m['emoji']) !== '' ? trim($m['emoji']) : null,
                     'easy' => is_string($m['easy'] ?? null) ? trim($m['easy']) : null,
+                    'phrase' => is_string($m['phrase'] ?? null) ? trim($m['phrase']) : null,
+                    'long' => is_string($m['long'] ?? null) ? trim($m['long']) : null,
                 ];
             }
         }

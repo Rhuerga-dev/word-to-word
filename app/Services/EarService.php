@@ -9,27 +9,31 @@ use Illuminate\Support\Collection;
 
 /**
  * Oído: reconocer de oído las palabras que ya aprendiste. Cada palabra sube por escalones,
- * de lo más fácil a lo más difícil, y siempre en inglés:
+ * siempre en inglés: primero escuchas y tocas; después escuchas y REPITES, cada vez algo más largo.
  *
- *   0 · sound       oyes la palabra despacio y eliges cuál de 3 palabras ESCRITAS oíste (sonidos parecidos)
- *   1 · easy        oyes la palabra y eliges su significado más simple (emoji + 1–3 palabras básicas)
- *   2 · definition  eliges la definición escrita solo con palabras muy comunes
- *   3 · sentence    oyes una frase que la contiene (y luego la palabra) y eliges el significado
- *   4 · fast        igual, pero tienes 2 segundos
- *   5+              automática: la reconoces sin pensar
+ *   0 · sound            oyes la palabra despacio y tocas cuál de 3 palabras escritas oíste
+ *   1 · easy             oyes la palabra y tocas su significado más simple (emoji + 1–3 palabras)
+ *   2 · repeat_word      oyes la palabra y la repites
+ *   3 · repeat_phrase    oyes una frase corta con la palabra ("pay the rent") y la repites
+ *   4 · repeat_sentence  oyes una oración y la repites
+ *   5 · repeat_long      oyes una oración larga a velocidad normal y la repites
+ *   6+                   automática
  *
- * Rápido y bien: sube un escalón y vuelve más tarde. Bien pero lento: mañana, mismo escalón.
- * Mal: baja un escalón (no a cero) y vuelve mañana.
+ * Bien (y sin tardar en arrancar): sube un escalón y vuelve más tarde. Bien pero lento: mañana, mismo escalón.
+ * Mal: baja un escalón (no a cero) y vuelve mañana. Para repetir, "bien" = al menos el 80 % de las palabras.
  */
 class EarService
 {
-    public const MODES = ['sound', 'easy', 'definition', 'sentence', 'fast'];
+    public const MODES = ['sound', 'easy', 'repeat_word', 'repeat_phrase', 'repeat_sentence', 'repeat_long'];
 
-    /** Tiempo para contar como "rápido" (sin traducir), por escalón. */
-    public const FAST_MS = [3500, 3000, 3500, 3500, 2000];
+    /** Tiempo para contar como "rápido": en tocar la respuesta, o en empezar a repetir. */
+    public const FAST_MS = [3500, 3000, 4000, 4000, 4000, 4000];
 
     /** Desde aquí la palabra es "automática". */
-    public const AUTOMATIC_LEVEL = 5;
+    public const AUTOMATIC_LEVEL = 6;
+
+    /** Para repetir: parte de las palabras que hay que decir bien. */
+    public const REPEAT_PASS = 80;
 
     public function __construct(private SrsService $srs) {}
 
@@ -94,15 +98,37 @@ class EarService
         $level = (int) $uw->ear_level;
         $mode = self::mode($level);
         $example = $w->example ? trim(str_replace('*', '', $w->example)) : null;
-        if (in_array($mode, ['sentence', 'fast'], true) && ! $example) {
-            $mode = 'definition'; // sin frase de ejemplo, se queda en la definición
+
+        if (str_starts_with($mode, 'repeat_')) {
+            // Lo que se repite. Si aún falta la frase o la oración larga, se usa lo más parecido que haya.
+            $target = match ($mode) {
+                'repeat_word' => $w->word,
+                'repeat_phrase' => filled($w->phrase) ? $w->phrase : ($example ?? $w->word),
+                'repeat_sentence' => $example ?? (filled($w->phrase) ? $w->phrase : $w->word),
+                default => filled($w->sentence_long) ? $w->sentence_long : ($example ?? $w->word),
+            };
+
+            return [
+                'id' => $w->id,
+                'word' => $w->word,
+                'mode' => $mode,
+                'audio' => [['text' => $target, 'slow' => false]],
+                'target' => $target,
+                'meaning' => self::easy($w) ?: null,
+                'example' => $example,
+                'options' => [],
+                'answer' => null,
+                'ear_level' => $level,
+                'fast_ms' => self::fastMs($level),
+                'pass' => self::REPEAT_PASS,
+            ];
         }
 
         if ($mode === 'sound') {
             $options = collect([$w->word, ...$this->soundAlikes($w->word)])->shuffle()->values()->all();
             $right = $w->word;
         } else {
-            $kind = $mode === 'easy' ? 'easy' : 'definition';
+            $kind = 'easy';
             $right = self::meaning($w, $kind);
             if ($right === '') {
                 return null;
@@ -117,10 +143,8 @@ class EarService
             $options = collect([$right, ...$wrong])->shuffle()->values()->all();
         }
 
-        // Lo que suena: la palabra (despacio al principio) o la frase y luego la palabra.
-        $audio = in_array($mode, ['sentence', 'fast'], true)
-            ? [['text' => $example, 'slow' => false], ['text' => $w->word, 'slow' => false]]
-            : [['text' => $w->word, 'slow' => $mode === 'sound']];
+        // Lo que suena: la palabra (despacio en el primer escalón).
+        $audio = [['text' => $w->word, 'slow' => $mode === 'sound']];
 
         return [
             'id' => $w->id,
@@ -218,13 +242,8 @@ class EarService
         if ($w->gloss === null && $claude && $claude->enabled()) {
             try {
                 $m = $claude->simplify([$w->word])[$w->word] ?? null;
-                $leaks = fn (?string $s) => $s !== null && preg_match('/\b'.preg_quote(mb_strtolower($w->word), '/').'/u', mb_strtolower($s));
                 if ($m) {
-                    $w->update([
-                        'gloss' => $m['gloss'] && ! $leaks($m['gloss']) ? mb_substr($m['gloss'], 0, 60) : '',
-                        'emoji' => $m['emoji'] ? mb_substr($m['emoji'], 0, 16) : null,
-                        'definition_easy' => $m['easy'] && ! $leaks($m['easy']) ? mb_substr($m['easy'], 0, 255) : $w->definition_easy,
-                    ]);
+                    $w->update(\App\Console\Commands\SimplifyWords::fields($w, $m));
                 }
             } catch (\Throwable $e) {
                 report($e);

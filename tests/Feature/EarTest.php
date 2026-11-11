@@ -62,38 +62,47 @@ class EarTest extends TestCase
         $this->assertSame('🏠 money for a house', $e['options'][$e['answer']]);
     }
 
-    public function test_escalon_2_definicion_facil_y_3_en_una_frase(): void
+    public function test_despues_se_escucha_y_se_repite_cada_vez_algo_mas_largo(): void
     {
-        $this->learned('rent', ['definition' => 'a regular payment for the use of property', 'definition_easy' => 'money you pay each month to live in a place'], 2);
-        $this->learned('invoice', ['definition_easy' => 'a paper that says how much to pay']);
-        $this->learned('deadline', ['definition_easy' => 'the last day to finish work']);
+        $this->learned('rent', ['gloss' => 'money for a house', 'phrase' => 'pay the rent', 'sentence_long' => 'Every month I pay the rent on the first day so I never forget it.'], 2);
         $e = $this->earFor('rent');
-        $this->assertSame('definition', $e['mode']);
-        $this->assertSame('money you pay each month to live in a place', $e['options'][$e['answer']]);
+        $this->assertSame('repeat_word', $e['mode']);
+        $this->assertSame('rent', $e['target']);
+        $this->assertSame([], $e['options']);
+        $this->assertSame(80, $e['pass']);
+        $this->assertSame('money for a house', $e['meaning']);
 
-        UserWord::whereHas('word', fn ($q) => $q->where('word', 'rent'))->update(['ear_level' => 3]);
-        $e = $this->earFor('rent');
-        $this->assertSame('sentence', $e['mode']);
-        $this->assertSame('I use rent a lot.', $e['audio'][0]['text']);
-        $this->assertSame('rent', $e['audio'][1]['text']);
+        $levels = [3 => ['repeat_phrase', 'pay the rent'], 4 => ['repeat_sentence', 'I use rent a lot.'], 5 => ['repeat_long', 'Every month I pay the rent on the first day so I never forget it.']];
+        foreach ($levels as $level => [$mode, $target]) {
+            UserWord::whereHas('word', fn ($q) => $q->where('word', 'rent'))->update(['ear_level' => $level]);
+            $e = $this->earFor('rent');
+            $this->assertSame($mode, $e['mode']);
+            $this->assertSame($target, $e['target']);
+            $this->assertSame($target, $e['audio'][0]['text']);
+        }
+    }
+
+    public function test_si_falta_la_frase_se_usa_lo_mas_parecido(): void
+    {
+        $this->learned('deadline', ['gloss' => 'last day'], 3);
+        $this->assertSame('I use deadline a lot.', $this->earFor('deadline')['target']);
     }
 
     public function test_sube_rapido_baja_un_escalon_si_fallas_y_lento_no_sube(): void
     {
         $w = $this->learned('rent', ['gloss' => 'money for a house'], 2);
         $r = $this->postJson("/api/words/{$w->id}/ear", ['ok' => true, 'ms' => 1500])->assertOk();
-        $r->assertJsonPath('ear_level', 3)->assertJsonPath('fast', true)->assertJsonPath('mode', 'sentence');
+        $r->assertJsonPath('ear_level', 3)->assertJsonPath('fast', true)->assertJsonPath('mode', 'repeat_phrase');
         $this->assertGreaterThan(0, $r->json('xp_gained'));
 
         $this->postJson("/api/words/{$w->id}/ear", ['ok' => true, 'ms' => 9000])->assertJsonPath('ear_level', 3)->assertJsonPath('fast', false)->assertJsonPath('xp_gained', 0);
         $this->postJson("/api/words/{$w->id}/ear", ['ok' => false, 'ms' => 900])->assertJsonPath('ear_level', 2);
     }
 
-    public function test_en_el_escalon_4_hay_que_contestar_en_2_segundos_y_luego_es_automatica(): void
+    public function test_despues_de_la_oracion_larga_es_automatica(): void
     {
-        $w = $this->learned('rent', ['gloss' => 'money for a house'], 4);
-        $this->postJson("/api/words/{$w->id}/ear", ['ok' => true, 'ms' => 2500])->assertJsonPath('fast', false)->assertJsonPath('ear_level', 4);
-        $this->postJson("/api/words/{$w->id}/ear", ['ok' => true, 'ms' => 1500])->assertJsonPath('ear_level', 5)
+        $w = $this->learned('rent', ['gloss' => 'money for a house'], 5);
+        $this->postJson("/api/words/{$w->id}/ear", ['ok' => true, 'ms' => 2000])->assertJsonPath('ear_level', 6)
             ->assertJsonPath('automatic', true)->assertJsonPath('automatic_total', 1);
         $this->getJson('/api/stats')->assertJsonPath('ear_automatic', 1);
     }
@@ -130,8 +139,8 @@ class EarTest extends TestCase
         $this->learned('rent');
         $this->learned('invoice');
         Http::fake(['api.anthropic.com/*' => Http::response(['content' => [['type' => 'text', 'text' => json_encode([
-            'rent' => ['gloss' => 'money for a house', 'emoji' => '🏠', 'easy' => 'money you pay to live in a place'],
-            'invoice' => ['gloss' => 'an invoice paper', 'emoji' => null, 'easy' => 'a paper that says how much to pay'],
+            'rent' => ['gloss' => 'money for a house', 'emoji' => '🏠', 'easy' => 'money you pay to live in a place', 'phrase' => 'pay the rent', 'long' => 'We pay the rent every month to the owner of the house.'],
+            'invoice' => ['gloss' => 'an invoice paper', 'emoji' => null, 'easy' => 'a paper that says how much to pay', 'phrase' => 'send a bill', 'long' => 'Please send me the invoice before Friday so I can pay it.'],
         ])]]])]);
 
         $this->artisan('words:simplify')->assertSuccessful();
@@ -142,5 +151,10 @@ class EarTest extends TestCase
         $inv = Word::where('word', 'invoice')->first();
         $this->assertSame('', $inv->gloss); // decía la palabra: se descarta y no se reintenta
         $this->assertSame('a paper that says how much to pay', $inv->definition_easy);
+        // La frase y la oración tienen que contener la palabra.
+        $this->assertSame('pay the rent', $rent->phrase);
+        $this->assertSame('We pay the rent every month to the owner of the house.', $rent->sentence_long);
+        $this->assertSame('', $inv->phrase);
+        $this->assertSame('Please send me the invoice before Friday so I can pay it.', $inv->sentence_long);
     }
 }
