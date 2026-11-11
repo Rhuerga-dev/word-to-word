@@ -34,6 +34,13 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     state = AsyncData(await _repo.me());
   }
 
+  /// Borra la cuenta: se cancelan los recordatorios y se vuelve a la pantalla de entrar.
+  Future<void> deleteAccount(String password) async {
+    await _repo.deleteAccount(password);
+    await ref.read(reminderServiceProvider).cancelAll();
+    state = const AsyncData(null);
+  }
+
   Future<void> logout() async {
     await ref.read(reminderServiceProvider).cancelAll();
     await _repo.logout();

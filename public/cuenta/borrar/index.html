@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Borrar mi cuenta · W2W</title>
+<link rel="icon" href="/app/icons/favicon-32.png?v=2">
+<link rel="stylesheet" href="/legal.css">
+</head>
+<body>
+<main>
+<header><img src="/app/icons/apple-touch-icon.png?v=2" alt=""><b>W2W</b></header>
+<h1>Borrar mi cuenta</h1>
+<p>Se borran tu cuenta y todo lo que tiene: tu progreso, tus palabras, tus errores, tus sesiones y tus recordatorios. <b>No se puede deshacer.</b></p>
+<p class="muted">También puedes hacerlo desde la app: Progreso → Borrar mi cuenta. · <span lang="en">Delete your W2W account and all its data. This cannot be undone.</span></p>
+<section>
+<form id="del">
+<label for="email">Correo · Email</label>
+<input id="email" type="email" autocomplete="username" required>
+<label for="password">Contraseña · Password</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button type="submit" id="go">Borrar mi cuenta para siempre</button>
+<p class="msg" id="msg" role="status" aria-live="polite"></p>
+</form>
+</section>
+<p class="muted"><a href="/privacidad/">Política de privacidad</a></p>
+</main>
+<script src="/cuenta/borrar/borrar.js"></script>
+</body>
+</html>

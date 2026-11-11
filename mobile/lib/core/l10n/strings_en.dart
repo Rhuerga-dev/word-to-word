@@ -268,4 +268,12 @@ const stringsEn = <String, String>{
   "¡Perfecto!": "Perfect!",
   "Toca y repite": "Tap and repeat",
   "Cada palabra sube por escalones: primero la reconoces y sabes qué significa; después la repites, luego en una frase, en una oración y en una oración larga.": "Each word climbs step by step: first you recognize it and know what it means; then you repeat it, then in a phrase, in a sentence and in a long sentence.",
+  "Borrar mi cuenta": "Delete my account",
+  "Se borran tu cuenta y todo lo que tiene: tu progreso, tus palabras, tus errores y tus recordatorios. No se puede deshacer.": "Your account and everything in it will be deleted: your progress, words, mistakes and reminders. This cannot be undone.",
+  "Borrando…": "Deleting…",
+  "Borrar para siempre": "Delete forever",
+  "Se borran tu cuenta y todo lo que tiene. No se puede deshacer.": "Your account and everything in it will be deleted. This cannot be undone.",
+  "Tu contraseña": "Your password",
+  "Política de privacidad": "Privacy policy",
+  "La contraseña no es correcta.": "The password is incorrect.",
 };

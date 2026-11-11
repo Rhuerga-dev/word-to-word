@@ -45,6 +45,7 @@ class Api {
   Future<dynamic> get(String path) => _call(() => dio.get(path));
   Future<dynamic> post(String path, [Map<String, dynamic>? body]) => _call(() => dio.post(path, data: body));
   Future<dynamic> put(String path, [Map<String, dynamic>? body]) => _call(() => dio.put(path, data: body));
+  Future<dynamic> delete(String path, [Map<String, dynamic>? body]) => _call(() => dio.delete(path, data: body));
 
   /// Sube audio (WAV 16 kHz mono) con campos extra; [onProgress] va de 0 a 1.
   Future<dynamic> upload(String path, Uint8List wav, {Map<String, String> fields = const {}, void Function(double)? onProgress}) =>

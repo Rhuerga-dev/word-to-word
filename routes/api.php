@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:signup');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
+// Borrar la cuenta sin la app (página /cuenta/borrar/, como pide Google Play).
+Route::post('/account/delete', [\App\Http\Controllers\Api\AccountController::class, 'destroyWithPassword'])->middleware('throttle:5,1');
 Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
 Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:10,1');
 Route::get('/config', [StudyController::class, 'config']);
@@ -27,6 +29,7 @@ Route::post('/auth/demo', [\App\Http\Controllers\Api\DemoController::class, 'sto
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::delete('/account', [\App\Http\Controllers\Api\AccountController::class, 'destroy'])->middleware('throttle:5,1');
     Route::post('/i18n/missing', [\App\Http\Controllers\Api\I18nController::class, 'missing'])->middleware('throttle:10,1');
     Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->middleware('throttle:3,1');
 

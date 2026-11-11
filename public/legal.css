@@ -1,0 +1,21 @@
+/* Páginas legales de W2W (política de privacidad, borrar cuenta). */
+:root{--bg:#f1f4fc;--card:#fff;--ink:#16212e;--muted:#4d5a6b;--line:#d3dbe6;--accent:#1f4fd1;--bad:#c43c3c;--good:#1e8a55}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1622;--card:#172131;--ink:#e8edf5;--muted:#a3afc0;--line:#2a3648;--accent:#7f9cff;--bad:#ff8a8a;--good:#6fd39b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:28px 16px 60px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+header img{width:48px;height:48px;border-radius:12px}
+header b{font-size:20px}
+h1{font-size:28px;line-height:1.2;margin:8px 0 6px}
+h2{font-size:20px;margin:28px 0 6px}
+p,li{color:var(--ink)}
+.muted{color:var(--muted);font-size:15px}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 20px 14px;margin:14px 0}
+a{color:var(--accent)}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+button{margin-top:18px;width:100%;padding:14px;border:0;border-radius:12px;background:var(--bad);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button[disabled]{opacity:.6;cursor:default}
+.msg{margin-top:14px;font-weight:600}
+.msg.bad{color:var(--bad)}.msg.ok{color:var(--good)}

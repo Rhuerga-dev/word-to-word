@@ -32,6 +32,12 @@ class AuthRepository {
     await clear();
   }
 
+  /// Borra la cuenta y todo lo que tiene (Google Play lo exige). Lanza ApiException si la contraseña no es correcta.
+  Future<void> deleteAccount(String password) async {
+    await _api.delete('/account', {'password': password});
+    await clear();
+  }
+
   Future<void> clear() async {
     _api.token = null;
     await _storage.delete(key: 'token');

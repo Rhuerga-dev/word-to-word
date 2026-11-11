@@ -110,6 +110,15 @@ class ProgressPage extends ConsumerWidget {
               _h(tr('Tus errores por tipo')),
               for (final (label, count) in p.mistakesByCategory) Text('$label: $count'),
             ],
+            const SizedBox(height: 28),
+            Center(
+              child: TextButton.icon(
+                style: TextButton.styleFrom(foregroundColor: W.bad),
+                onPressed: () => showDialog<void>(context: context, builder: (_) => const _DeleteAccountDialog()),
+                icon: const Icon(Icons.delete_forever_outlined),
+                label: Text(tr('Borrar mi cuenta')),
+              ),
+            ),
           ]),
         );
       },
@@ -358,6 +367,66 @@ class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
             ),
           ),
       ]),
+    );
+  }
+}
+
+/// Borrar la cuenta y todo lo que tiene (se pide la contraseña otra vez).
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  final _pass = TextEditingController();
+  bool _busy = false;
+  String _msg = '';
+
+  @override
+  void dispose() {
+    _pass.dispose();
+    super.dispose();
+  }
+
+  Future<void> _go() async {
+    final auth = ref.read(authControllerProvider.notifier), nav = Navigator.of(context);
+    setState(() {
+      _busy = true;
+      _msg = '';
+    });
+    try {
+      await auth.deleteAccount(_pass.text);
+      nav.pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _msg = '$e';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(tr('Borrar mi cuenta')),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(tr('Se borran tu cuenta y todo lo que tiene: tu progreso, tus palabras, tus errores y tus recordatorios. No se puede deshacer.')),
+        const SizedBox(height: 12),
+        TextField(controller: _pass, obscureText: true, autofillHints: const [AutofillHints.password], decoration: InputDecoration(labelText: tr('Contraseña'))),
+        if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_msg, style: const TextStyle(color: W.bad))),
+      ]),
+      actions: [
+        TextButton(onPressed: _busy ? null : () => Navigator.pop(context), child: Text(tr('Cancelar'))),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: W.bad),
+          onPressed: _busy ? null : _go,
+          child: Text(_busy ? tr('Borrando…') : tr('Borrar para siempre')),
+        ),
+      ],
     );
   }
 }

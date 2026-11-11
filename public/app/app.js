@@ -811,6 +811,17 @@ async function nextDay() { try { await api("/debug/next-day", { method: "POST" }
 $("nextDay").onclick = nextDay;
 $("resetBtn").onclick = () => $("confirmBox").hidden = false;
 $("resetNo").onclick = () => $("confirmBox").hidden = true;
+// Borrar la cuenta y todo lo que tiene (también desde /cuenta/borrar/).
+$("delAccBtn").onclick = () => { $("delAccBox").hidden = false; $("delAccPass").focus(); };
+$("delAccNo").onclick = () => { $("delAccBox").hidden = true; $("delAccPass").value = ""; $("delAccMsg").textContent = ""; };
+$("delAccYes").onclick = async () => {
+  $("delAccYes").disabled = true; $("delAccMsg").textContent = "Borrando…";
+  try {
+    await api("/account", { method: "DELETE", body: { password: $("delAccPass").value } });
+    setToken(null); profile = null; applyUiLang(); showAuth(); setAuthMode("login");
+  } catch (e) { $("delAccMsg").textContent = e.message; }
+  $("delAccYes").disabled = false;
+};
 $("resetYes").onclick = async () => { $("confirmBox").hidden = true; try { await api("/reset", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } };
 function alertSide(m) { $("svc").textContent = m; }
 
