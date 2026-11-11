@@ -701,6 +701,19 @@ body:not([data-nav="progress"]) .grid{max-width:none}
   .pr-tiles{grid-template-columns:minmax(0,1fr)}
   .bnav button{font-size:11px}
 }
+
+/* Prueba del micrófono */
+.mic-test{margin:10px 0;padding:14px;border:1px solid var(--line,#d3dbe6);border-radius:14px;background:var(--card,#fff)}
+.mic-test .mt-step{font-weight:700;margin:4px 0}
+.mic-test .mt-say{font-size:1.25em;margin:6px 0 10px}
+.mic-test .mt-meter{height:12px;border-radius:9px;background:rgba(127,127,127,.25);overflow:hidden}
+.mic-test .mt-meter span{display:block;height:100%;width:2%;background:#1e8a55;transition:width .08s linear}
+.mic-test .mt-verdict{font-weight:700;font-size:1.05em;margin:0 0 8px}
+.mic-test .mt-list,.mic-test .mt-tips{margin:0 0 10px;padding:0;list-style:none;display:grid;gap:8px}
+.mic-test .mt-row{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+.mic-test .mt-tips li{padding:8px 10px;border-radius:10px;background:rgba(183,121,31,.16);color:inherit}
+.mic-test .note{overflow-wrap:anywhere}
+.mic-test .mt-bad{color:#c43c3c;font-weight:700}
 </style>
 
 <div class="wrap">
@@ -815,6 +828,8 @@ body:not([data-nav="progress"]) .grid{max-width:none}
           <label class="inl" for="micSel">Micrófono <select id="micSel" style="width:auto;max-width:180px"><option value="">Automático</option></select></label>
           <p class="note" id="micNote"></p>
           <p class="note">Con AirPods: elige el <b>micrófono del iPhone</b> y la voz de la app se oirá con mejor calidad en los AirPods.</p>
+          <div class="row"><button type="button" id="micTest">🎙️ Probar micrófono</button></div>
+          <div id="micTestOut" class="mic-test" hidden aria-live="polite"></div>
           <label class="inl" for="speakGoal">Minutos hablando por día <input type="number" id="speakGoal" min="1" max="60" value="5"></label>
           <label class="inl" for="freelancePack">Vocabulario para clientes (freelance) <input type="checkbox" id="freelancePack"></label>
           <label class="inl" for="remOn">Recordatorio diario <input type="checkbox" id="remOn"></label>
@@ -868,4 +883,5 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 <script src="/app/speak.js?v=10"></script>
 <script src="/app/progress.js?v=4"></script>
 <script src="/app/today.js?v=4"></script>
+<script src="/app/mictest.js?v=1"></script>
 </body></html>
