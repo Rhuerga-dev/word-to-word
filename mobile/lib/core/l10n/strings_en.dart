@@ -216,4 +216,5 @@ const stringsEn = <String, String>{
   "¿Necesitas una pista?": "Need a hint?",
   "Nuevas de hoy y repasos que tocan, con tu escena AID": "Today's new words and due reviews, with your AID scene",
   "Esta semana": "This week",
+  "Manos libres en pausa porque no te oí. Actívalo cuando quieras seguir.": "Hands-free paused because I couldn't hear you. Turn it back on when you're ready.",
 };

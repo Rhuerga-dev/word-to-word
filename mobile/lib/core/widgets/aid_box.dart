@@ -33,9 +33,12 @@ class _AidBoxState extends ConsumerState<AidBox> {
   String _state = '';
   Timer? _t;
 
+  late final WordsRepository _repo;
+
   @override
   void initState() {
     super.initState();
+    _repo = ref.read(wordsRepositoryProvider); // para guardar aunque la ficha ya se haya cerrado
     _editing = _text.text.isEmpty;
   }
 
@@ -47,6 +50,8 @@ class _AidBoxState extends ConsumerState<AidBox> {
 
   @override
   void dispose() {
+    // Si sales antes de que se guarde, se guarda igual.
+    if (_t?.isActive ?? false) _repo.saveAid(widget.card.id, _text.text).catchError((_) {});
     _t?.cancel();
     _text.dispose();
     super.dispose();
@@ -58,7 +63,7 @@ class _AidBoxState extends ConsumerState<AidBox> {
     _t?.cancel();
     _t = Timer(const Duration(milliseconds: 700), () async {
       try {
-        await ref.read(wordsRepositoryProvider).saveAid(widget.card.id, v);
+        await _repo.saveAid(widget.card.id, v);
         if (mounted) setState(() => _state = tr('Guardado'));
       } catch (e) {
         if (mounted) setState(() => _state = '$e');
@@ -69,7 +74,7 @@ class _AidBoxState extends ConsumerState<AidBox> {
   Future<void> _suggest() async {
     setState(() => _loading = true);
     try {
-      _sugg = await ref.read(wordsRepositoryProvider).suggestAid(widget.card.id);
+      _sugg = await _repo.suggestAid(widget.card.id);
       _state = '';
     } catch (e) {
       _state = '$e';

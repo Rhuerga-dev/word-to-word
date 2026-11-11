@@ -24,14 +24,14 @@ class _WordsPageState extends ConsumerState<WordsPage> {
   Future<void> _start(WordsDay d) async {
     final plan = SessionPlan([for (final c in d.reviews) ReviewStep(c), for (final c in d.newCards) NewStep(c)], title: tr('Tus palabras'));
     await context.push(Routes.session, extra: plan);
-    ref.invalidate(wordsProvider);
+    if (mounted) ref.invalidate(wordsProvider);
   }
 
   Future<void> _daily(int n) async {
     setState(() => _saving = true);
     try {
       await ref.read(wordsRepositoryProvider).setDailyNew(n);
-      ref.invalidate(wordsProvider);
+      if (mounted) ref.invalidate(wordsProvider);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }

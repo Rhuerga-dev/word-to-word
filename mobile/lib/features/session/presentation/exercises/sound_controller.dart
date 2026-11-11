@@ -57,12 +57,10 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
   }
 
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {
-    var silent = 0;
     await hf.say(word, slow: true);
     while (!state.finished) {
       final h = await hf.listen(maxMs: 3500, silenceMs: 700, transcribe: false);
       if (h.silent) {
-        if (++silent >= 3) return ExerciseOutcome.skipped;
         await hf.say("I didn't hear you. Say $word.");
         continue;
       }

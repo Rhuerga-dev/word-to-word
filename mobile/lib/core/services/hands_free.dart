@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../network/api_client.dart';
 import '../utils/json.dart';
 import 'audio_service.dart';
+import '../../features/auth/presentation/auth_controller.dart';
 
 /// Órdenes de voz del modo manos libres (en inglés a propósito).
 enum VoiceCommand { repeat, slower, next, help, stop }
@@ -58,8 +59,11 @@ class Heard {
   final bool silent;
 }
 
-/// Se lanza cuando pausas el manos libres en medio de un ejercicio.
-class HandsFreePaused implements Exception {}
+/// Se lanza cuando pausas el manos libres en medio de un ejercicio ([silence]: se pausó solo porque no te oyó).
+class HandsFreePaused implements Exception {
+  HandsFreePaused({this.silence = false});
+  final bool silence;
+}
 
 /// Manos libres: la app habla, te escucha y sigue sola. Los ejercicios lo usan para hacer su parte por voz.
 class HandsFreeController extends Notifier<HandsFreeState> {
@@ -67,6 +71,10 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   final _storage = const FlutterSecureStorage();
   String _last = '';
   String _lastLang = 'en';
+
+  /// Escuchas seguidas sin oírte. A la segunda se pausa: nunca se avanza ni se califica sin tu respuesta.
+  int _silent = 0;
+  static const maxSilent = 2;
 
   AppAudio get _audio => ref.read(audioProvider);
 
@@ -80,6 +88,7 @@ class HandsFreeController extends Notifier<HandsFreeState> {
 
   Future<void> setOn(bool on) async {
     state = state.copyWith(on: on, phase: HfPhase.idle);
+    _silent = 0;
     if (!on) _interrupt();
     try {
       await _storage.write(key: _key, value: on ? '1' : '0');
@@ -117,8 +126,10 @@ class HandsFreeController extends Notifier<HandsFreeState> {
     _check();
     if (!r.heard) {
       state = state.copyWith(phase: HfPhase.idle);
+      if (++_silent >= maxSilent) await _pauseForSilence();
       return Heard('', null, wav: r.wav, silent: true);
     }
+    _silent = 0;
     if (!transcribe) {
       state = state.copyWith(phase: HfPhase.thinking);
       return Heard('', null, wav: r.wav);
@@ -134,6 +145,18 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   }
 
   void idle() => state = state.copyWith(phase: HfPhase.idle);
+
+  /// No te oye dos veces seguidas: lo dice y se queda en pausa en el mismo ejercicio.
+  Future<void> _pauseForSilence() async {
+    final spanish = ref.read(spanishProvider).step == 1;
+    try {
+      await say(spanish ? 'No te oigo. Lo dejo en pausa; actívalo cuando quieras seguir.' : "I can't hear you. I'll pause here. Turn it back on when you're ready.", lang: spanish ? 'es' : 'en');
+    } on HandsFreePaused {
+      // ya estaba en pausa
+    }
+    await setOn(false);
+    throw HandsFreePaused(silence: true);
+  }
 }
 
 final handsFreeProvider = NotifierProvider<HandsFreeController, HandsFreeState>(HandsFreeController.new);

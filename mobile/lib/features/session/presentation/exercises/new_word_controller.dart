@@ -46,8 +46,14 @@ class NewWordController extends AutoDisposeFamilyNotifier<NewWordState, WordCard
     }
     if (card.example != null) await hf.say(plainExample(card.example));
     await hf.say('Now you. Say ${card.word} twice.');
-    for (var i = 0; i < 3; i++) {
-      if (!await handleCommand(hf, await hf.listen(maxMs: 5000), onHelp: () => hf.say(card.word, slow: true))) break;
+    // Solo pasa cuando la dices: si no te oye, te la vuelve a pedir (y a la segunda se pausa).
+    while (true) {
+      final h = await hf.listen(maxMs: 5000);
+      if (h.silent) {
+        await hf.say('Your turn. Say ${card.word}.');
+        continue;
+      }
+      if (!await handleCommand(hf, h, onHelp: () => hf.say(card.word, slow: true))) break;
     }
     await learn();
     return state.outcome;

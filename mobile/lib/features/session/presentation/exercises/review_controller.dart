@@ -53,8 +53,14 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
     if (state.finished) return state.outcome;
     final question = card.englishOnly && card.definition != null ? '${card.definition}. What is the word?' : card.word;
     await hf.say(question);
-    for (var i = 0; i < 3; i++) {
-      if (!await handleCommand(hf, await hf.listen(), onHelp: () => _help(hf))) break;
+    // Espera tu respuesta: si no te oye, te lo vuelve a pedir (y a la segunda se pausa, sin avanzar).
+    while (true) {
+      final h = await hf.listen();
+      if (h.silent) {
+        await hf.say('Take your time. Say the answer, or say help.');
+        continue;
+      }
+      if (!await handleCommand(hf, h, onHelp: () => _help(hf))) break;
     }
     reveal();
     if (card.englishOnly) await hf.say(card.word);
@@ -66,10 +72,11 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
     } else if (card.example != null) {
       await hf.say(plainExample(card.example));
     }
-    for (var i = 0; i < 2; i++) {
+    // La nota solo la pones tú: sin respuesta no se califica.
+    for (var i = 0;; i++) {
       await hf.say(i == 0 ? 'Again, hard, good or easy?' : 'Say again, hard, good or easy.');
-      final h = await hf.listen(maxMs: 4000, silenceMs: 900);
-      if (await handleCommand(hf, h)) continue;
+      final h = await hf.listen(maxMs: 5000, silenceMs: 900);
+      if (h.silent || await handleCommand(hf, h)) continue;
       final g = parseGrade(h.text);
       if (g != null) {
         await rate(g);
@@ -78,8 +85,6 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
         return state.outcome;
       }
     }
-    await rate('hard');
-    return state.outcome;
   }
 }
 

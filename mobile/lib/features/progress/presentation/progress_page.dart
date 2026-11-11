@@ -203,9 +203,11 @@ class _SpanishCardState extends ConsumerState<_SpanishCard> {
   Future<void> _set(int? step) async {
     setState(() => _busy = true);
     try {
-      final sp = await ref.read(spanishRepositoryProvider).setStep(step);
-      ref.read(authControllerProvider.notifier).setSpanish(sp);
-      ref.invalidate(progressProvider);
+      // Al cambiar de idioma la app se vuelve a dibujar y esta tarjeta se cierra: todo se toma antes.
+      final repo = ref.read(spanishRepositoryProvider), auth = ref.read(authControllerProvider.notifier);
+      final sp = await repo.setStep(step);
+      if (mounted) ref.invalidate(progressProvider);
+      auth.setSpanish(sp);
       _msg = '';
     } catch (e) {
       _msg = '$e';

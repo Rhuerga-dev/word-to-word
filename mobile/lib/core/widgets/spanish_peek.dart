@@ -23,12 +23,14 @@ class _SpanishPeekState extends ConsumerState<SpanishPeek> {
   String _msg = '';
 
   Future<void> _ask() async {
+    // Se toma antes de esperar: si pasas de ficha mientras responde, la pantalla ya no existe.
+    final repo = ref.read(spanishRepositoryProvider), auth = ref.read(authControllerProvider.notifier);
     setState(() => _busy = true);
     try {
-      await ref.read(spanishRepositoryProvider).use(widget.kind);
+      await repo.use(widget.kind);
       _open = true;
       _msg = '';
-      refreshSpanish(ref);
+      refreshSpanish(repo, auth);
     } catch (e) {
       _msg = '$e';
     }
@@ -68,11 +70,12 @@ class _TranslateButtonState extends ConsumerState<TranslateButton> {
   bool _busy = false;
 
   Future<void> _go() async {
+    final repo = ref.read(spanishRepositoryProvider), auth = ref.read(authControllerProvider.notifier);
     setState(() => _busy = true);
     try {
-      _es = await ref.read(spanishRepositoryProvider).translate(widget.text);
+      _es = await repo.translate(widget.text);
       _msg = '';
-      refreshSpanish(ref);
+      refreshSpanish(repo, auth);
     } catch (e) {
       _msg = '$e';
     }
@@ -98,6 +101,6 @@ class _TranslateButtonState extends ConsumerState<TranslateButton> {
 }
 
 /// Trae el contador de español actualizado (sin esperar).
-void refreshSpanish(WidgetRef ref) {
-  ref.read(spanishRepositoryProvider).fetch().then(ref.read(authControllerProvider.notifier).setSpanish).catchError((_) {});
+void refreshSpanish(SpanishRepository repo, AuthController auth) {
+  repo.fetch().then(auth.setSpanish).catchError((_) {});
 }

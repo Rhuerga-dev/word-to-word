@@ -123,8 +123,11 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
     ExerciseOutcome? outcome;
     try {
       outcome = await _byVoice(hf);
-    } on HandsFreePaused {
+    } on HandsFreePaused catch (p) {
       // Se pausó: el ejercicio sigue con el dedo donde quedó.
+      if (p.silence && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Manos libres en pausa porque no te oí. Actívalo cuando quieras seguir.'))));
+      }
     } on SkipExercise {
       outcome = ExerciseOutcome.skipped;
     } catch (e) {
@@ -132,7 +135,8 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Manos libres en pausa: {0}', [e]))));
     } finally {
       _running = false;
-      if (ref.read(handsFreeProvider).on) hf.idle();
+      // La pantalla pudo cerrarse mientras hablaba (pasaste de ficha o saliste): sin ref.
+      if (mounted && ref.read(handsFreeProvider).on) hf.idle();
     }
     if (outcome != null && mounted && ref.read(handsFreeProvider).on) widget.onDone(outcome);
   }
