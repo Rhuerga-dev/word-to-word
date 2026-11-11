@@ -77,4 +77,20 @@ void main() {
     expect(d.ear.single.meaning, 'c');
     expect(EarItem.fromJson({'id': 1, 'word': 'x', 'options': ['q'], 'answer': 0}).level, 0);
   });
+
+  test('oído: cada escalón trae lo que suena y cómo se contesta', () {
+    final e = EarItem.fromJson({
+      'id': 3, 'word': 'rent', 'mode': 'sentence', 'fast_ms': 3500,
+      'audio': [{'text': 'The rent is due.', 'slow': false}, {'text': 'rent', 'slow': false}],
+      'options': ['money for a house', 'b', 'c'], 'answer': 0, 'ear_level': 3,
+    });
+    expect(e.step, 4);
+    expect(e.definitions, isTrue);
+    expect(e.sounds.map((a) => a.text), ['The rent is due.', 'rent']);
+    final s = EarItem.fromJson({'id': 1, 'word': 'think', 'mode': 'sound', 'options': ['think', 'sink', 'thing'], 'answer': 0});
+    expect(s.step, 1);
+    expect(s.definitions, isFalse);
+    expect(s.sounds.single.text, 'think');
+    expect(WordLookup.fromJson({'word': 'payment', 'emoji': '💳', 'gloss': 'money given'}).text, '💳 money given');
+  });
 }

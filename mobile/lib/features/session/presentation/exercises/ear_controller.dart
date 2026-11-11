@@ -6,11 +6,8 @@ import '../../data/ear_item.dart';
 import '../../data/session_repository.dart';
 import 'exercise_outcome.dart';
 
-/// Rápido = la reconoces sin traducir.
-const earFastMs = 3000;
-
 class EarState {
-  const EarState({this.playing = true, this.endedAt, this.chosen, this.ms = 0, this.result, this.error});
+  const EarState({this.playing = true, this.endedAt, this.chosen, this.ms = 0, this.result, this.error, this.lens = false, this.look});
   final bool playing;
 
   /// Cuándo terminó de sonar (desde ahí se cuenta lo que tardas).
@@ -20,14 +17,27 @@ class EarState {
   final EarResult? result;
   final String? error;
 
+  /// Modo lupa: tocar las palabras de las opciones para entenderlas.
+  final bool lens;
+
+  /// Lo último que buscaste con la lupa.
+  final String? look;
+
   bool get answered => chosen != null;
   bool get finished => result != null || error != null;
 
-  EarState copyWith({bool? playing, DateTime? endedAt, int? chosen, int? ms, EarResult? result, String? error}) =>
-      EarState(playing: playing ?? this.playing, endedAt: endedAt ?? this.endedAt, chosen: chosen ?? this.chosen, ms: ms ?? this.ms, result: result ?? this.result, error: error ?? this.error);
+  EarState copyWith({bool? playing, DateTime? endedAt, int? chosen, int? ms, EarResult? result, String? error, bool? lens, String? look}) => EarState(
+      playing: playing ?? this.playing,
+      endedAt: endedAt ?? this.endedAt,
+      chosen: chosen ?? this.chosen,
+      ms: ms ?? this.ms,
+      result: result ?? this.result,
+      error: error ?? this.error,
+      lens: lens ?? this.lens,
+      look: look ?? this.look);
 }
 
-/// Oído: suena la palabra (sin texto) y eliges qué significa, rápido.
+/// Oído por escalones: sonido → significado fácil → definición → en una frase → rápido.
 class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
   EarItem get item => arg;
 
@@ -36,15 +46,37 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
 
   ExerciseOutcome outcome() => ExerciseOutcome(xp: state.result?.xp ?? 0, graded: true, ok: state.chosen == item.answer);
 
-  /// Suena la palabra; el tiempo empieza a contar al terminar.
+  bool get fast => state.chosen == item.answer && state.ms <= item.fastMs;
+
+  /// Suena lo de este escalón (la palabra, despacio al principio, o la frase y la palabra).
   Future<void> play() async {
     state = state.copyWith(playing: true);
-    await ref.read(audioProvider).say(item.word);
-    state = EarState(playing: false, endedAt: DateTime.now(), chosen: state.chosen, ms: state.ms, result: state.result, error: state.error);
+    final audio = ref.read(audioProvider);
+    final parts = item.sounds;
+    for (var i = 0; i < parts.length; i++) {
+      if (i > 0) await Future<void>.delayed(const Duration(milliseconds: 450));
+      await audio.say(parts[i].text, slow: parts[i].slow);
+    }
+    // Solo la primera vez empieza a contar el tiempo.
+    state = state.copyWith(playing: false, endedAt: state.endedAt ?? DateTime.now());
+  }
+
+  void toggleLens() => state = state.copyWith(lens: !state.lens);
+
+  /// Toca una palabra que no entiendes: la dice y muestra su significado más simple.
+  Future<void> lookUp(String word) async {
+    state = state.copyWith(look: '$word…');
+    ref.read(audioProvider).say(word);
+    try {
+      final r = await ref.read(sessionRepositoryProvider).lookup(word);
+      state = state.copyWith(look: '${r.word} = ${r.text}');
+    } catch (e) {
+      state = state.copyWith(look: '$word: $e');
+    }
   }
 
   Future<void> choose(int i) async {
-    if (state.answered || state.endedAt == null) return;
+    if (state.answered || state.endedAt == null || state.lens) return;
     final ms = DateTime.now().difference(state.endedAt!).inMilliseconds;
     await _send(i == item.answer, ms, chosen: i);
   }
@@ -58,25 +90,58 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
     }
   }
 
-  /// Manos libres: la app dice la palabra, tú dices qué significa (en inglés), te dice la respuesta
-  /// y le dices si la sabías. Lo que tardas se mide desde que terminó la palabra hasta que empiezas a hablar.
+  static String _plain(String t) => t.replaceAll(RegExp(r'[^\x00-\x7F]'), '').trim();
+  static String _norm(String t) => t.toLowerCase().replaceAll(RegExp(r"[^a-z' ]"), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+
+  /// Manos libres. Escalón "sonido": repites la palabra que oíste y se compara con las opciones.
+  /// Los demás: dices qué significa (en inglés), te dice la respuesta y le dices si la sabías.
+  /// El tiempo va desde que termina de sonar hasta que empiezas a hablar.
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {
     if (state.finished) return outcome();
+    Future<void> sayItem() async {
+      for (final a in item.sounds) {
+        await hf.say(a.text, slow: a.slow);
+      }
+    }
+
     await hf.say('Listen.');
-    await hf.say(item.word);
+    await sayItem();
     final t0 = DateTime.now();
     DateTime? voice;
+
+    if (item.mode == 'sound') {
+      await hf.say('Which word did you hear? Say it.');
+      while (true) {
+        final h = await hf.listen(maxMs: 5000, onVoice: () => voice ??= DateTime.now());
+        if (h.silent) {
+          await sayItem();
+          continue;
+        }
+        if (await handleCommand(hf, h, onHelp: sayItem)) continue;
+        final heard = ' ${_norm(h.text)} ';
+        final said = item.options.indexWhere((o) => heard.contains(' ${o.toLowerCase()} '));
+        if (said < 0) {
+          await hf.say('Say it again: which word did you hear?');
+          continue;
+        }
+        final ms = (voice ?? DateTime.now()).difference(t0).inMilliseconds;
+        await _send(said == item.answer, ms, chosen: said);
+        await hf.say(said == item.answer ? 'Yes! ${item.word}.' : 'It was ${item.word}.');
+        return outcome();
+      }
+    }
+
     while (true) {
       final h = await hf.listen(maxMs: 6000, onVoice: () => voice ??= DateTime.now());
       if (h.silent) {
         await hf.say('What does it mean? Say it in English.');
-        await hf.say(item.word);
+        await sayItem();
         continue;
       }
       if (!await handleCommand(hf, h, onHelp: () => hf.say(item.example ?? item.word))) break;
     }
     final ms = (voice ?? DateTime.now()).difference(t0).inMilliseconds;
-    await hf.say('It means: ${item.meaning}. Did you know it? Yes or no.');
+    await hf.say('It means: ${_plain(item.meaning)}. Did you know it? Yes or no.');
     while (true) {
       final h = await hf.listen(maxMs: 4000, silenceMs: 900);
       if (h.silent || await handleCommand(hf, h)) continue;

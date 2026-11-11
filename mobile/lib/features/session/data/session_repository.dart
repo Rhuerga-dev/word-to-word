@@ -78,13 +78,16 @@ class SessionRepository {
     final body = {'ok': ok, 'ms': ms};
     try {
       final r = asMap(await _api.post('/words/$wordId/ear', body));
-      return EarResult(xp: asInt(r['xp_gained']), fast: asBool(r['fast']), automatic: asBool(r['automatic']));
+      return EarResult(xp: asInt(r['xp_gained']), fast: asBool(r['fast']), automatic: asBool(r['automatic']), mode: asStringOrNull(r['mode']));
     } on ApiException catch (e) {
       if (!e.isNetwork) rethrow;
       await _cache.enqueue('/words/$wordId/ear', body);
       return EarResult(fast: ok && ms <= 3000);
     }
   }
+
+  /// Una palabra que no entiendes dentro de una definición: su significado más simple.
+  Future<WordLookup> lookup(String word) async => WordLookup.fromJson(asMap(await _api.get('/words/lookup?w=${Uri.encodeQueryComponent(word)}')));
 
   /// Puntuación (0–100) del sonido [phoneme] al decir [word].
   Future<int> assess(String word, String phoneme, Uint8List wav) async {
