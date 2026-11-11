@@ -96,7 +96,7 @@ class PronunciationService
      *
      * @return array{text: string, words: int, speech_ms: int, long_pauses: int, wpm: int|null}
      */
-    public function transcribe(string $wavBytes): array
+    public function transcribe(string $wavBytes, string $language = 'en-US'): array
     {
         if (! $this->enabled()) {
             throw new RuntimeException('Falta AZURE_SPEECH_KEY en el archivo .env');
@@ -104,7 +104,7 @@ class PronunciationService
 
         $region = config('vocab.azure_speech.region');
         $url = "https://{$region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1"
-            .'?language=en-US&format=detailed&wordLevelTimestamps=true&profanity=raw';
+            .'?language='.$language.'&format=detailed&wordLevelTimestamps=true&profanity=raw';
 
         $response = Http::withHeaders([
             'Ocp-Apim-Subscription-Key' => config('vocab.azure_speech.key'),

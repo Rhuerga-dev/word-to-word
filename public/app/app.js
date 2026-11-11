@@ -861,9 +861,23 @@ async function hfMeaning(c, prefixEs = "") {
   if (c.definition) return en(c.definition);
 }
 let hfRec = null;
-function listenP(lang, ms) {
+/** ¿Puede entender lo que dices? Chrome lo hace en el navegador; el iPhone, con el servidor (Azure). */
+const hfHears = () => !!SR || !!cfg.pronunciation;
+/**
+ * Escucha y devuelve lo entendido (varias alternativas). Si no oyó nada, el resultado lleva .silent.
+ * Con [count] (por defecto) dos silencios seguidos ponen el manos libres en pausa: nunca se avanza ni se
+ * califica una ficha sin tu respuesta.
+ */
+async function listenP(lang, ms, count = true) {
+  if (!hf.on) return [];
+  const got = SR ? await browserHear(lang, ms) : cfg.pronunciation ? await serverHear(lang, ms) : [];
+  if (!hf.on) return got;
+  if (!got.length) { got.silent = true; if (count) await hfHeardNothing(); }
+  else hf.silent = 0;
+  return got;
+}
+function browserHear(lang, ms) {
   return new Promise(resolve => {
-    if (!hf.on || !SR) return resolve([]);
     const r = new SR(); hfRec = r; r.lang = lang; r.maxAlternatives = 4; r.interimResults = false; r.continuous = false;
     let got = []; const t = setTimeout(() => { try { r.stop(); } catch (e) {} }, ms || 7000);
     r.onresult = e => { got = [...e.results[0]].map(a => a.transcript); };
@@ -872,6 +886,36 @@ function listenP(lang, ms) {
     hfStatus(lang.startsWith("es") ? "Te escucho… (en español)" : "Te escucho… (en inglés)", "listen");
     try { r.start(); } catch (e) { clearTimeout(t); resolve([]); }
   });
+}
+// iPhone: Safari no reconoce voz, así que se graba y el servidor la pasa a texto.
+async function serverHear(lang, ms) {
+  hfStatus(lang.startsWith("es") ? "Te escucho… (en español)" : "Te escucho… (en inglés)", "listen");
+  let wav;
+  try { wav = await recordWav(ms || 7000, null, 1.2); } catch (e) { return []; }
+  if (!hf.on || !wav.heard) return [];
+  hfStatus("Entendiendo lo que dijiste…");
+  const fd = new FormData(); fd.append("audio", wav, "voz.wav"); fd.append("lang", lang.startsWith("es") ? "es" : "en");
+  try { const r = await api("/speech/transcribe", { method: "POST", body: fd }); return r.text ? [r.text] : []; }
+  catch (e) { return []; }
+}
+/** No te oyó: a la segunda vez seguida lo dice y se pausa en la misma ficha. Devuelve true si se pausó. */
+async function hfHeardNothing() {
+  hf.silent = (hf.silent || 0) + 1;
+  if (hf.silent < 2) return false;
+  hf.silent = 0; hf.silencePaused = true;
+  await hfSay("No te oigo. Lo dejo en pausa; actívalo cuando quieras seguir.", "I can't hear you. I'll pause here. Turn it back on when you're ready.");
+  stopHF();
+  return true;
+}
+/** Pregunta y espera respuesta: si no te oye, te lo vuelve a pedir una vez (y luego se pausa). null = en pausa. */
+async function hfAsk(lang, ms, askAgain) {
+  for (let i = 0; i < 2; i++) {
+    const alts = await listenP(lang, ms);
+    if (!hf.on) return null;
+    if (!alts.silent) return alts;
+    if (askAgain) await askAgain();
+  }
+  return null;
 }
 function noAccents(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9ñ\s]/g, " ").replace(/\s+/g, " ").trim(); }
 function command(alts) {
@@ -906,7 +950,8 @@ async function hfAssess(c, target, text, ms) {
     catch (e) { if (/límite/i.test(e.message)) throw e; hfStatus(e.message); return { pct: 0, weak: [], silent: true }; }
     const out = $("heard"); if (out) showAzure(r, out);
     const a = r.assessment;
-    if (!a || a.status !== "Success") return { pct: 0, weak: [], silent: true };
+    if (!a || a.status !== "Success") { await hfHeardNothing(); return { pct: 0, weak: [], silent: true }; }
+    hf.silent = 0;
     const weak = a.words.filter(w => w.error !== "Insertion" && (w.error !== "None" || w.accuracy < HF_WORD_PASS))
       .map(w => ({ word: w.word, bad: w.phonemes.filter(p => p.accuracy < 60).map(p => p.phoneme).filter(Boolean) }));
     return { pct: r.score, weak };
@@ -947,6 +992,7 @@ async function hfRepeatSentence(c) {
   for (let attempt = 0; attempt < 2 && hf.on; attempt++) {
     await es(attempt ? "Otra vez. Repite la frase completa." : "Repite la frase.");
     const r = await hfAssess(c, "sentence");
+    if (!hf.on) return "pause";
     if (r.silent) { await es("No te oí. Habla un poco más cerca."); continue; }
     const cmd = r.alts && r.pct < 50 ? command(r.alts) : null; if (cmd) return cmd;
     if (r.pct >= 90) { await es(r.pct >= 97 ? pick(["¡Perfecto!", "¡Impecable!", "¡Como un nativo!"]) : pick(HF_PRAISE)); return null; }
@@ -963,6 +1009,7 @@ async function hfDrillWord(c, w, bad) {
   for (let i = 0; i < 3 && hf.on; i++) {
     await en(w, true); if (i === 2) await en(w);
     const r = await hfAssess(c, w.toLowerCase() === String(c.word).toLowerCase() ? "word" : "text", w, 3500);
+    if (!hf.on) return "pause";
     const ok = cfg.pronunciation ? (!r.silent && r.pct >= HF_WORD_PASS) : (r.alts && wordHeard(w, r.alts));
     if (ok) { await es(i ? pick(["¡Ahora sí!", "¡Esa es!", "¡Mucho mejor!"]) : pick(HF_PRAISE)); return null; }
     const cmd = r.alts ? command(r.alts) : null; if (cmd === "pause" || cmd === "skip") return cmd;
@@ -1021,8 +1068,8 @@ function aidKey(scene) { const m = String(scene).match(/[“"']([^”"']{2,40})[
 async function hfRepeatAid(c, scene) {
   const key = aidKey(scene), meaning = String(c.translation || "").split(/[;,/]/)[0].trim();
   await es(pick(["Ahora cuéntamela tú, en voz alta y con tus palabras.", "Tu turno: repite la escena en voz alta.", "Repítela tú. Decirla en voz alta la fija en tu memoria."]));
-  if (SR) {
-    const alts = await listenP("es-ES", 12000);
+  if (hfHears()) {
+    const alts = await listenP("es-ES", 12000, false);
     if (!hf.on) return;
     if (!alts.length) { await es("No te oí, no pasa nada. Repítela en tu mente."); }
     else {
@@ -1064,12 +1111,13 @@ async function hfPracticeWord(c) {
   for (let attempt = 0; attempt < 2 && hf.on; attempt++) {
     await es(attempt ? "Otra vez, dila tú." : pick(["Ahora dila tú.", "Repítela.", "Tu turno, dila."]));
     const r = await hfAssess(c, "word", c.word, 3500);
+    if (!hf.on) return "pause";
     const cmd = r.alts && !hfWordOk(r, c.word) ? command(r.alts) : null; if (cmd) return cmd;
     if (r.silent) { await es("No te oí. Habla un poco más cerca."); continue; }
     if (hfWordOk(r, c.word)) { await es(pick(HF_PRAISE)); return null; }
     return await hfDrillWord(c, c.word, (r.weak[0] || {}).bad);
   }
-  return null;
+  return hf.on ? null : "pause";
 }
 // Según el avance de la palabra: palabra sola, o frase completa.
 async function hfPractice(c) {
@@ -1086,7 +1134,7 @@ async function hfNew(c) {
   if (!hf.on) return;
   await en(c.word, true);
   const r = await hfPracticeWord(c);
-  if (r === "pause") return stopHF();
+  if (r === "pause" || !hf.on) return stopHF();
   if (r === "repeat") return; // vuelve a empezar la misma ficha
   if (r === "skip") { cards.push(cards.shift()); render(); return; }
   await api(`/words/${c.id}/learn`, { method: "POST" });
@@ -1094,28 +1142,33 @@ async function hfNew(c) {
 }
 async function hfReview(c) {
   revealed = false; render();
-  if (!SR) {
-    // iPhone: no hay reconocimiento del navegador. Piensa la respuesta, la escena AID te ayuda, y practicas la pronunciación con Azure.
+  if (!hfHears()) {
+    // Sin reconocimiento de voz (ni navegador ni servidor): piensas la respuesta y dices con un toque si la sabías.
     await en(c.word); await hfSay("Piensa qué significa.", "Think about what it means."); await new Promise(r => setTimeout(r, 3000));
     revealed = true; render();
     await hfMeaning(c); await hfSay("¿La recordabas? Toca sí o no.", "Did you remember it? Tap yes or no.");
     // Sin reconocimiento en español no puedo saber si acertaste: tú lo dices con un toque.
     const knew = await hfAskRecall();
     if (!hf.on) return;
+    // Sin respuesta no se califica: se pausa en esta ficha.
+    if (knew === null) { hf.silencePaused = true; return stopHF(); }
     if (knew === false || (c.fails || 0) >= 1) await hfAid(c, knew === false ? "Para que no se te olvide, imagina esto." : "Recuerda tu escena.", knew === false);
     else if (knew) await es(pick(["¡Muy bien!", "¡Excelente!", "¡Eso es!"]));
     const r = await hfPractice(c);
     if (r === "pause") return stopHF();
     if (r === "skip") { cards.push(cards.shift()); render(); return; }
-    // Sabías → avanza. No sabías → vuelve mañana. Sin respuesta → "difícil" (vuelve pronto).
-    await api(`/words/${c.id}/review`, { method: "POST", body: { grade: knew === true ? "good" : knew === false ? "again" : "hard" } });
+    if (!hf.on) return;
+    // Sabías → avanza. No sabías → vuelve mañana.
+    await api(`/words/${c.id}/review`, { method: "POST", body: { grade: knew ? "good" : "again" } });
     cards.shift(); revealed = false; render();
     return;
   }
   // Escalón 2+: se recuerda desde el inglés (la definición) y se contesta con la palabra en inglés.
   if (c.hide_translation && c.definition) return hfReviewEnglish(c);
   await en(c.word); await es("¿Qué significa?");
-  let alts = await listenP("es-ES", 7000), cmd = command(alts);
+  let alts = await hfAsk("es-ES", 7000, () => es("Tómate tu tiempo. ¿Qué significa?"));
+  if (!alts) return;
+  let cmd = command(alts);
   if (cmd === "pause") return stopHF();
   if (cmd === "repeat") return;
   if (cmd === "skip") { cards.push(cards.shift()); render(); return; }
@@ -1126,7 +1179,9 @@ async function hfReview(c) {
     await es((alts.length && cmd !== "dontknow" ? "No exactamente. " : "") + "Te doy una pista con tu escena.");
     await es(c.aid.replace(/[“”"]/g, ""), true);
     await es("¿Ahora sí? ¿Qué significa?");
-    alts = await listenP("es-ES", 7000); cmd = command(alts);
+    alts = await hfAsk("es-ES", 7000, () => es("¿Qué significa?"));
+    if (!alts) return;
+    cmd = command(alts);
     if (cmd === "pause") return stopHF();
     ok = cmd !== "dontknow" && meaningMatches(c.translation, alts); hinted = true;
   }
@@ -1138,14 +1193,16 @@ async function hfReview(c) {
     else if (c.aid) await hfRepeatAid(c, c.aid);
   }
   await en(c.word);
-  const r = await hfPractice(c); if (r === "pause") return stopHF();
+  const r = await hfPractice(c); if (r === "pause" || !hf.on) return stopHF();
   await api(`/words/${c.id}/review`, { method: "POST", body: { grade: ok ? (hinted ? "hard" : "good") : "again" } });
   cards.shift(); revealed = false; render();
 }
 // Repaso sin español: la definición en inglés y dices la palabra.
 async function hfReviewEnglish(c) {
   await en(c.definition); await en("What's the word?");
-  const alts = await listenP("en-US", 6000), cmd = command(alts);
+  const alts = await hfAsk("en-US", 6000, () => en("Take your time. What's the word?"));
+  if (!alts) return;
+  const cmd = command(alts);
   if (cmd === "pause") return stopHF();
   if (cmd === "repeat") return;
   if (cmd === "skip") { cards.push(cards.shift()); render(); return; }
@@ -1153,7 +1210,7 @@ async function hfReviewEnglish(c) {
   revealed = true; render();
   await en(ok ? pick(["Correct!", "Exactly!", "Well done!"]) : "The word is");
   await en(c.word);
-  const r = await hfPractice(c); if (r === "pause") return stopHF();
+  const r = await hfPractice(c); if (r === "pause" || !hf.on) return stopHF();
   await api(`/words/${c.id}/review`, { method: "POST", body: { grade: ok ? "good" : "again" } });
   cards.shift(); revealed = false; render();
 }
@@ -1203,11 +1260,11 @@ async function hfLoop() {
   } catch (e) { hfStatus(e.message || "Algo falló. Vuelve a activar el modo manos libres."); stopHF(true); }
 }
 async function startHF() {
-  if (!SR && !cfg.pronunciation) { $("hfOn").checked = false; hfStatus("Necesita reconocimiento de voz: usa Chrome en la Mac o en Android, o activa Azure en el servidor."); return; }
-  hf.on = true; hf.sounds = {}; hf.tipsSaid = new Set(); showTab(false);
+  if (!hfHears()) { $("hfOn").checked = false; hfStatus("Necesita reconocimiento de voz: usa Chrome en la Mac o en Android, o activa Azure en el servidor."); return; }
+  hf.on = true; hf.sounds = {}; hf.tipsSaid = new Set(); hf.silent = 0; hf.silencePaused = false; showTab(false);
   document.body.classList.add("focus"); render(); try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {}
   // La primera frase sale ya, todavía dentro del toque (el iPhone lo exige); la pantalla encendida se pide sin esperar.
-  const intro = es((hf.mode === "sentences" ? "Modo frases. Te digo una frase, la repites, y si está bien seguimos. " : "Modo manos libres. ") + (SR ? "Di pausa cuando quieras parar." : "Para parar, toca el interruptor."));
+  const intro = es((hf.mode === "sentences" ? "Modo frases. Te digo una frase, la repites, y si está bien seguimos. " : "Modo manos libres. ") + (hfHears() ? "Di pausa cuando quieras parar." : "Para parar, toca el interruptor."));
   try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(w => { hf.wake = w; }).catch(() => {}); } catch (e) {}
   await intro;
   hfLoop();
@@ -1218,7 +1275,7 @@ function stopHF(keepMsg) {
   try { ttsAudio.pause(); } catch (e) {}
   try { hfRec && hfRec.abort(); } catch (e) {}
   try { hf.wake && hf.wake.release(); } catch (e) {} hf.wake = null;
-  if (!keepMsg) hfStatus("En pausa. Actívalo de nuevo para seguir.");
+  if (!keepMsg) hfStatus(hf.silencePaused ? "En pausa porque no te oí. Actívalo cuando quieras seguir: sigues en esta ficha." : "En pausa. Actívalo de nuevo para seguir.");
   document.body.classList.remove("focus");
   render();
 }

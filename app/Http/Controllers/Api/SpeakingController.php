@@ -59,9 +59,11 @@ class SpeakingController extends Controller
     public function transcribe(Request $request, PronunciationService $pron)
     {
         abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
-        $request->validate(['audio' => ['required', 'file', 'max:1024']]);
+        $data = $request->validate(['audio' => ['required', 'file', 'max:1024'], 'lang' => ['sometimes', 'in:en,es']]);
+        // El manos libres de la web en el iPhone también escucha respuestas en español (escalón 1).
+        $language = ($data['lang'] ?? 'en') === 'es' ? 'es-ES' : 'en-US';
         try {
-            $text = $pron->transcribe($request->file('audio')->get())['text'];
+            $text = $pron->transcribe($request->file('audio')->get(), $language)['text'];
         } catch (Throwable $e) {
             report($e);
             abort(502, 'No se pudo entender el audio ahora. Intenta otra vez.');

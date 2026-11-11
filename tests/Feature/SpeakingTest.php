@@ -62,6 +62,14 @@ class SpeakingTest extends TestCase
         $this->assertSame(0, SpeakingSession::count());
     }
 
+    public function test_transcribe_can_listen_in_spanish(): void
+    {
+        Http::fake(['*' => Http::response($this->azureWords([['factura', 0, 300]]))]);
+        $this->post('/api/speech/transcribe', ['audio' => $this->wav(), 'lang' => 'es'], ['Accept' => 'application/json'])->assertOk();
+        Http::assertSent(fn ($r) => str_contains($r->url(), 'language=es-ES'));
+        $this->post('/api/speech/transcribe', ['audio' => $this->wav(), 'lang' => 'fr'], ['Accept' => 'application/json'])->assertUnprocessable();
+    }
+
     public function test_transcribe_needs_azure(): void
     {
         config(['vocab.azure_speech.key' => null]);
