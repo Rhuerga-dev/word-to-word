@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../api.dart';
 import '../theme.dart';
@@ -24,7 +24,7 @@ class _PathScreenState extends State<PathScreen> {
 
   Future<void> _load() async {
     try {
-      final r = await context.read<Api>().get('/path');
+      final r = await Get.find<Api>().get('/path');
       if (mounted) setState(() => _d = Map<String, dynamic>.from(r as Map));
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
@@ -33,7 +33,7 @@ class _PathScreenState extends State<PathScreen> {
 
   Future<void> _continue(Map u) async {
     final steps = u['steps'] as Map;
-    final nav = Navigator.of(context), api = context.read<Api>(), messenger = ScaffoldMessenger.of(context);
+    final api = Get.find<Api>();
     SessionPlan? plan;
     if (steps['words'] != true) {
       try {
@@ -41,7 +41,7 @@ class _PathScreenState extends State<PathScreen> {
         final cards = (r['cards'] as List).cast<Map>();
         if (cards.isNotEmpty) plan = SessionPlan([for (final c in cards) NewStep(c)], title: u['title'] as String, daily: false);
       } catch (e) {
-        messenger.showSnackBar(SnackBar(content: Text(e.toString())));
+        Get.snackbar('Camino', e.toString(), snackPosition: SnackPosition.BOTTOM);
         return;
       }
     }
@@ -50,10 +50,10 @@ class _PathScreenState extends State<PathScreen> {
       if (k != null) plan = SessionPlan([for (final w in soundWords[k]!) SoundStep(k, w)], title: u['title'] as String, daily: false);
     }
     if (plan == null) {
-      messenger.showSnackBar(const SnackBar(content: Text('El shadowing y la prueba de la unidad se hacen por ahora en la web (w2w.huergalabs.dev).')));
+      Get.snackbar('Camino', 'El shadowing y la prueba de la unidad se hacen por ahora en la web (w2w.huergalabs.dev).', snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    await nav.push(MaterialPageRoute(builder: (_) => SessionScreen(plan: plan!), fullscreenDialog: true));
+    await Get.to(() => SessionScreen(plan: plan!), fullscreenDialog: true);
     _load();
   }
 

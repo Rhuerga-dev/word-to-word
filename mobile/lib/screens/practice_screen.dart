@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../api.dart';
 import '../theme.dart';
@@ -23,7 +23,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
   }
 
   Future<void> _load() async {
-    final api = context.read<Api>();
+    final api = Get.find<Api>();
     try {
       final r = await Future.wait([api.get('/speaking/mistakes'), api.get('/today')]);
       if (!mounted) return;
@@ -38,7 +38,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   Future<void> _run(List<SessionStep> steps, String title) async {
     if (steps.isEmpty) return;
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => SessionScreen(plan: SessionPlan(steps, title: title, daily: false)), fullscreenDialog: true));
+    await Get.to(() => SessionScreen(plan: SessionPlan(steps, title: title, daily: false)), fullscreenDialog: true);
     _load();
   }
 

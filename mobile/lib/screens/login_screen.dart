@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../auth.dart';
 import '../theme.dart';
@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.read<Auth>();
+    final auth = Get.find<Auth>();
     return Scaffold(
       body: SafeArea(
         child: ListView(

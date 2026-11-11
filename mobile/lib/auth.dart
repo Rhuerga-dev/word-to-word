@@ -1,24 +1,30 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
 
 import 'api.dart';
 
 /// Sesión del alumno: el token se guarda cifrado en el teléfono (Keychain / Keystore).
-class Auth extends ChangeNotifier {
+class Auth extends GetxController {
   Auth(this.api, {FlutterSecureStorage? storage}) : _storage = storage ?? const FlutterSecureStorage() {
     api.onUnauthorized = () => _clear();
   }
 
   final Api api;
   final FlutterSecureStorage _storage;
-  Map<String, dynamic>? profile;
+  final profile = Rxn<Map<String, dynamic>>();
   Map<String, dynamic> config = {};
-  bool loading = true;
+  final loading = true.obs;
 
-  bool get loggedIn => api.token != null && profile != null;
+  bool get loggedIn => api.token != null && profile.value != null;
   String get firstName {
-    final n = (profile?['name'] as String? ?? '').trim().split(RegExp(r'\s+')).first;
+    final n = (profile.value?['name'] as String? ?? '').trim().split(RegExp(r'\s+')).first;
     return ['Estudiante', 'Invitado'].contains(n) ? '' : n;
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    restore();
   }
 
   Future<void> restore() async {
@@ -27,11 +33,10 @@ class Auth extends ChangeNotifier {
       try {
         await _loadProfile();
       } catch (_) {
-        await _clear(notify: false);
+        await _clear();
       }
     }
-    loading = false;
-    notifyListeners();
+    loading.value = false;
   }
 
   Future<void> login(String email, String password) async {
@@ -55,19 +60,17 @@ class Auth extends ChangeNotifier {
     api.token = token;
     await _storage.write(key: 'token', value: token);
     await _loadProfile();
-    notifyListeners();
   }
 
   Future<void> _loadProfile() async {
     final results = await Future.wait([api.get('/me'), api.get('/config')]);
-    profile = Map<String, dynamic>.from(results[0] as Map);
     config = Map<String, dynamic>.from(results[1] as Map);
+    profile.value = Map<String, dynamic>.from(results[0] as Map);
   }
 
-  Future<void> _clear({bool notify = true}) async {
+  Future<void> _clear() async {
     api.token = null;
-    profile = null;
+    profile.value = null;
     await _storage.delete(key: 'token');
-    if (notify) notifyListeners();
   }
 }

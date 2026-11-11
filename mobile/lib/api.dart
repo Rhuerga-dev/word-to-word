@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 /// Error de la API con el mensaje que da el servidor (en español).
 class ApiException implements Exception {
@@ -12,66 +11,63 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Cliente de la API de Word to Word (la misma que usa la web).
+/// Cliente de la API de Word to Word (la misma que usa la web), con Dio.
 class Api {
-  Api({this.baseUrl = 'https://w2w.huergalabs.dev/api', http.Client? client}) : _client = client ?? http.Client();
+  Api({String baseUrl = 'https://w2w.huergalabs.dev/api', Dio? dio})
+      : dio = dio ??
+            Dio(BaseOptions(
+              baseUrl: baseUrl,
+              connectTimeout: const Duration(seconds: 20),
+              receiveTimeout: const Duration(seconds: 60),
+              sendTimeout: const Duration(seconds: 60),
+              headers: {'Accept': 'application/json'},
+            )) {
+    // El token va en cada petición desde un solo sitio.
+    this.dio.interceptors.add(InterceptorsWrapper(onRequest: (o, h) {
+      if (token != null) o.headers['Authorization'] = 'Bearer $token';
+      h.next(o);
+    }));
+  }
 
-  final String baseUrl;
-  final http.Client _client;
+  final Dio dio;
   String? token;
 
   /// Se llama cuando el servidor dice que la sesión ya no vale (401).
   void Function()? onUnauthorized;
 
-  Map<String, String> get _headers => {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+  Future<dynamic> get(String path) => _call(() => dio.get(path));
+  Future<dynamic> post(String path, [Map<String, dynamic>? body]) => _call(() => dio.post(path, data: body));
+  Future<dynamic> put(String path, [Map<String, dynamic>? body]) => _call(() => dio.put(path, data: body));
 
-  Future<dynamic> get(String path) => _send('GET', path);
-  Future<dynamic> post(String path, [Map<String, dynamic>? body]) => _send('POST', path, body);
-  Future<dynamic> put(String path, [Map<String, dynamic>? body]) => _send('PUT', path, body);
-
-  Future<dynamic> _send(String method, String path, [Map<String, dynamic>? body]) async {
-    final req = http.Request(method, Uri.parse('$baseUrl$path'))..headers.addAll(_headers);
-    if (body != null) {
-      req.headers['Content-Type'] = 'application/json';
-      req.body = jsonEncode(body);
-    }
-    return _decode(await http.Response.fromStream(await _client.send(req).timeout(const Duration(seconds: 60))));
-  }
-
-  /// Sube audio (WAV 16 kHz mono) con campos extra.
-  Future<dynamic> upload(String path, Uint8List wav, {Map<String, String> fields = const {}}) async {
-    final req = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'))
-      ..headers.addAll(_headers)
-      ..fields.addAll(fields)
-      ..files.add(http.MultipartFile.fromBytes('audio', wav, filename: 'voz.wav'));
-    return _decode(await http.Response.fromStream(await _client.send(req).timeout(const Duration(seconds: 60))));
-  }
+  /// Sube audio (WAV 16 kHz mono) con campos extra; [onProgress] va de 0 a 1.
+  Future<dynamic> upload(String path, Uint8List wav, {Map<String, String> fields = const {}, void Function(double)? onProgress}) =>
+      _call(() => dio.post(path,
+          data: FormData.fromMap({...fields, 'audio': MultipartFile.fromBytes(wav, filename: 'voz.wav')}),
+          onSendProgress: onProgress == null ? null : (s, t) => t > 0 ? onProgress(s / t) : null));
 
   /// Audio de la voz natural (mp3).
   Future<Uint8List> tts(String text, {String lang = 'en', bool slow = false}) async {
-    final uri = Uri.parse('$baseUrl/tts').replace(queryParameters: {'text': text, 'lang': lang, 'slow': slow ? '1' : '0'});
-    final res = await _client.get(uri, headers: {..._headers, 'Accept': 'audio/mpeg'});
-    if (res.statusCode != 200) throw ApiException('tts ${res.statusCode}', res.statusCode);
-    return res.bodyBytes;
+    final r = await _call(() => dio.get<List<int>>('/tts',
+        queryParameters: {'text': text, 'lang': lang, 'slow': slow ? '1' : '0'},
+        options: Options(responseType: ResponseType.bytes, headers: {'Accept': 'audio/mpeg'})));
+    return Uint8List.fromList(r as List<int>);
   }
 
-  dynamic _decode(http.Response res) {
-    if (res.statusCode == 401) {
-      onUnauthorized?.call();
-      throw ApiException('Tu sesión expiró. Entra otra vez.', 401);
-    }
-    if (res.statusCode == 204 || res.body.isEmpty) return null;
-    dynamic data;
+  Future<dynamic> _call(Future<Response> Function() send) async {
     try {
-      data = jsonDecode(utf8.decode(res.bodyBytes));
-    } catch (_) {
-      data = null;
+      return (await send()).data;
+    } on DioException catch (e) {
+      final status = e.response?.statusCode ?? 0;
+      if (status == 401) {
+        onUnauthorized?.call();
+        throw ApiException('Tu sesión expiró. Entra otra vez.', 401);
+      }
+      if (e.response != null) throw ApiException(errorMessage(e.response!.data, status), status);
+      throw ApiException(switch (e.type) {
+        DioExceptionType.connectionTimeout || DioExceptionType.sendTimeout || DioExceptionType.receiveTimeout => 'El servidor tardó demasiado. Prueba otra vez.',
+        _ => 'Sin conexión. Revisa tu internet.',
+      });
     }
-    if (res.statusCode >= 400) throw ApiException(errorMessage(data, res.statusCode), res.statusCode);
-    return data;
   }
 
   /// El primer error de validación, o el mensaje, o "Error 500".

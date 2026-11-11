@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../api.dart';
 import '../auth.dart';
@@ -23,7 +23,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Future<void> _load() async {
-    final api = context.read<Api>();
+    final api = Get.find<Api>();
     try {
       final r = await Future.wait([api.get('/progress'), api.get('/league'), api.get('/achievements')]);
       if (mounted) {
@@ -40,7 +40,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   Future<void> _visible(bool v) async {
     try {
-      final r = await context.read<Api>().put('/league/visibility', {'visible': v});
+      final r = await Get.find<Api>().put('/league/visibility', {'visible': v});
       if (mounted) setState(() => _league = r as Map);
     } catch (_) {}
   }
@@ -57,7 +57,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
       child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
         Row(children: [
           Expanded(child: Text('Progreso', style: W.display(26))),
-          TextButton(onPressed: () => context.read<Auth>().logout(), child: const Text('Salir')),
+          TextButton(onPressed: () => Get.find<Auth>().logout(), child: const Text('Salir')),
         ]),
         const SizedBox(height: 10),
         GridView.count(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../api.dart';
 import '../audio.dart';
@@ -98,7 +98,7 @@ class _SessionScreenState extends State<SessionScreen> {
     Map<String, dynamic>? r;
     if (widget.plan.daily) {
       try {
-        r = Map<String, dynamic>.from(await context.read<Api>().post('/session/complete') as Map);
+        r = Map<String, dynamic>.from(await Get.find<Api>().post('/session/complete') as Map);
       } catch (_) {}
     }
     if (mounted) setState(() => _end = r ?? {});
@@ -115,7 +115,7 @@ class _SessionScreenState extends State<SessionScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
             child: Row(children: [
-              IconButton(tooltip: 'Salir', icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+              IconButton(tooltip: 'Salir', icon: const Icon(Icons.close), onPressed: () => Get.back()),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(99),
@@ -208,13 +208,13 @@ class _ReviewViewState extends State<_ReviewView> {
   @override
   void initState() {
     super.initState();
-    if (widget.card['english_only'] != true) context.read<AppAudio>().say(widget.card['word'] as String);
+    if (widget.card['english_only'] != true) Get.find<AppAudio>().say(widget.card['word'] as String);
   }
 
   Future<void> _rate(String g) async {
     setState(() => _busy = true);
     try {
-      final r = await context.read<Api>().post('/words/${widget.card['id']}/review', {'grade': g});
+      final r = await Get.find<Api>().post('/words/${widget.card['id']}/review', {'grade': g});
       widget.onGraded(g != 'again', r['xp_gained'] as num?);
     } catch (e) {
       _error = e.toString();
@@ -226,7 +226,7 @@ class _ReviewViewState extends State<_ReviewView> {
   Widget build(BuildContext context) {
     final c = widget.card, en = c['english_only'] == true;
     final pv = (c['previews'] as Map?) ?? const {'again': 1, 'hard': 1, 'good': 3, 'easy': 7};
-    final audio = context.read<AppAudio>();
+    final audio = Get.find<AppAudio>();
     final bottom = _grade != null
         ? Feedback(
             ok: _grade != 'again' && _error == null,
@@ -294,13 +294,13 @@ class _NewViewState extends State<_NewView> {
   @override
   void initState() {
     super.initState();
-    context.read<AppAudio>().say(widget.card['word'] as String);
+    Get.find<AppAudio>().say(widget.card['word'] as String);
   }
 
   Future<void> _learn() async {
     setState(() => _busy = true);
     try {
-      final r = await context.read<Api>().post('/words/${widget.card['id']}/learn');
+      final r = await Get.find<Api>().post('/words/${widget.card['id']}/learn');
       widget.onXp(r['xp_gained'] as num?);
       _ok = true;
     } catch (_) {
@@ -320,7 +320,7 @@ class _NewViewState extends State<_NewView> {
         _kind('Palabra nueva'),
         Row(children: [
           Flexible(child: Text(c['word'] as String, style: W.display(46))),
-          IconButton(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up), onPressed: () => context.read<AppAudio>().say(c['word'] as String)),
+          IconButton(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up), onPressed: () => Get.find<AppAudio>().say(c['word'] as String)),
         ]),
         Text(c['translation'] as String? ?? '', style: const TextStyle(fontSize: 22, color: W.accent, fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
@@ -379,11 +379,11 @@ class _SoundViewState extends State<_SoundView> {
   @override
   void initState() {
     super.initState();
-    context.read<AppAudio>().say(widget.word, slow: true);
+    Get.find<AppAudio>().say(widget.word, slow: true);
   }
 
   Future<void> _say() async {
-    final audio = context.read<AppAudio>(), api = context.read<Api>();
+    final audio = Get.find<AppAudio>(), api = Get.find<Api>();
     setState(() {
       _rec = true;
       _msg = '';
@@ -425,7 +425,7 @@ class _SoundViewState extends State<_SoundView> {
         _kind('Pronunciación · /${widget.phoneme}/'),
         Row(children: [
           Flexible(child: Text(widget.word, style: W.display(46))),
-          IconButton(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up), onPressed: () => context.read<AppAudio>().say(widget.word, slow: true)),
+          IconButton(tooltip: 'Escuchar', icon: const Icon(Icons.volume_up), onPressed: () => Get.find<AppAudio>().say(widget.word, slow: true)),
         ]),
         const SizedBox(height: 10),
         if (_msg.isNotEmpty) Text(_msg, style: const TextStyle(color: W.warn)),
@@ -458,7 +458,7 @@ class _NarrateViewState extends State<_NarrateView> {
 
   Future<void> _create() async {
     try {
-      final r = await context.read<Api>().post('/speaking/sessions', {'scenario': 'narrate'});
+      final r = await Get.find<Api>().post('/speaking/sessions', {'scenario': 'narrate'});
       _topic = r['topic'] as Map;
       _session = (r['id'] as num).toInt();
       _phase = 'ready';
@@ -470,7 +470,7 @@ class _NarrateViewState extends State<_NarrateView> {
   }
 
   Future<void> _go() async {
-    final audio = context.read<AppAudio>(), api = context.read<Api>();
+    final audio = Get.find<AppAudio>(), api = Get.find<Api>();
     await audio.say(_topic!['en'] as String);
     await audio.say('Habla un minuto. Empieza ya.', lang: 'es');
     setState(() => _phase = 'rec');
@@ -497,7 +497,7 @@ class _NarrateViewState extends State<_NarrateView> {
 
   @override
   Widget build(BuildContext context) {
-    final audio = context.read<AppAudio>();
+    final audio = Get.find<AppAudio>();
     final children = <Widget>[
       _kind('Narración del día · 1 minuto'),
       if (_topic != null) ...[
@@ -562,7 +562,7 @@ class _MistakeViewState extends State<_MistakeView> {
   int _tries = 0;
 
   Future<void> _say() async {
-    final audio = context.read<AppAudio>(), api = context.read<Api>();
+    final audio = Get.find<AppAudio>(), api = Get.find<Api>();
     setState(() {
       _rec = true;
       _msg = '';
@@ -667,7 +667,7 @@ class _EndView extends StatelessWidget {
           for (final a in ach) Padding(padding: const EdgeInsets.only(top: 10), child: Text('🏅 ¡Nuevo logro! ${a['title']} · ${a['desc']}', style: const TextStyle(color: W.good, fontWeight: FontWeight.w700))),
         ]),
       ),
-      _pad(FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Continuar'))),
+      _pad(FilledButton(onPressed: () => Get.back(), child: const Text('Continuar'))),
     ]);
   }
 

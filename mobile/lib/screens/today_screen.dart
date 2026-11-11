@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 import '../api.dart';
 import '../auth.dart';
@@ -29,7 +29,7 @@ class _TodayScreenState extends State<TodayScreen> {
   }
 
   Future<void> _load() async {
-    final api = context.read<Api>();
+    final api = Get.find<Api>();
     try {
       final r = await Future.wait([api.get('/session/today'), api.get('/path').catchError((_) => null)]);
       if (!mounted) return;
@@ -45,7 +45,7 @@ class _TodayScreenState extends State<TodayScreen> {
 
   Future<void> _start() async {
     final plan = SessionPlan.fromToday(_data!);
-    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => SessionScreen(plan: plan), fullscreenDialog: true));
+    await Get.to(() => SessionScreen(plan: plan), fullscreenDialog: true);
     _load();
   }
 
@@ -59,7 +59,7 @@ class _TodayScreenState extends State<TodayScreen> {
     final reviews = (plan['reviews'] as List).length, fresh = (plan['new'] as List).length, mistakes = (plan['mistakes'] as List).length;
     final sounds = plan['sounds'] as List;
     final goal = (xp['goal'] as num).toInt(), got = (xp['xp'] as num).toInt();
-    final name = context.read<Auth>().firstName;
+    final name = Get.find<Auth>().firstName;
     final speak = const {'narrate': ['Hablar 1 min', 'narración del día'], 'picture': ['Hablar 45 s', 'describe una foto'], 'shadowing': ['Shadowing', 'repite como un nativo']}[plan['speak']] ??
         ['Hablar', 'un ejercicio'];
 
