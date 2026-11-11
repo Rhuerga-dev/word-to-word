@@ -3,6 +3,7 @@
 (function () {
   const SENTENCE = "I need the invoice before Friday.";
   const dB = v => v > 0 ? 20 * Math.log10(v) : -100;
+  const BT = /airpods|bluetooth|beats|galaxy buds|\bbuds\b|hands-?free|\bhfp\b/i;
   let running = false;
 
   function box() { return document.getElementById("micTestOut"); }
@@ -12,7 +13,7 @@
   async function switchToPhone() {
     const mics = await listMics();
     const phone = mics.find(m => /iphone|built-?in|integrad|interno|internal/i.test(m.label))
-      || mics.find(m => m.label && !/airpods|bluetooth|headset|beats|buds|hands-?free/i.test(m.label));
+      || mics.find(m => m.label && !BT.test(m.label));
     if (!phone) { show(`<p class="mt-bad">❌ No encontré otro micrófono en este teléfono.</p>`); return; }
     mic.pref = phone.deviceId;
     try { localStorage.setItem("wtw_mic", mic.pref); } catch (e) {}
@@ -96,7 +97,8 @@
     const clipped = sp.filter(f => f.peak > 0.98).length;
     return {
       label, rate,
-      bluetooth: /airpods|bluetooth|headset|beats|buds|hands-?free/i.test(label),
+      // Solo nombres que de verdad son Bluetooth. Ojo: Android llama "Headset earpiece" al micrófono del propio teléfono.
+      bluetooth: BT.test(label),
       noiseDb: Math.round(dB(floor)),
       voiceDb: Math.round(dB(vRms)),
       snr: Math.round(dB(vRms) - dB(floor)),
