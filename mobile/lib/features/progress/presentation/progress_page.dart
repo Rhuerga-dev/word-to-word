@@ -261,6 +261,7 @@ class _SpanishCardState extends ConsumerState<_SpanishCard> {
           const SizedBox(height: 8),
           DropdownButtonFormField<int>(
             key: ValueKey(sp.auto ? 0 : sp.step),
+            isExpanded: true,
             initialValue: sp.auto ? 0 : sp.step,
             decoration: InputDecoration(labelText: tr('Escalón')),
             items: [
