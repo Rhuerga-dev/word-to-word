@@ -155,7 +155,7 @@ function pathCurrent(u) {
     ${k("sound", st.sound, `Sonido /${esc(u.sound)}/`, "un taller aprobado", "Taller")}
     ${k("shadow", st.shadow, "Shadowing", "repite un diálogo del tema", "Empezar")}
     ${k("test", st.test, "Prueba: " + esc(u.scenario_title || "conversación"), u.test_ready ? (u.test.tries ? `Mejor nota ${u.test.score ?? "—"}/10 · aprueba con 6` : "una conversación real con la IA, aprueba con 6/10") : "se abre al terminar los otros 3 pasos", "Hacer la prueba", !u.test_ready)}
-    ${u.test.feedback && !st.test ? `<p class="note">Última prueba: ${esc(u.test.feedback)}</p>` : ""}
+    ${u.test.feedback && !st.test ? `<p class="note">Última prueba: ${esc(u.test.feedback)} ${esTranslate(u.test.feedback)}</p>` : ""}
   </section>`;
 }
 
@@ -265,15 +265,15 @@ function sessReview(st) {
   const c = st.card, en = c.english_only, cloze = esc(c.example || "").replace(/\*(.+?)\*/g, '<span class="cloze">_____</span>');
   sessStage(`<span class="sess-kind">${en ? "Solo inglés · ¿qué palabra falta?" : "Repaso · ¿qué significa?"}</span>
     ${en ? `${c.definition ? `<p class="sess-def">${esc(c.definition)}</p>` : ""}<p class="sess-ex">${cloze}</p>` : `<p class="sess-word">${esc(c.word)}</p>`}
-    <p class="note">${en ? "Dila en voz alta antes de ver la respuesta." : "Dilo en voz alta (en español o explícalo en inglés) antes de ver la respuesta."}</p>`);
+    <p class="note">${en ? "Dila en voz alta antes de ver la respuesta." : (spStep() >= 2 ? "Explícalo en voz alta en inglés antes de ver la respuesta." : "Dilo en voz alta (en español o explícalo en inglés) antes de ver la respuesta.")}</p>`);
   if (!en) sessSay(c.word);
   sessActions(`<button type="button" class="primary sess-big" id="sessShow">Ver la respuesta</button>`);
   $("sessShow").onclick = () => {
     sessStage(`<span class="sess-kind">Repaso</span>
       <p class="sess-word">${esc(c.word)} <button type="button" class="round" id="sessSpk" aria-label="Escuchar">${ICON_SPK}</button></p>
-      ${en && c.definition ? `<p class="sess-def">${esc(c.definition)}</p>` : `<p class="sess-tr">${esc(c.translation)}</p>`}
+      ${en && c.definition ? `<p class="sess-def">${esc(c.definition)}</p>` : meaningHTML(c, "sess-tr", false)}
       <p class="sess-ex">${exHTML(c.example || "")}</p>
-      ${en ? `<details class="es-peek"><summary>Ver en español</summary><p class="sess-tr">${esc(c.translation)}</p></details>` : ""}
+      ${en ? (c.hide_translation ? `<p class="es-line">${esPeek(`<span class="sess-tr">${esc(c.translation)}</span>`)}</p>` : `<details class="es-peek"><summary>Ver en español</summary><p class="sess-tr">${esc(c.translation)}</p></details>`) : ""}
       <p class="note">¿Cómo te fue?</p>`);
     $("sessSpk").onclick = () => sessSay(c.word);
     sessSay(c.word);
@@ -286,7 +286,7 @@ function sessReview(st) {
       sessAdd(r.xp_gained);
       sessActions("");
       sessSheet(r.error ? `<h3>No se guardó</h3><p>${esc(r.error)}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`
-        : b.dataset.g === "again" ? `<h3>La repasarás pronto</h3><p><b>${esc(c.word)}</b> · ${esc(c.translation)}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`
+        : b.dataset.g === "again" ? `<h3>La repasarás pronto</h3><p><b>${esc(c.word)}</b>${c.hide_translation ? (c.definition ? " · " + esc(c.definition) : "") : " · " + esc(c.translation)}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`
         : `<h3>${pick(HF_PRAISE)} ${r.xp_gained ? "+" + r.xp_gained + " XP" : ""}</h3><p><b>${esc(c.word)}</b> · vuelve ${days(pv[b.dataset.g])}</p><button type="button" class="primary sess-big" data-next>Continuar</button>`,
         b.dataset.g === "again" || r.error ? "bad" : "ok");
     });
@@ -303,8 +303,8 @@ function sessNew(st) {
   const c = st.card;
   sessStage(`<span class="sess-kind">Palabra nueva</span>
     <p class="sess-word">${esc(c.word)} <button type="button" class="round" id="sessSpk" aria-label="Escuchar">${ICON_SPK}</button></p>
-    <p class="sess-tr">${esc(c.translation)}</p>
-    <p class="sess-ex">${exHTML(c.example || "")}</p><p class="note">${esc(c.example_es || "")}</p>
+    ${meaningHTML(c, "sess-tr", false)}
+    <p class="sess-ex">${exHTML(c.example || "")}</p>${c.hide_translation ? "" : `<p class="note">${esc(c.example_es || "")}</p>`}
     <p class="note">Dila en voz alta dos veces y úsala en una frase tuya.</p>`);
   $("sessSpk").onclick = () => sessSay(c.word);
   sessSay(c.word);

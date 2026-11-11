@@ -210,7 +210,7 @@ async function startDemo() {
   if (b) { b.disabled = false; b.textContent = "Probar la demo, sin registrarte"; }
 }
 $("demoBtn").onclick = startDemo;
-$("logoutBtn").onclick = async () => { try { await api("/auth/logout", { method: "POST" }); } catch (e) {} setToken(null); profile = null; showAuth(); setAuthMode("login"); };
+$("logoutBtn").onclick = async () => { try { await api("/auth/logout", { method: "POST" }); } catch (e) {} setToken(null); profile = null; applyUiLang(); showAuth(); setAuthMode("login"); };
 function userTimezone() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York"; } catch (e) { return "America/New_York"; } }
 
 // ===== Carga =====
@@ -221,6 +221,7 @@ async function start() {
   $("nextDay").hidden = true; // solo en la demo (abajo, cuando se sabe quién es)
   $("chatMode").textContent = cfg.ai ? "" : "Necesita ANTHROPIC_API_KEY";
   try { profile = await api("/me"); } catch (e) { return; }
+  applyUiLang();
   $("nextDay").hidden = !(cfg.time_travel && profile.demo);
   renderBanners(); renderSettings(); loadFamilies();
   await loadLevels();
@@ -257,6 +258,43 @@ function aidBlock(c, nudge) {
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 let dayTotal = 0;
+// ===== Escalera de español: cada vez menos español para pensar en inglés =====
+// 1 = todo con español · 2 = primero inglés, español al tocar · 3 = interfaz en inglés y español con límite · 4 = solo inglés.
+function spStep() { return (profile && profile.spanish && profile.spanish.step) || 1; }
+/** Español a pedido: un botón "Ver en español" que, al tocarlo, cuenta un uso (y respeta el límite del escalón). */
+function esPeek(html, kind = "translation") {
+  if (!html) return "";
+  if (spStep() <= 1) return html;
+  if (spStep() >= 4) return "";
+  return `<span class="es-ask" data-kind="${kind}"><button type="button" class="linkish es-btn">Ver en español</button><span class="es-hidden" hidden>${html}</span></span>`;
+}
+/** Botón para traducir al español un texto del coach (cuenta un uso). Nada en los escalones 1 y 4. */
+function esTranslate(text) {
+  if (!text || spStep() <= 1 || spStep() >= 4) return "";
+  return `<span class="es-ask" data-translate="${esc(text)}"><button type="button" class="linkish es-btn">Traducir</button><span class="es-hidden note" hidden></span></span>`;
+}
+/** Lo que significa una palabra según el escalón: traducción (1) o definición en inglés con el español a pedido (2–4). */
+function meaningHTML(c, cls = "tr", withExample = true) {
+  if (!c.hide_translation) return `<p class="${cls}">${esc(c.translation)}</p>` + (withExample && c.example_es ? `<p class="ex-es">${esc(c.example_es)}</p>` : "");
+  const peek = esPeek(`<span class="${cls}">${esc(c.translation)}</span>${withExample && c.example_es ? `<br><span class="ex-es">${esc(c.example_es)}</span>` : ""}`);
+  return `${c.definition ? `<p class="def">${esc(c.definition)}</p>` : ""}${peek ? `<p class="es-line">${peek}</p>` : ""}`;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest(".es-btn"); if (!b) return;
+  const box = b.closest(".es-ask"), out = box.querySelector(".es-hidden");
+  b.disabled = true;
+  try {
+    if (box.dataset.translate) {
+      const r = await api("/spanish/translate", { method: "POST", body: { text: box.dataset.translate } });
+      out.textContent = r.text;
+    } else {
+      await api("/spanish/use", { method: "POST", body: { kind: box.dataset.kind || "translation" } });
+    }
+    b.remove(); out.hidden = false;
+    if (profile && profile.spanish) profile.spanish.today++;
+  } catch (err) { b.replaceWith(Object.assign(document.createElement("span"), { className: "note", textContent: err.message })); }
+});
+
 function firstName() { const n = (profile && profile.name || "").trim().split(/\s+/)[0]; return n && !["Estudiante", "Invitado"].includes(n) ? n : ""; }
 function greeting() { const h = new Date().getHours(); return h < 5 ? "Buenas noches" : h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches"; }
 function stageLabel(c) {
@@ -320,9 +358,9 @@ function focusCard(c) {
     <div class="focus-top"><span>${stageLabel(c)}${c.family ? " · " + c.family.emoji + " " + esc(c.family.label) : ""}</span><span>${dayTotal - left + 1} de ${dayTotal}</span></div>
     <div class="focus-step" id="focusStep">${$("hfState") ? $("hfState").innerHTML : ""}</div>
     <h2 class="fw">${esc(c.word)}</h2>
-    ${showMeaning ? `<p class="ftr">${esc(c.translation)}</p>` : '<p class="ftr hidden">¿Qué significa?</p>'}
+    ${showMeaning ? meaningHTML(c, "ftr", false) : '<p class="ftr hidden">¿Qué significa?</p>'}
     ${showMeaning && c.aid ? `<div class="faid"><b>Tu escena</b>${esc(c.aid)}</div>` : ""}
-    ${showMeaning && sentence ? `<p class="fex">${exHTML(c.example)}</p><p class="fex-es">${esc(c.example_es)}</p>` : ""}
+    ${showMeaning && sentence ? `<p class="fex">${exHTML(c.example)}</p>${c.hide_translation ? "" : `<p class="fex-es">${esc(c.example_es)}</p>`}` : ""}
     <div class="heard" id="heard"></div>
     <div id="drill"></div>
   </div>`;
@@ -360,7 +398,7 @@ function render() {
     <div class="word-row"><h2 class="word tappable" id="spk" role="button" tabindex="0" title="Toca para escuchar">${esc(c.word)}</h2></div>`;
   let body;
   if (isNew) {
-    body = `<p class="tr">${esc(c.translation)}</p><div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>
+    body = `${meaningHTML(c, "tr", false)}<div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p>${c.hide_translation ? "" : `<p class="ex-es">${esc(c.example_es)}</p>`}</div>
       ${speakingBlock()}${aidBlock(c, false)}
       <p class="gesture">Desliza la ficha a la derecha → cuando la tengas<span class="keys"> · o pulsa <kbd>Enter</kbd></span></p>`;
   } else if (enOnly && !revealed) {
@@ -375,8 +413,8 @@ function render() {
     const p = c.previews || { again: 1, hard: 1, good: 3, easy: 7 };
     body = (enOnly
       ? `${c.definition ? `<p class="def">${esc(c.definition)}</p>` : ""}<div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p></div>
-        <details class="es-peek"><summary>Ver en español</summary><p class="tr">${esc(c.translation)}</p><p class="ex-es">${esc(c.example_es)}</p></details>`
-      : `<p class="tr">${esc(c.translation)}</p><div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p><p class="ex-es">${esc(c.example_es)}</p></div>`) + `
+        ${c.hide_translation ? `<p class="es-line">${esPeek(`<span class="tr">${esc(c.translation)}</span><br><span class="ex-es">${esc(c.example_es)}</span>`)}</p>` : `<details class="es-peek"><summary>Ver en español</summary><p class="tr">${esc(c.translation)}</p><p class="ex-es">${esc(c.example_es)}</p></details>`}`
+      : `${meaningHTML(c, "tr", false)}<div><p class="ex tappable" data-slow="1" role="button" tabindex="0">${exHTML(c.example)}</p>${c.hide_translation ? "" : `<p class="ex-es">${esc(c.example_es)}</p>`}</div>`) + `
       ${speakingBlock()}${aidBlock(c, c.fails >= 2 && !c.aid)}
       <div class="swipe-legend" aria-label="Califica deslizando la ficha">
         <span class="l tappable" role="button" tabindex="0" data-grade="again"><b>← Olvidé</b><small>${days(p.again)}</small></span>
@@ -676,7 +714,7 @@ async function drillAttempt() {
 let history = [];
 function renderChat(targets, used) {
   if (targets) $("targets").innerHTML = targets.map(t => `<span class="chip ${used && used.has(t.toLowerCase()) ? "used" : ""}">${esc(t)}</span>`).join("");
-  $("msgs").innerHTML = history.map(m => `<div class="msg ${m.role === "user" ? "me" : "ai"}">${esc(m.content)}${m.feedback ? `<p class="fb">${esc(m.feedback)}</p>` : ""}</div>`).join("") || '<p class="note">Pulsa Enviar con el campo vacío para que la IA empiece.</p>';
+  $("msgs").innerHTML = history.map(m => `<div class="msg ${m.role === "user" ? "me" : "ai"}">${esc(m.content)}${m.feedback ? `<p class="fb">${esc(m.feedback)} ${esTranslate(m.feedback)}</p>` : ""}</div>`).join("") || '<p class="note">Pulsa Enviar con el campo vacío para que la IA empiece.</p>';
   $("msgs").scrollTop = $("msgs").scrollHeight;
 }
 const usedWords = new Set();
@@ -789,6 +827,7 @@ function hfStatus(text, mode) {
 }
 async function speakP(text, lang, rate) {
   if (!hf.on || !text) return;
+  [text, lang] = uiSpeech(text, lang);
   if (useTts()) {
     hfStatus(text, "speak");
     try { return await playTts(text, lang.startsWith("es") ? "es" : "en", !!rate && rate < (lang.startsWith("es") ? 0.95 : 0.8)); }
@@ -814,6 +853,13 @@ function speakBrowser(text, lang, rate) {
 }
 const en = (t, slow) => speakP(t, "en-US", slow ? 0.65 : 0.9);
 const es = (t, slow) => speakP(t, "es-ES", slow ? 0.8 : 1);
+// Escalera de español: desde el escalón 2 el modo manos libres habla en inglés.
+const hfSay = (tEs, tEn, slow) => spStep() >= 2 ? en(tEn, slow) : es(tEs, slow);
+/** Lo que significa la palabra, en voz: traducción (escalón 1) o la definición en inglés. */
+async function hfMeaning(c, prefixEs = "") {
+  if (!c.hide_translation) return es(prefixEs + "Significa " + c.translation + ".");
+  if (c.definition) return en(c.definition);
+}
 let hfRec = null;
 function listenP(lang, ms) {
   return new Promise(resolve => {
@@ -959,6 +1005,7 @@ async function hfGetAid(c) {
 }
 // La voz cuenta la escena despacio, deja un momento para imaginarla y te pide repetirla.
 async function hfAid(c, intro, repeat = true) {
+  if (spStep() >= 2) return false; // las escenas AID son en español: solo en el escalón 1
   const scene = await hfGetAid(c);
   if (!scene || !hf.on) return false;
   await es(intro || pick(["Para recordarla, imagina esto.", "Truco para memorizarla. Imagina:", "Visualiza esta escena."]));
@@ -1034,7 +1081,7 @@ async function hfPractice(c) {
 async function hfNew(c) {
   revealed = true; render();
   if (c.family && hf.lastFam !== c.category) { hf.lastFam = c.category; await es("Familia: " + c.family.label + "."); }
-  await es("Palabra nueva."); await en(c.word); await es("Significa " + c.translation + ".");
+  await hfSay("Palabra nueva.", "New word."); await en(c.word); await hfMeaning(c);
   await hfAid(c);
   if (!hf.on) return;
   await en(c.word, true);
@@ -1049,9 +1096,9 @@ async function hfReview(c) {
   revealed = false; render();
   if (!SR) {
     // iPhone: no hay reconocimiento del navegador. Piensa la respuesta, la escena AID te ayuda, y practicas la pronunciación con Azure.
-    await en(c.word); await es("Piensa qué significa."); await new Promise(r => setTimeout(r, 3000));
+    await en(c.word); await hfSay("Piensa qué significa.", "Think about what it means."); await new Promise(r => setTimeout(r, 3000));
     revealed = true; render();
-    await es("Significa " + c.translation + ". ¿La recordabas? Toca sí o no.");
+    await hfMeaning(c); await hfSay("¿La recordabas? Toca sí o no.", "Did you remember it? Tap yes or no.");
     // Sin reconocimiento en español no puedo saber si acertaste: tú lo dices con un toque.
     const knew = await hfAskRecall();
     if (!hf.on) return;
@@ -1065,6 +1112,8 @@ async function hfReview(c) {
     cards.shift(); revealed = false; render();
     return;
   }
+  // Escalón 2+: se recuerda desde el inglés (la definición) y se contesta con la palabra en inglés.
+  if (c.hide_translation && c.definition) return hfReviewEnglish(c);
   await en(c.word); await es("¿Qué significa?");
   let alts = await listenP("es-ES", 7000), cmd = command(alts);
   if (cmd === "pause") return stopHF();
@@ -1093,6 +1142,21 @@ async function hfReview(c) {
   await api(`/words/${c.id}/review`, { method: "POST", body: { grade: ok ? (hinted ? "hard" : "good") : "again" } });
   cards.shift(); revealed = false; render();
 }
+// Repaso sin español: la definición en inglés y dices la palabra.
+async function hfReviewEnglish(c) {
+  await en(c.definition); await en("What's the word?");
+  const alts = await listenP("en-US", 6000), cmd = command(alts);
+  if (cmd === "pause") return stopHF();
+  if (cmd === "repeat") return;
+  if (cmd === "skip") { cards.push(cards.shift()); render(); return; }
+  const w = c.word.toLowerCase(), ok = cmd !== "dontknow" && alts.some(a => String(a).toLowerCase().includes(w));
+  revealed = true; render();
+  await en(ok ? pick(["Correct!", "Exactly!", "Well done!"]) : "The word is");
+  await en(c.word);
+  const r = await hfPractice(c); if (r === "pause") return stopHF();
+  await api(`/words/${c.id}/review`, { method: "POST", body: { grade: ok ? "good" : "again" } });
+  cards.shift(); revealed = false; render();
+}
 // ----- Modo frases: te digo la frase, la repites, si está bien seguimos -----
 const SHADOW_PASS = 80;
 async function hfShadow(c) {
@@ -1102,8 +1166,8 @@ async function hfShadow(c) {
   for (let attempt = 0; attempt < 3 && hf.on; attempt++) {
     if (attempt === 0) {
       await en(sentence, true);
-      if (c.example_es) await es(c.example_es);
-      await es("Repite.");
+      if (c.example_es && !c.hide_translation) await es(c.example_es);
+      await hfSay("Repite.", "Repeat.");
     } else {
       await es(attempt === 1 ? "Otra vez. Escucha." : "Una más, despacio.");
       await en(sentence, true);
@@ -1299,6 +1363,7 @@ function runQuiz(kind, questions, level) {
 }
 async function finishQuiz() {
   try { profile = await api("/me"); } catch (e) {}
+  applyUiLang();
   showQuiz(false);
   await loadLevels();
   await refresh();
@@ -1541,6 +1606,7 @@ function labAids(text) {
 function labSay(text, lang, slow) {
   if (!lab.on || !text) return Promise.resolve();
   lang = lang || "en";
+  [text, lang] = uiSpeech(text, lang);
   if (useTts()) return playTts(text, lang, slow).catch(() => labBrowserSay(text, lang, slow));
   return labBrowserSay(text, lang, slow);
 }

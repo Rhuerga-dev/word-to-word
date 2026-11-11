@@ -109,6 +109,7 @@ class SpanishService
             'step' => $step,
             'auto' => $user->spanish_step === null,
             'base' => $this->base($user),
+            'auto_step' => $this->autoStep($user),
             'ui' => $step >= 3 ? 'en' : 'es',
             'coach' => $this->coachLang($user),
             'limit' => $limit,

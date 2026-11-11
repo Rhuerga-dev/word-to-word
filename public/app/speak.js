@@ -50,6 +50,8 @@ function spSayBrowser(text) {
 }
 function spSayEs(text) {
   if (!text) return Promise.resolve();
+  const [t2, l2] = uiSpeech(text, "es");
+  if (l2 === "en") return useTts() ? playTts(t2, "en", false).catch(() => {}) : new Promise(r => { if (!("speechSynthesis" in window)) return r(); const u = new SpeechSynthesisUtterance(t2); u.lang = "en-US"; u.onend = u.onerror = () => r(); speechSynthesis.speak(u); });
   if (useTts()) return playTts(text, "es", false).catch(() => spSayEsBrowser(text));
   return spSayEsBrowser(text);
 }
@@ -207,7 +209,7 @@ async function spReviewLoop() {
       const m = rv.list[rv.i];
       rv.attempts = rv.attempts || 0;
       if (!rv.result) {
-        if (!rv.attempts) { await spSayEs("Dijiste:"); await spSay(m.said); if (m.why) await spSayEs(m.why); await spSayEs("Dilo bien."); }
+        if (!rv.attempts) { await (spStep() >= 2 ? spSay("You said:") : spSayEs("Dijiste:")); await spSay(m.said); if (m.why && (spStep() < 2 || !looksSpanish(m.why))) await (looksSpanish(m.why) ? spSayEs : spSay)(m.why); await (spStep() >= 2 ? spSay("Say it correctly.") : spSayEs("Dilo bien.")); }
         else await spSayEs("Otra vez.");
         if (!sp.reviewHf || sp.view !== "review") break;
       }
@@ -375,7 +377,7 @@ function renderTalk() {
 }
 function fixHTML(m) {
   if (!m.feedback && !(m.fixes && m.fixes.length)) return "";
-  return `<div class="sp-fb">${m.feedback ? `<p>${esc(m.feedback)}</p>` : ""}${(m.fixes || []).map(f => `<p class="sp-fix"><s>${esc(f.said)}</s> → <b>${esc(f.correct)}</b>${f.why ? ` <span class="note">${esc(f.why)}</span>` : ""}</p>`).join("")}</div>`;
+  return `<div class="sp-fb">${m.feedback ? `<p>${esc(m.feedback)} ${esTranslate(m.feedback)}</p>` : ""}${(m.fixes || []).map(f => `<p class="sp-fix"><s>${esc(f.said)}</s> → <b>${esc(f.correct)}</b>${f.why ? ` <span class="note">${esc(f.why)}</span>` : ""}</p>`).join("")}</div>`;
 }
 function renderControls() {
   const c = $("spCtl"); if (!c) return;
@@ -390,7 +392,7 @@ function summaryHTML() {
   const ut = s.unitTest;
   let html = `<div class="kind"><span>${ut ? "Prueba de la unidad" : "Resumen de la conversación"}</span><span>${esc((sp.scenario || {}).title || "")}</span></div>
     ${ut ? (ut.error ? `<p class="warnbox">${esc(ut.error)}</p>`
-      : `<div class="${ut.passed ? "banner ok" : "warnbox"}" style="display:grid;gap:6px"><b style="font-size:18px">${ut.passed ? "🏆 ¡Unidad completada!" : "Todavía no"}${ut.score != null ? ` · ${ut.score}/10` : ""}${ut.xp_gained ? ` · +${ut.xp_gained} XP` : ""}</b><span>${esc(ut.feedback || "")}</span></div>`)
+      : `<div class="${ut.passed ? "banner ok" : "warnbox"}" style="display:grid;gap:6px"><b style="font-size:18px">${ut.passed ? "🏆 ¡Unidad completada!" : "Todavía no"}${ut.score != null ? ` · ${ut.score}/10` : ""}${ut.xp_gained ? ` · +${ut.xp_gained} XP` : ""}</b><span>${esc(ut.feedback || "")} ${esTranslate(ut.feedback)}</span></div>`)
       + `<button type="button" class="primary" id="spToPath">Ver el camino</button>` : ""}
     <div class="stats">
       <div class="stat"><b>${esc(spMin(s.minutes))}</b><span>min hablando</span></div>
@@ -508,7 +510,7 @@ async function spNarrRecord() {
 function narrHTML() {
   const n = sp.narr; if (!n) return "";
   let html = `<div class="kind"><span>🗣️ Narración del día</span><span>${n.phase === "rec" ? `<b id="spNarrLeft">${n.left}</b> s` : ""}</span></div>
-    <p class="sp-topic">${esc(n.topic.en)}</p><p class="note">${esc(n.topic.es)}</p>`;
+    <p class="sp-topic">${esc(n.topic.en)}</p>${n.topic.es ? `<p class="note">${esPeek(esc(n.topic.es), "hint")}</p>` : ""}`;
   if (n.phase === "intro") html += '<p class="sp-status"><span class="hf-dot speak"></span>Escucha el tema…</p>';
   if (n.phase === "rec") html += `<p class="sp-status"><span class="hf-dot listen"></span>Te escucho: habla sin parar, aunque te equivoques.</p>
     <p class="note">Si te quedas en blanco, describe lo que ves o di <i>"what I mean is…"</i> y sigue.</p>
@@ -523,7 +525,7 @@ function narrHTML() {
         <div class="stat"><b>${s.reaction != null ? String(s.reaction).replace(".", ",") + " s" : "—"}</b><span>para arrancar</span></div>
       </div>
       ${fb.comment ? `<p class="msg ai">${esc(fb.comment)}</p>` : ""}
-      ${fb.feedback ? `<p class="note">${esc(fb.feedback)}</p>` : ""}
+      ${fb.feedback ? `<p class="note">${esc(fb.feedback)} ${esTranslate(fb.feedback)}</p>` : ""}
       <details class="sp-said-all"><summary>Lo que dijiste</summary><p>${esc(n.text)}</p></details>
       ${fb.better ? `<h3 class="sp-h">Así sonaría más natural</h3><p class="sp-better">${esc(fb.better)} <button type="button" class="round" id="spNarrListen" aria-label="Escuchar">${ICON_SPK}</button></p>
         <p class="note">Léela en voz alta una vez: copiar el ritmo de una versión natural de <b>tus propias ideas</b> es de lo que más ayuda.</p>` : ""}
@@ -617,7 +619,7 @@ function picHTML() {
         <div class="stat"><b>${s.reaction != null ? String(s.reaction).replace(".", ",") + " s" : "—"}</b><span>para arrancar</span></div>
       </div>
       ${fb.comment ? `<p class="msg ai">${esc(fb.comment)}</p>` : ""}
-      ${fb.feedback ? `<p class="note">${esc(fb.feedback)}</p>` : ""}
+      ${fb.feedback ? `<p class="note">${esc(fb.feedback)} ${esTranslate(fb.feedback)}</p>` : ""}
       <details class="sp-said-all"><summary>Lo que dijiste</summary><p>${esc(n.text)}</p></details>
       ${(fb.missed || []).length ? `<h3 class="sp-h">Palabras que te faltaron</h3><div class="sp-missed">${fb.missed.map((w, i) => `<div class="sp-mw"><div><b>${esc(w.word)}</b> <span class="note">${esc(w.translation)}</span><br><span class="ex">${exHTML(w.example)}</span></div>
           <button type="button" data-addw="${i}"${w.added ? " disabled" : ""}>${w.added ? "✓ En tus fichas" : "+ A mis fichas"}</button></div>`).join("")}</div>` : ""}
@@ -715,3 +717,6 @@ async function spShUnitDone() {
   catch (e) { n.unitMsg = e.message; }
   renderSpeak();
 }
+
+/** ¿El texto está en español? (las explicaciones viejas lo están; las nuevas siguen el escalón). */
+function looksSpanish(t) { return /[áéíóúñ¿¡]|\b(el|la|los|las|que|para|con|una|por|del|se|es|usa)\b/i.test(String(t || "")); }

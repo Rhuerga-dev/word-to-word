@@ -52,6 +52,9 @@ function pgRender() {
     : '<p class="banner ok">¡Todo hecho por hoy! 🎉 Vuelve mañana.</p>';
   html += `</section>`;
 
+  // Escalera de español
+  if (d.spanish) html += spanishSection(d.spanish);
+
   // Logros nuevos, liga y logros
   const A = pg.ach, L = pg.league;
   if (A && A.new.length) html += `<div class="banner ok" style="display:grid;gap:6px"><b>🏅 ¡${A.new.length === 1 ? "Nuevo logro" : "Nuevos logros"}!</b>${A.new.map(x => `<span>${esc(x.title)} · ${esc(x.desc)}</span>`).join("")}</div>`;
@@ -123,3 +126,37 @@ function pgAction(t) {
   if (t.action === "review") spReviewStart();
   if (t.action === "narrate") spNarrStart(0);
 }
+
+// ===== Escalera de español =====
+const SP_STEPS = {
+  1: ["Con español", "Traducción a la vista y explicaciones en español."],
+  2: ["Primero inglés", "Definición en inglés; el español solo si lo pides."],
+  3: ["Interfaz en inglés", "La app en inglés y español con límite diario."],
+  4: ["Solo inglés", "Sin español: todo se explica en inglés."],
+};
+function spanishSection(sp) {
+  const dots = [1, 2, 3, 4].map(n => `<span class="sp-step${n <= sp.step ? " on" : ""}${n === sp.step ? " cur" : ""}" title="${esc(SP_STEPS[n][0])}">${n}</span>`).join("");
+  const opts = `<option value="auto"${sp.auto ? " selected" : ""}>Automático (ahora: ${(sp.auto_step ?? sp.step) > sp.base ? "escalón " + sp.auto_step + ", subiste por usar poco español" : "escalón " + sp.base + ", según tu nivel"})</option>`
+    + [1, 2, 3, 4].map(n => `<option value="${n}"${!sp.auto && sp.step === n ? " selected" : ""}>${n} · ${esc(SP_STEPS[n][0])}</option>`).join("");
+  return `<section class="pg-sec"><h3>Tu español</h3>
+    <div class="sp-ladder">${dots}<b>${esc(SP_STEPS[sp.step][0])}</b></div>
+    <p class="note">${esc(SP_STEPS[sp.step][1])} Pensar en inglés es dejar de pasar por el español: cada escalón te quita un poco.</p>
+    <div class="pg-sp">
+      <div><b>${sp.today}${sp.limit != null ? " / " + sp.limit : ""}</b><span>veces hoy</span></div>
+      <div><b>${sp.week}</b><span>esta semana</span></div>
+      <div><b>${sp.streak}</b><span>${sp.streak === 1 ? "día" : "días"} sin español</span></div>
+    </div>
+    ${sp.translating ? `<p class="warnbox">Tardas ${String(sp.reaction).replace(".", ",")} s en empezar a hablar: señal de que traduces mentalmente. Prueba «Respuesta rápida» en Hablar.</p>` : sp.reaction != null ? `<p class="note">Empiezas a hablar en ${String(sp.reaction).replace(".", ",")} s de media. Menos de 2,5 s es buena señal.</p>` : ""}
+    <label class="inl" for="spStepSel">Escalón <select id="spStepSel" style="width:auto;max-width:240px">${opts}</select></label>
+  </section>`;
+}
+document.addEventListener("change", async e => {
+  if (e.target.id !== "spStepSel") return;
+  const v = e.target.value;
+  try {
+    const sp = await api("/spanish", { method: "PUT", body: { step: v === "auto" ? null : Number(v) } });
+    if (profile) profile.spanish = sp;
+    if (typeof applyUiLang === "function") applyUiLang();
+    pgOpen();
+  } catch (err) { alert(err.message); }
+});
