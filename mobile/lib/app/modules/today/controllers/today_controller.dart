@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 
 import '../../../data/providers/api_client.dart';
+import '../../../data/services/auth_service.dart';
+import '../../../data/services/reminder_service.dart';
 import '../../../routes/app_routes.dart';
 import '../../session/models/session_plan.dart';
 
@@ -23,6 +25,7 @@ class TodayController extends GetxController {
       data.value = Map<String, dynamic>.from(r[0] as Map);
       path.value = r[1] == null ? null : Map<String, dynamic>.from(r[1] as Map);
       error.value = '';
+      _syncReminder();
     } catch (e) {
       error.value = e.toString();
     }
@@ -31,5 +34,11 @@ class TodayController extends GetxController {
   Future<void> start() async {
     await Get.toNamed(Routes.session, arguments: SessionPlan.fromToday(data.value!));
     load();
+  }
+
+  /// Reprograma el recordatorio: si hoy ya ganaste puntos, el aviso de hoy no sale.
+  void _syncReminder() {
+    final r = Get.find<AuthService>().reminder, xp = data.value?['xp'] as Map?;
+    Get.find<ReminderService>().sync(enabled: r['enabled'] == true, time: r['time'] as String?, studiedToday: ((xp?['xp'] as num?) ?? 0) > 0);
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:word_to_word/app/data/services/auth_service.dart';
+import 'package:word_to_word/app/data/services/reminder_service.dart';
 import 'package:word_to_word/app/data/providers/api_client.dart';
 import 'package:word_to_word/app/modules/session/models/session_plan.dart';
 import 'package:word_to_word/app/core/utils/format.dart';
@@ -51,5 +52,15 @@ void main() {
     auth.profile.value = {'name': 'Rey'};
     await tester.pump();
     expect(find.text('dentro'), findsOneWidget);
+  });
+
+  test('recordatorio: hoy solo si no estudiaste y la hora no pasó', () {
+    final now = DateTime(2026, 11, 10, 12, 0);
+    final pending = ReminderService.nextTimes(now, '19:30', false);
+    expect(pending.length, ReminderService.days);
+    expect(pending.first, DateTime(2026, 11, 10, 19, 30));
+    expect(ReminderService.nextTimes(now, '19:30', true).first, DateTime(2026, 11, 11, 19, 30));
+    expect(ReminderService.nextTimes(now, '08:00', false).first, DateTime(2026, 11, 11, 8, 0));
+    expect(ReminderService.nextTimes(DateTime(2026, 11, 30, 20), '19:00', false).first, DateTime(2026, 12, 1, 19, 0));
   });
 }

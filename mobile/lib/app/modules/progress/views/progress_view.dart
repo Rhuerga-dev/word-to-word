@@ -41,6 +41,26 @@ class ProgressView extends GetView<ProgressController> {
         ),
         for (final t in (p['todo'] as List? ?? const []))
           Padding(padding: const EdgeInsets.only(top: 8), child: Text('${t['icon']} ${t['text']}')),
+        _h('Recordatorio diario'),
+        Card(
+          child: Column(children: [
+            SwitchListTile(
+              title: const Text('Avisarme si no he estudiado'),
+              subtitle: Text(Get.find<AuthService>().reminder['enabled'] == true ? 'A las ${Get.find<AuthService>().reminder['time'] ?? '19:00'}' : 'Desactivado'),
+              value: Get.find<AuthService>().reminder['enabled'] == true,
+              onChanged: controller.setReminder,
+            ),
+            if (Get.find<AuthService>().reminder['enabled'] == true)
+              ListTile(
+                leading: const Icon(Icons.schedule),
+                title: const Text('Cambiar la hora'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => controller.pickReminderTime(context),
+              ),
+            if (controller.reminderMsg.value.isNotEmpty)
+              Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: Text(controller.reminderMsg.value, style: const TextStyle(color: W.muted))),
+          ]),
+        ),
         _h('Liga de la semana'),
         Card(
           child: Padding(

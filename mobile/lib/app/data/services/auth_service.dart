@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../routes/app_routes.dart';
 import '../providers/api_client.dart';
+import 'reminder_service.dart';
 
 /// Sesión del alumno: el token se guarda cifrado en el teléfono (Keychain / Keystore).
 class AuthService extends GetxService {
@@ -59,6 +60,7 @@ class AuthService extends GetxService {
     try {
       await api.post('/auth/logout');
     } catch (_) {}
+    if (Get.isRegistered<ReminderService>()) await Get.find<ReminderService>().cancelAll();
     await _clear();
   }
 
@@ -67,6 +69,14 @@ class AuthService extends GetxService {
     await _storage.write(key: 'token', value: token);
     await _loadProfile();
   }
+
+  /// Guarda el recordatorio en el servidor (la misma hora que usa la web) y actualiza el perfil.
+  Future<void> saveReminder({required bool enabled, required String time, required String timezone}) async {
+    final r = await api.put('/reminders', {'enabled': enabled, 'time': time, 'timezone': timezone});
+    profile.value = Map<String, dynamic>.from(r as Map);
+  }
+
+  Map get reminder => (profile.value?['reminder'] as Map?) ?? const {};
 
   Future<void> _loadProfile() async {
     final results = await Future.wait([api.get('/me'), api.get('/config')]);

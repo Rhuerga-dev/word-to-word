@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El icono del recordatorio se usa por nombre desde Dart: que no lo quite la reducción de recursos -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/ic_stat_mic" />
