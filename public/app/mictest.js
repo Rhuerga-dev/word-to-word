@@ -8,7 +8,20 @@
   function box() { return document.getElementById("micTestOut"); }
   function show(html) { const b = box(); b.hidden = false; b.innerHTML = html; }
 
-  async function run() {
+  /** Elige el micrófono del propio teléfono (no el Bluetooth) y repite la prueba. */
+  async function switchToPhone() {
+    const mics = await listMics();
+    const phone = mics.find(m => /iphone|built-?in|integrad|interno|internal/i.test(m.label))
+      || mics.find(m => m.label && !/airpods|bluetooth|headset|beats|buds|hands-?free/i.test(m.label));
+    if (!phone) { show(`<p class="mt-bad">❌ No encontré otro micrófono en este teléfono.</p>`); return; }
+    mic.pref = phone.deviceId;
+    try { localStorage.setItem("wtw_mic", mic.pref); } catch (e) {}
+    releaseMic();
+    if (typeof renderMicSelect === "function") renderMicSelect();
+    run(true);
+  }
+
+  async function run(switched) {
     if (running) return;
     running = true;
     const btn = document.getElementById("micTest");
@@ -56,6 +69,8 @@
 
       const wav = encodeWav(downsample(flatten(chunks), rate, 16000), 16000);
       const a = analyze(frames, rate, label);
+      a.switched = switched === true;
+      if (typeof renderMicSelect === "function") renderMicSelect(); // ahora ya se ven los nombres
       show(`<p class="mt-step">Analizando…</p>`);
       a.heard = await understood(wav);
       render(a, wav);
@@ -123,7 +138,9 @@
       rows += row(h, `Te entiende: ${a.heard.pct}%`, a.heard.text ? `Entendí: “${a.heard.text}”` : "No entendí ninguna palabra.");
       if (h < 2 && vol === 2 && noise === 2) tips.push("El audio está bien: habla un poco más despacio y separando las palabras.");
     }
-    if (a.bluetooth) tips.push("Estás usando el micrófono de tus audífonos Bluetooth: suena peor y hace que la voz de la app baje de calidad. Elige el micrófono del iPhone arriba y prueba otra vez.");
+    if (a.bluetooth) tips.push(a.switched
+      ? "El iPhone siguió usando el micrófono de tus audífonos aunque elegí el del iPhone. Para practicar con buena calidad, quítate los audífonos o usa la app W2W."
+      : "Estás usando el micrófono de tus audífonos Bluetooth: suena peor y hace que la voz de la app baje de calidad. Elige el micrófono del iPhone arriba y prueba otra vez.");
     const all = vol + noise + (a.heard ? (a.heard.pct >= 80 ? 2 : a.heard.pct >= 50 ? 1 : 0) : 2);
     const verdict = all >= 6 && !a.bluetooth ? "✅ Tu micrófono está listo para practicar." : all >= 4 ? "⚠️ Funciona, pero se puede mejorar:" : "❌ Así te va a costar que la app te entienda:";
     const url = URL.createObjectURL(wav);
@@ -131,10 +148,12 @@
       + (tips.length ? `<ul class="mt-tips">${tips.map(t => `<li>${esc(t)}</li>`).join("")}</ul>` : "")
       + `<p class="note">Micrófono: ${esc(a.label || "automático")} · voz ${a.voiceDb} dB · ruido ${a.noiseDb} dB</p>`
       + `<p class="mt-step">Escúchate:</p><audio controls src="${url}" style="width:100%"></audio>`
-      + `<div class="row"><button type="button" id="micTestAgain">Probar otra vez</button></div>`);
-    document.getElementById("micTestAgain").onclick = run;
+      + `<div class="row">${a.bluetooth && !a.switched ? '<button type="button" class="primary" id="micUsePhone">Usar el micrófono del iPhone y probar otra vez</button>' : ""}<button type="button" id="micTestAgain">Probar otra vez</button></div>`);
+    document.getElementById("micTestAgain").onclick = () => run();
+    const usePhone = document.getElementById("micUsePhone");
+    if (usePhone) usePhone.onclick = () => switchToPhone();
   }
 
   const b = document.getElementById("micTest");
-  if (b) b.onclick = run;
+  if (b) b.onclick = () => run();
 })();
