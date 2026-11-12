@@ -252,9 +252,15 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
         final heard = ' ${_norm(h.text)} ';
         var said = item.options.indexWhere((o) => heard.contains(' ${o.toLowerCase()} '));
         // También vale decir el número de la opción ("one", "the second"…): se entiende mucho mejor.
-        if (said < 0) said = parseOptionNumber(heard, item.options.length);
+        if (said < 0) said = parseOptionNumber(h.text, item.options.length);
         if (said < 0) {
           misses++;
+          if (misses >= 3) {
+            // Sin bucles: tras tres intentos se pausa y se elige tocando la pantalla.
+            await hf.say("I can't understand. Tap the word on the screen.");
+            hf.pause();
+            throw HandsFreePaused();
+          }
           if (misses == 1) {
             await hf.say("I didn't catch it. Say the word slowly and clearly, or say its number.");
           } else {

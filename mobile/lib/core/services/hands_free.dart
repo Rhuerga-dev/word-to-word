@@ -38,7 +38,8 @@ int parseOptionNumber(String text, int count) {
     ['five', 'fifth', '5'],
     ['six', 'sixth', '6'],
   ];
-  final t = _clean(text).split(' ').where((w) => w.isNotEmpty).toList();
+  // Conserva los dígitos: el reconocedor suele devolver "2." o "Number 3".
+  final t = text.toLowerCase().replaceAll(RegExp(r"[^a-z0-9' ]"), ' ').split(' ').where((w) => w.isNotEmpty).toList();
   if (t.isEmpty || t.length > 4) return -1;
   final found = [for (var i = 0; i < count && i < words.length; i++) if (t.any(words[i].contains)) i];
   // "the second one": el "one" es de relleno.
@@ -92,9 +93,10 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   String _last = '';
   String _lastLang = 'en';
 
-  /// Escuchas seguidas sin oírte. A la tercera se pausa: nunca se avanza ni se califica sin tu respuesta.
+  /// Escuchas seguidas sin oírte. A la segunda se pausa (antes, a la tercera: tardaba ~15–20 s si te
+  /// quitabas los auriculares). Nunca se avanza ni se califica sin tu respuesta.
   int _silent = 0;
-  static const maxSilent = 3;
+  static const maxSilent = 2;
 
   AppAudio get _audio => ref.read(audioProvider);
 
@@ -188,7 +190,7 @@ class HandsFreeController extends Notifier<HandsFreeState> {
     return Heard(text, parseCommand(text), wav: r.wav);
   }
 
-  /// No te oyó. A la tercera vez seguida se pausa (nunca se avanza ni se califica sin tu respuesta).
+  /// No te oyó. A la segunda vez seguida se pausa (nunca se avanza ni se califica sin tu respuesta).
   Future<Heard> _nothing(Uint8List wav) async {
     state = state.copyWith(phase: HfPhase.idle);
     if (++_silent >= maxSilent) await _pauseForSilence();

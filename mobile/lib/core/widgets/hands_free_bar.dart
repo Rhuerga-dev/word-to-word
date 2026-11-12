@@ -24,9 +24,6 @@ class HandsFreeBar extends ConsumerWidget {
     };
     final listening = s.phase == HfPhase.listening;
     final phones = ref.watch(headphonesProvider).valueOrNull;
-    // Si activaste la opción: si llevas puestos los AirPods.
-    final seenEars = ref.watch(airPodsEarsSettingProvider) ? ref.watch(airPodsEarsProvider).valueOrNull : null;
-    final ears = seenEars != null && seenEars.found ? seenEars : null;
     return Container(
       decoration: const BoxDecoration(color: W.navy, borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -62,9 +59,7 @@ class HandsFreeBar extends ConsumerWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                phones != null
-                    ? '$phones${ears == null ? '' : ' · ${ears.inEar ? tr('puestos') : tr('fuera')}'} · ${tr('hablas al micrófono del teléfono')}'
-                    : tr('Sin auriculares: la voz sale por el altavoz'),
+                phones != null ? '$phones · ${tr('hablas al micrófono del teléfono')}' : tr('Sin auriculares: la voz sale por el altavoz'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: W.mist, fontSize: 13),

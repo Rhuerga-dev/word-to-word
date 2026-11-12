@@ -1,3 +1,4 @@
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,11 @@ class _FakeAudio extends AppAudio {
   Future<void> stopVoice() async {}
   @override
   void stopRecording() {}
+
+  /// Graba "silencio": no te oye.
+  @override
+  Future<Recording> record({int maxMs = 6000, int silenceMs = 1200, void Function()? onVoice}) async =>
+      Recording(Uint8List(0), false, maxMs);
 }
 
 void main() {
@@ -49,5 +55,23 @@ void main() {
     expect(parseOptionNumber('one', 3), 0);
     expect(parseOptionNumber('I want to go for it', 3), -1);
     expect(parseOptionNumber('four', 3), -1); // solo hay 3 opciones
+    // Azure devuelve dígitos: "2.", "Number 3".
+    expect(parseOptionNumber('2.', 3), 1);
+    expect(parseOptionNumber('Number 3', 3), 2);
+    expect(parseOptionNumber('1', 3), 0);
+  });
+
+  test('manos libres: si no te oye dos veces seguidas, se pausa (sin avanzar)', () async {
+    final audio = _FakeAudio();
+    final c = ProviderContainer(overrides: [audioProvider.overrideWithValue(audio)]);
+    addTearDown(c.dispose);
+    final hf = c.read(handsFreeProvider.notifier);
+    await hf.setOn(true);
+
+    final first = await hf.listen(transcribe: false);
+    expect(first.silent, isTrue);
+    expect(c.read(handsFreeProvider).on, isTrue);       // la primera vez solo vuelve a preguntar
+    await expectLater(hf.listen(transcribe: false), throwsA(isA<HandsFreePaused>().having((p) => p.silence, 'silence', true)));
+    expect(c.read(handsFreeProvider).on, isFalse);      // a la segunda, en pausa
   });
 }
