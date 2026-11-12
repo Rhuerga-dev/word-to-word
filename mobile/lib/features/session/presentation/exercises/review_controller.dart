@@ -73,11 +73,18 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
       await hf.say(plainExample(card.example));
     }
     // La nota solo la pones tú: sin respuesta no se califica.
+    var misses = 0;
     for (var i = 0;; i++) {
       await hf.say(i == 0 ? 'Again, hard, good or easy?' : 'Say again, hard, good or easy.');
       final h = await hf.listen(maxMs: 5000, silenceMs: 900);
       if (h.silent || await handleCommand(hf, h)) continue;
       final g = parseGrade(h.text);
+      if (g == null && ++misses >= 3) {
+        // Sin bucles: tras tres intentos se pausa y la nota se toca en pantalla.
+        await hf.say("Sorry, I didn't understand. Tap your answer on the screen.");
+        hf.pause();
+        throw HandsFreePaused();
+      }
       if (g != null) {
         await rate(g);
         final aid = aidOf(card);

@@ -49,11 +49,14 @@ int parseOptionNumber(String text, int count) {
 
 /// La nota de una ficha dicha en voz alta: again · hard · good · easy (o null si no se entendió).
 String? parseGrade(String text) {
-  final t = _clean(text);
-  if (RegExp(r'\b(again|forgot|no idea)\b').hasMatch(t)) return 'again';
-  if (RegExp(r'\b(hard|difficult)\b').hasMatch(t)) return 'hard';
-  if (RegExp(r'\b(easy)\b').hasMatch(t)) return 'easy';
-  if (RegExp(r'\b(good|fine|ok|okay|got it)\b').hasMatch(t)) return 'good';
+  // Sin tildes, para entender también la nota en español ("fácil", "difícil").
+  const accents = {'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u'};
+  final t = _clean(text.toLowerCase().split('').map((c) => accents[c] ?? c).join());
+  // Incluye cómo lo suele escribir el reconocedor cuando no lo oye bien ("heart" por hard, "could" por good).
+  if (RegExp(r'\b(again|a gain|forgot|no idea|olvide|otra vez)\b').hasMatch(t)) return 'again';
+  if (RegExp(r'\b(hard|heart|hart|harder|difficult|dificil)\b').hasMatch(t)) return 'hard';
+  if (RegExp(r'\b(easy|easily|easier|is he|facil)\b').hasMatch(t)) return 'easy';
+  if (RegExp(r'\b(good|could|goods|great|fine|ok|okay|got it|bien)\b').hasMatch(t)) return 'good';
   return null;
 }
 

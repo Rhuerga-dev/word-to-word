@@ -288,6 +288,7 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
     }
     final ms = (voice ?? DateTime.now()).difference(t0).inMilliseconds;
     await hf.say('It means: ${_plain(item.meaning)}. Did you know it? Yes or no.');
+    var misses = 0;
     while (true) {
       final h = await hf.listen(maxMs: 4000, silenceMs: 900);
       if (h.silent || await handleCommand(hf, h)) continue;
@@ -295,6 +296,12 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
       final yes = RegExp(r'\b(yes|yeah|yep|sure|i did|right|correct|s[ií])\b').hasMatch(t);
       final no = RegExp(r"\b(no|nope|didn't|did not|wrong)\b").hasMatch(t);
       if (yes == no) {
+        if (++misses >= 3) {
+          // Sin bucles: tras tres intentos se pausa y se responde tocando la pantalla.
+          await hf.say("Sorry, I didn't understand. Tap your answer on the screen.");
+          hf.pause();
+          throw HandsFreePaused();
+        }
         await hf.say('Say yes or no.');
         continue;
       }

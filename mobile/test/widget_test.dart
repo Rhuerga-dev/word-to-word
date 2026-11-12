@@ -107,6 +107,14 @@ void main() {
     expect(parseGrade('hard'), 'hard');
     expect(parseGrade('again'), 'again');
     expect(parseGrade('banana'), isNull);
+    // Lo que el reconocedor suele escribir y la nota en español.
+    expect(parseGrade('Heart.'), 'hard');
+    expect(parseGrade('Could.'), 'good');
+    expect(parseGrade('Easily'), 'easy');
+    expect(parseGrade('Fácil'), 'easy');
+    expect(parseGrade('difícil'), 'hard');
+    expect(parseGrade('Bien'), 'good');
+    expect(parseGrade('otra vez'), 'again');
   });
 
   test('sin conexión: devuelve lo guardado y encola las fichas', () async {
