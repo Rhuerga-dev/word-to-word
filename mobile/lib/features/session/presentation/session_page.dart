@@ -42,10 +42,8 @@ class SessionPage extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
             child: Row(children: [
-              IconButton(tooltip: tr('Salir'), icon: const Icon(Icons.close), onPressed: () {
-                ref.read(handsFreeProvider.notifier).pause();
-                context.pop();
-              }),
+              // Salir no apaga el manos libres: lo que estaba escuchando se corta al cerrarse la pantalla.
+              IconButton(tooltip: tr('Salir'), icon: const Icon(Icons.close), onPressed: () => context.pop()),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(99),
@@ -102,10 +100,23 @@ class _HandsFreeDriver extends ConsumerStatefulWidget {
 
 class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
   bool _running = false;
+  int? _turn;
+
+  // Guardado al crear la pantalla: en dispose ya no se puede usar ref.
+  late final HandsFreeController _hf;
+
+  @override
+  void dispose() {
+    // Saliste (X, atrás, otra pestaña) o pasaste al siguiente: lo que estaba escuchando se corta.
+    final t = _turn;
+    if (t != null) _hf.cancel(t);
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    _hf = ref.read(handsFreeProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && ref.read(handsFreeProvider).on) _run();
     });
@@ -123,10 +134,11 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
   Future<void> _run() async {
     if (_running) return;
     _running = true;
-    final hf = ref.read(handsFreeProvider.notifier);
+    final hf = _hf;
+    final turn = _turn = hf.begin();
     ExerciseOutcome? outcome;
     try {
-      outcome = await _byVoice(hf);
+      outcome = await hf.runAs(turn, () => _byVoice(hf));
     } on HandsFreePaused catch (p) {
       // Se pausó: el ejercicio sigue con el dedo donde quedó.
       if (p.silence && mounted) {
@@ -139,6 +151,7 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Manos libres en pausa: {0}', [e]))));
     } finally {
       _running = false;
+      if (_turn == turn) _turn = null;
       // La pantalla pudo cerrarse mientras hablaba (pasaste de ficha o saliste): sin ref.
       if (mounted && ref.read(handsFreeProvider).on) hf.idle();
     }

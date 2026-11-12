@@ -1,0 +1,43 @@
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:word_to_word/core/network/api_client.dart';
+import 'package:word_to_word/core/services/audio_service.dart';
+import 'package:word_to_word/core/services/hands_free.dart';
+
+/// Audio de mentira: "habla" al instante.
+class _FakeAudio extends AppAudio {
+  _FakeAudio() : super(Api());
+  final said = <String>[];
+  @override
+  Future<void> say(String text, {String lang = 'en', bool slow = false}) async => said.add(text);
+  @override
+  Future<void> stopVoice() async {}
+  @override
+  void stopRecording() {}
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  // El almacenamiento seguro no existe en los tests: se ignora.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'), (_) async => null);
+
+  test('manos libres: al salir de una pantalla su vuelta se corta y la nueva funciona', () async {
+    final audio = _FakeAudio();
+    final c = ProviderContainer(overrides: [audioProvider.overrideWithValue(audio)]);
+    addTearDown(c.dispose);
+    final hf = c.read(handsFreeProvider.notifier);
+    await hf.setOn(true);
+
+    final old = hf.begin();
+    final now = hf.begin(); // volviste a entrar: empieza otra vuelta
+    await expectLater(hf.runAs(old, () => hf.say('old')), throwsA(isA<HandsFreePaused>()));
+    await hf.runAs(now, () => hf.say('new'));
+    expect(audio.said, ['new']);
+
+    hf.cancel(now); // saliste otra vez
+    await expectLater(hf.runAs(now, () => hf.say('late')), throwsA(isA<HandsFreePaused>()));
+    expect(c.read(handsFreeProvider).on, isTrue); // salir no apaga el manos libres
+  });
+}

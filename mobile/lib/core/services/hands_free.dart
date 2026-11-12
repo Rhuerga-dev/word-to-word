@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,6 +79,29 @@ class HandsFreeController extends Notifier<HandsFreeState> {
 
   AppAudio get _audio => ref.read(audioProvider);
 
+  /// Cada pantalla que usa el manos libres hace su "vuelta" con un número. Si sales de la pantalla
+  /// (con la X, el gesto de atrás o cambiando de pestaña) esa vuelta se corta: la vieja no puede seguir
+  /// escuchando por detrás y trabar la nueva cuando vuelves a entrar.
+  int _run = 0;
+  static const _zoneKey = #handsFreeRun;
+
+  /// Empieza una vuelta: corta lo que quedara sonando o grabando y devuelve su número.
+  int begin() {
+    _interrupt();
+    return ++_run;
+  }
+
+  /// Hace [body] como la vuelta [run]: si después empieza otra o se cancela, esta se detiene.
+  Future<T> runAs<T>(int run, Future<T> Function() body) => runZoned(body, zoneValues: {_zoneKey: run});
+
+  /// La pantalla se cerró: corta su vuelta (sin apagar el manos libres).
+  void cancel(int run) {
+    if (run != _run) return;
+    _run++;
+    _interrupt();
+    if (state.phase != HfPhase.idle) state = state.copyWith(phase: HfPhase.idle);
+  }
+
   @override
   HandsFreeState build() {
     _storage.read(key: _key).then((v) {
@@ -104,6 +128,8 @@ class HandsFreeController extends Notifier<HandsFreeState> {
 
   void _check() {
     if (!state.on) throw HandsFreePaused();
+    final mine = Zone.current[_zoneKey];
+    if (mine is int && mine != _run) throw HandsFreePaused();
   }
 
   /// La app dice [text] y espera a que termine.
