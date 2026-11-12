@@ -95,7 +95,7 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
         continue;
       }
       if (!await _check(h.wav!)) {
-        await hf.say("I didn't understand. Try again.");
+        await hf.say("Sorry, I didn't understand. Try again.");
         continue;
       }
       final cmd = parseCommand(state.review!.heard);

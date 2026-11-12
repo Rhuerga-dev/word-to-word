@@ -262,7 +262,7 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
             throw HandsFreePaused();
           }
           if (misses == 1) {
-            await hf.say("I didn't catch it. Say the word slowly and clearly, or say its number.");
+            await hf.say("Sorry, I didn't understand. Say the word slowly and clearly, or say its number.");
           } else {
             // Las opciones en voz alta con su número, para que puedas elegir sin que dependa de tu pronunciación.
             final opts = [for (var i = 0; i < item.options.length; i++) '${_numbers[i]}: ${item.options[i]}'].join('. ');
