@@ -87,15 +87,29 @@ final airPodsProvider = NotifierProvider<AirPodsService, bool>(AirPodsService.ne
 
 /// Si llevas puestos los AirPods (lo que emiten por Bluetooth; ver AirPodsEars.kt).
 class EarState {
-  const EarState({required this.left, required this.right, this.status = 0, this.rssi = 0});
+  const EarState({required this.left, required this.right, this.status = 0, this.rssi = 0, this.found = true, this.seen = 0, this.pods = 0});
   final bool left, right;
   final int status, rssi;
+
+  /// false = solo es un latido de diagnóstico: aún no se ven tus AirPods ([seen] avisos de Apple, [pods] de AirPods).
+  final bool found;
+  final int seen, pods;
 
   /// Al menos uno puesto.
   bool get inEar => left || right;
 
-  static EarState fromMap(Map<dynamic, dynamic> m) =>
-      EarState(left: m['left'] == true, right: m['right'] == true, status: (m['status'] as num?)?.toInt() ?? 0, rssi: (m['rssi'] as num?)?.toInt() ?? 0);
+  static EarState fromMap(Map<dynamic, dynamic> m) {
+    int n(String k) => (m[k] as num?)?.toInt() ?? 0;
+    return EarState(
+      left: m['left'] == true,
+      right: m['right'] == true,
+      status: n('status'),
+      rssi: n('rssi'),
+      found: m.containsKey('left'),
+      seen: n('seen'),
+      pods: n('pods'),
+    );
+  }
 }
 
 /// Opción "Pausar el manos libres al quitarte los AirPods" (solo Android, experimental).

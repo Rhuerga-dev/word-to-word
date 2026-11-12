@@ -304,4 +304,6 @@ const stringsEn = <String, String>{
   "Pausar el manos libres al quitarte los AirPods": "Pause hands-free when you take off your AirPods",
   "Si te quitas los dos, el manos libres se pausa; al volver a ponértelos, sigue solo.": "If you take both off, hands-free pauses; put them back on and it continues.",
   "Experimental: solo AirPods y Beats, en Android. Lee lo que los AirPods emiten por Bluetooth.": "Experimental: AirPods and Beats only, on Android. It reads what the AirPods broadcast over Bluetooth.",
+  "Buscando tus AirPods… Señales de Apple vistas: {0} · de AirPods: {1}": "Looking for your AirPods… Apple signals seen: {0} · AirPods: {1}",
+  "Faltan permisos: «Dispositivos cercanos» y «Ubicación» (Android la pide para leer los AirPods; no se guarda ni se envía). Dalos en los ajustes de la app → Permisos.": "Missing permissions: “Nearby devices” and “Location” (Android needs it to read the AirPods; it isn't stored or sent). Grant them in the app settings → Permissions.",
 };

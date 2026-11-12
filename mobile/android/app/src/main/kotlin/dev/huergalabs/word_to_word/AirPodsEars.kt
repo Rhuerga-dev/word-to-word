@@ -27,25 +27,49 @@ import io.flutter.plugin.common.EventChannel
  */
 object AirPodsEars : EventChannel.StreamHandler {
     private const val APPLE = 0x004C
-    private const val MIN_RSSI = -72          // más lejos que esto: no son los tuyos
+    private const val MIN_RSSI = -92          // muy lejos: no son los tuyos (puestos o en el bolsillo llegan a -60…-85)
     private var ctx: Context? = null
     private var sink: EventChannel.EventSink? = null
     private var scanner: BluetoothLeScanner? = null
     private var lastKey = ""
     private var lastSent = 0L
+    // Diagnóstico: señales de Apple y de AirPods vistas desde el último aviso a Flutter.
+    private var apple = 0
+    private var pods = 0
+    private var lastBeat = 0L
+    // Los AirPods "tuyos": la dirección con más señal (cambia cada ~15 min por privacidad: se re-elige).
+    private var bestAddr: String? = null
+    private var bestRssi = -200
+    private var bestAt = 0L
 
     fun attach(context: Context) { ctx = context.applicationContext }
 
-    fun hasPermission(c: Context): Boolean =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            c.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-        else c.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    // Sin "neverForLocation" (Android ocultaba los avisos de Apple como si fueran balizas): hace falta
+    // también la ubicación precisa. Solo se usa para leer los AirPods; no se guarda ni se envía nada.
+    fun hasPermission(c: Context): Boolean {
+        val loc = c.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            loc && c.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+        else loc
+    }
 
     private val callback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            if (result.rssi < MIN_RSSI) return
             val d = result.scanRecord?.getManufacturerSpecificData(APPLE) ?: return
-            if (d.size < 9 || d[0].toInt() != 0x07) return
+            apple++
+            val now0 = SystemClock.elapsedRealtime()
+            // Latido cada 4 s mientras no hay AirPods: así la app sabe si llega algo.
+            if (now0 - lastBeat > 4000 && lastKey.isEmpty()) {
+                lastBeat = now0
+                sink?.success(mapOf("seen" to apple, "pods" to pods))
+            }
+            if (d.size < 9 || d[0].toInt() != 0x07 || result.rssi < MIN_RSSI) return
+            pods++
+            val addr = result.device?.address
+            val stale = now0 - bestAt > 10_000
+            if (bestAddr == null || stale || addr == bestAddr || result.rssi > bestRssi + 6) {
+                bestAddr = addr; bestRssi = result.rssi; bestAt = now0
+            } else return
             val status = d[5].toInt() and 0xFF
             val primaryIn = status and 0x02 != 0
             val otherIn = status and 0x08 != 0
@@ -58,7 +82,7 @@ object AirPodsEars : EventChannel.StreamHandler {
             if (key == lastKey && now - lastSent < 4000) return
             lastKey = key; lastSent = now
             sink?.success(mapOf(
-                "left" to left, "right" to right, "status" to status, "rssi" to result.rssi,
+                "left" to left, "right" to right, "status" to status, "rssi" to result.rssi, "seen" to apple, "pods" to pods,
                 "model" to (((d[3].toInt() and 0xFF) shl 8) or (d[4].toInt() and 0xFF)),
             ))
         }
@@ -75,11 +99,11 @@ object AirPodsEars : EventChannel.StreamHandler {
         if (!hasPermission(c)) { events?.error("permission", "Falta el permiso de dispositivos cercanos", null); return }
         val adapter = (c.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
         if (adapter == null || !adapter.isEnabled) { events?.error("off", "Bluetooth apagado", null); return }
-        val filter = ScanFilter.Builder()
-            .setManufacturerData(APPLE, byteArrayOf(0x07), byteArrayOf(0xFF.toByte()))
-            .build()
+        // Solo "de Apple" (sin pedir el tipo: algunos Samsung fallan con filtros de datos). Con filtro,
+        // Android sigue escaneando con la pantalla apagada (manos libres con el teléfono en el bolsillo).
+        val filter = ScanFilter.Builder().setManufacturerData(APPLE, byteArrayOf(), byteArrayOf()).build()
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
-        lastKey = ""; lastSent = 0
+        lastKey = ""; lastSent = 0; apple = 0; pods = 0; lastBeat = 0; bestAddr = null; bestRssi = -200
         try {
             scanner = adapter.bluetoothLeScanner
             scanner?.startScan(listOf(filter), settings, callback)

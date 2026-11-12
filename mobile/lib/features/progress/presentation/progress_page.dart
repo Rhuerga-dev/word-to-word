@@ -392,7 +392,7 @@ class _EarsCardState extends ConsumerState<_EarsCard> {
     if (on) {
       switch (r) {
         case AirPodsEnable.denied:
-          msg = tr('Falta el permiso «Dispositivos cercanos». Si no te salió la pregunta, dalo en los ajustes de la app: Permisos → Dispositivos cercanos → Permitir.');
+          msg = tr('Faltan permisos: «Dispositivos cercanos» y «Ubicación» (Android la pide para leer los AirPods; no se guarda ni se envía). Dalos en los ajustes de la app → Permisos.');
           settings = true;
         case AirPodsEnable.reinstall:
           msg = tr('Esta función es nueva y necesita reinstalar la app: detén la app y vuelve a ejecutar flutter run (el hot reload no la carga).');
@@ -416,7 +416,9 @@ class _EarsCardState extends ConsumerState<_EarsCard> {
     final live = on ? ref.watch(airPodsEarsProvider) : null;
     String yes(bool b) => b ? tr('puesto') : tr('fuera');
     final status = live?.when(
-            data: (e) => '${tr('Ahora')}: ${tr('izquierdo')} ${yes(e.left)} · ${tr('derecho')} ${yes(e.right)}  (0x${e.status.toRadixString(16).padLeft(2, '0')}, ${e.rssi} dBm)',
+            data: (e) => e.found
+                ? '${tr('Ahora')}: ${tr('izquierdo')} ${yes(e.left)} · ${tr('derecho')} ${yes(e.right)}  (0x${e.status.toRadixString(16).padLeft(2, '0')}, ${e.rssi} dBm)'
+                : tr('Buscando tus AirPods… Señales de Apple vistas: {0} · de AirPods: {1}', [e.seen, e.pods]),
             loading: () => tr('Buscando tus AirPods… (abre el estuche o póntelos)'),
             error: (e, _) => tr('No se pudo leer el estado de los AirPods (¿Bluetooth apagado o falta el permiso?).'),
           );

@@ -8,5 +8,10 @@ void main() {
     expect(e.status, 0x22);
     expect(EarState.fromMap({'left': false, 'right': false}).inEar, isFalse);
     expect(EarState.fromMap(<String, dynamic>{}).inEar, isFalse); // datos raros: fuera, sin romperse
+    // Latido de diagnóstico: aún no se ven los AirPods (no debe pausar nada).
+    final beat = EarState.fromMap({'seen': 12, 'pods': 0});
+    expect(beat.found, isFalse);
+    expect(beat.seen, 12);
+    expect(e.found, isTrue);
   });
 }

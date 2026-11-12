@@ -25,7 +25,8 @@ class HandsFreeBar extends ConsumerWidget {
     final listening = s.phase == HfPhase.listening;
     final phones = ref.watch(headphonesProvider).valueOrNull;
     // Si activaste la opción: si llevas puestos los AirPods.
-    final ears = ref.watch(airPodsEarsSettingProvider) ? ref.watch(airPodsEarsProvider).valueOrNull : null;
+    final seenEars = ref.watch(airPodsEarsSettingProvider) ? ref.watch(airPodsEarsProvider).valueOrNull : null;
+    final ears = seenEars != null && seenEars.found ? seenEars : null;
     return Container(
       decoration: const BoxDecoration(color: W.navy, borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),

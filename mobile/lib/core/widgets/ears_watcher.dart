@@ -61,7 +61,7 @@ class _EarsWatcherState extends ConsumerState<EarsWatcher> {
     if (ref.watch(airPodsEarsSettingProvider)) {
       ref.listen<AsyncValue<EarState>>(airPodsEarsProvider, (_, next) {
         final e = next.valueOrNull;
-        if (e != null) _onEars(e);
+        if (e != null && e.found) _onEars(e);   // los latidos de diagnóstico no cuentan
       });
     }
     return widget.child;
