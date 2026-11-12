@@ -286,4 +286,6 @@ const stringsEn = <String, String>{
   "La versión nueva está lista.": "The new version is ready.",
   "Reiniciar": "Restart",
   "Ahora no": "Not now",
+  "Conectar": "Connect",
+  "Conectar auriculares": "Connect headphones",
 };

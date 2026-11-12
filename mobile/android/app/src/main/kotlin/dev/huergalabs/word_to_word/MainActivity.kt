@@ -32,6 +32,15 @@ class MainActivity : FlutterActivity() {
                         android.net.Uri.fromParts("package", packageName, null)))
                     result.success(true)
                 }
+                // Ajustes de Bluetooth del teléfono, para conectar los auriculares sin salir a buscarlos.
+                "bluetooth" -> {
+                    try {
+                        startActivity(android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS))
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
+                }
                 "connected" -> worker.execute {
                     val d = AirPodsControl.connectedAirPods(this)
                     main.post { result.success(d != null) }

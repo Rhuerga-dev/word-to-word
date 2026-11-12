@@ -51,6 +51,9 @@ class AirPodsService extends Notifier<bool> {
   /// Abre los ajustes de la app (Permisos → Dispositivos cercanos).
   Future<void> openSettings() async => _invoke<bool>('settings');
 
+  /// Abre los ajustes de Bluetooth del teléfono (para conectar los auriculares). Solo Android.
+  Future<void> openBluetooth() async => _invoke<bool>('bluetooth');
+
   /// ¿Hay AirPods conectados ahora?
   Future<bool> connected() async => (await _invoke<bool>('connected')) ?? false;
 

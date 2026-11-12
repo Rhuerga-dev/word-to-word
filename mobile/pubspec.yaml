@@ -1,7 +1,7 @@
 name: word_to_word
 description: "Word to Word: aprende a hablar inglés con una sesión guiada cada día."
 publish_to: 'none'
-version: 1.0.3+5
+version: 1.0.4+6
 
 environment:
   sdk: ">=3.4.0 <4.0.0"

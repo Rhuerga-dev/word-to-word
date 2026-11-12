@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -19,21 +20,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _busy = false;
   String _error = '';
 
-  Future<void> _run(Future<void> Function(AuthController c) fn) async {
+  Future<bool> _run(Future<void> Function(AuthController c) fn) async {
     setState(() {
       _busy = true;
       _error = '';
     });
     try {
       await fn(ref.read(authControllerProvider.notifier));
+      return true;
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+    return false;
   }
 
-  void _login() => _run((c) => c.login(_email.text.trim(), _password.text));
+  /// Al entrar bien, el teléfono ofrece guardar la contraseña (Google / Samsung Pass) para la próxima vez.
+  Future<void> _login() async {
+    final ok = await _run((c) => c.login(_email.text.trim(), _password.text));
+    TextInput.finishAutofillContext(shouldSave: ok);
+  }
 
   @override
   void dispose() {
@@ -54,10 +61,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             const SizedBox(height: 8),
             Text(tr('Aprende a hablar inglés con una sesión guiada cada día.'), style: TextStyle(color: W.muted, fontSize: 16)),
             const SizedBox(height: 32),
+            AutofillGroup(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             TextField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
+              autofillHints: const [AutofillHints.email, AutofillHints.username],
               decoration: InputDecoration(labelText: tr('Correo'), border: OutlineInputBorder()),
             ),
             const SizedBox(height: 12),
@@ -67,6 +76,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               autofillHints: const [AutofillHints.password],
               decoration: InputDecoration(labelText: tr('Contraseña'), border: OutlineInputBorder()),
               onSubmitted: (_) => _login(),
+            ),
+              ]),
             ),
             if (_error.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_error, style: const TextStyle(color: W.bad))),
             const SizedBox(height: 20),

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../services/airpods_service.dart';
 import '../services/audio_service.dart';
 import '../services/hands_free.dart';
 import '../theme/app_theme.dart';
@@ -62,6 +65,12 @@ class HandsFreeBar extends ConsumerWidget {
                 style: const TextStyle(color: W.mist, fontSize: 13),
               ),
             ),
+            if (phones == null && Platform.isAndroid)
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: W.yellow, visualDensity: VisualDensity.compact),
+                onPressed: () => ref.read(airPodsProvider.notifier).openBluetooth(),
+                child: Text(tr('Conectar'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              ),
           ]),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [

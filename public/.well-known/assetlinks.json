@@ -1,0 +1,17 @@
+[
+  {
+    "relation": ["delegate_permission/common.get_login_creds"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.huergalabs.w2w",
+      "sha256_cert_fingerprints": [
+        "4F:50:AD:F1:73:04:03:B6:DC:7D:50:49:45:3A:0A:3C:9F:67:19:D3:50:88:1C:1C:9C:BF:C2:0B:1A:AC:7E:5C",
+        "F8:27:69:71:56:99:C6:48:8D:54:DF:39:10:90:D8:83:32:62:A6:30:32:A5:2E:8D:B3:94:AF:E1:6A:DE:E3:AA"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.get_login_creds"],
+    "target": { "namespace": "web", "site": "https://w2w.huergalabs.dev" }
+  }
+]

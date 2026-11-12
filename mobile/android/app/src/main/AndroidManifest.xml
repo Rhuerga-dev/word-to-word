@@ -11,6 +11,8 @@
         android:label="W2W"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Contraseñas guardadas compartidas con w2w.huergalabs.dev (Digital Asset Links). -->
+        <meta-data android:name="asset_statements" android:resource="@string/asset_statements" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

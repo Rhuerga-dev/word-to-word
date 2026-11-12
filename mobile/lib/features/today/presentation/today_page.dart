@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
+import '../../../core/services/airpods_service.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/hands_free.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -94,6 +97,15 @@ class _TodayBody extends ConsumerWidget {
           value: handsFree,
           onChanged: (v) => ref.read(handsFreeProvider.notifier).setOn(v),
         ),
+        if (handsFree && Platform.isAndroid && ref.watch(headphonesProvider).hasValue && ref.watch(headphonesProvider).value == null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => ref.read(airPodsProvider.notifier).openBluetooth(),
+              icon: const Icon(Icons.bluetooth),
+              label: Text(tr('Conectar auriculares')),
+            ),
+          ),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
