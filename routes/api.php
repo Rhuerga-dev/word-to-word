@@ -67,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Taller de pronunciación: tus sonidos difíciles, ejercicios evaluados y repetición espaciada.
     Route::get('/pronunciation/sounds', [\App\Http\Controllers\Api\PronunciationLabController::class, 'index']);
+    Route::post('/pronunciation/tips', [PronunciationController::class, 'tips'])->middleware('throttle:40,1');
     Route::post('/pronunciation/assess', [\App\Http\Controllers\Api\PronunciationLabController::class, 'assess'])->middleware('throttle:60,1');
     Route::post('/pronunciation/sounds/result', [\App\Http\Controllers\Api\PronunciationLabController::class, 'result']);
 

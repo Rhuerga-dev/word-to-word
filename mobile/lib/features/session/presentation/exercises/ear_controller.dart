@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/l10n/tr.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
 import '../../../../core/utils/compare.dart';
+import '../../../../core/utils/pron_tips.dart';
+import '../../../auth/presentation/auth_controller.dart';
 import '../../data/ear_item.dart';
 import '../../data/session_repository.dart';
 import 'exercise_outcome.dart';
@@ -22,6 +26,8 @@ class EarState {
     this.match,
     this.heard = '',
     this.msg = '',
+    this.tips = const [],
+    this.loadingTips = false,
   });
   final bool playing;
 
@@ -37,6 +43,10 @@ class EarState {
   final int tries;
   final WordMatch? match;
   final String heard, msg;
+
+  /// Cuando no se te entendió: cómo decir las palabras que fallaron.
+  final List<WordTips> tips;
+  final bool loadingTips;
 
   bool get answered => chosen != null;
   bool get finished => result != null || error != null;
@@ -54,6 +64,8 @@ class EarState {
     WordMatch? match,
     String? heard,
     String? msg,
+    List<WordTips>? tips,
+    bool? loadingTips,
   }) =>
       EarState(
         playing: playing ?? this.playing,
@@ -68,6 +80,8 @@ class EarState {
         match: match ?? this.match,
         heard: heard ?? this.heard,
         msg: msg ?? this.msg,
+        tips: tips ?? this.tips,
+        loadingTips: loadingTips ?? this.loadingTips,
       );
 }
 
@@ -126,6 +140,7 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
       state = state.copyWith(checking: true);
       final text = await ref.read(sessionRepositoryProvider).transcribe(rec.wav);
       await _judge(text, (voice ?? DateTime.now()).difference(t0).inMilliseconds);
+      if (!passed) await _loadTips(rec.wav);
     } catch (e) {
       state = state.copyWith(recording: false, msg: '$e');
     } finally {
@@ -144,6 +159,31 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
       return true;
     }
     return false;
+  }
+
+  /// No se te entendió: qué sonidos fallaron (Azure) y la técnica para cada uno. Sin detalle, por la ortografía.
+  Future<void> _loadTips(Uint8List wav) async {
+    final target = item.target ?? item.word;
+    final missed = [for (final (w, ok) in state.match?.tokens ?? const <(String, bool)>[]) if (!ok) w];
+    state = state.copyWith(loadingTips: true);
+    var weak = <(String, List<String>)>[];
+    try {
+      weak = await ref.read(sessionRepositoryProvider).pronTips(target, wav).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+    if (weak.isEmpty) weak = [for (final w in missed.isEmpty ? target.split(' ') : missed) (w, const <String>[])];
+    state = state.copyWith(tips: buildTips(weak), loadingTips: false);
+  }
+
+  /// Manos libres: dice la primera técnica (en español mientras la app está en español).
+  Future<void> _sayTip(HandsFreeController hf) async {
+    if (state.tips.isEmpty) return;
+    final w = state.tips.first;
+    final t = w.tips.first;
+    if (ref.read(spanishProvider).step <= 2) {
+      await hf.say('Para "${w.word}": ${t.how}', lang: 'es');
+    } else {
+      await hf.say('Tip for ${w.word}: ${tr(t.how)}');
+    }
   }
 
   Future<void> _send(bool ok, int ms, {required int chosen}) async {
@@ -193,11 +233,16 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
           await hf.say(state.match!.pct >= 100 ? 'Perfect!' : 'Good!');
           return outcome();
         }
+        if (h.wav != null) await _loadTips(h.wav!);
         if (done) {
+          await _sayTip(hf);
           await hf.say("Let's practice it again tomorrow.");
           return outcome();
         }
-        await hf.say('Almost. Listen again.');
+        await hf.say('Almost.');
+        await _sayTip(hf);
+        await hf.say('Listen slowly, then say it.');
+        await hf.say(item.target ?? item.word, slow: true);
         await sayItem();
         t0 = DateTime.now();
       }

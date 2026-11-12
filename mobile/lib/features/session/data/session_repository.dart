@@ -92,6 +92,16 @@ class SessionRepository {
   /// Lo que dijiste, en texto (inglés).
   Future<String> transcribe(Uint8List wav) async => asString(asMap(await _api.upload('/speech/transcribe', wav))['text']);
 
+  /// Cuando no se te entendió: las palabras que fallaron y sus sonidos flojos (vacío si no hay detalle).
+  Future<List<(String, List<String>)>> pronTips(String text, Uint8List wav) async {
+    final r = asMap(await _api.upload('/pronunciation/tips', wav, fields: {'text': text}));
+    final words = r['words'] is List ? r['words'] as List : const [];
+    return [
+      for (final w in words)
+        (asString(asMap(w)['word']), [for (final p in (asMap(w)['phonemes'] is List ? asMap(w)['phonemes'] as List : const [])) '$p']),
+    ];
+  }
+
   /// Puntuación (0–100) del sonido [phoneme] al decir [word].
   Future<int> assess(String word, String phoneme, Uint8List wav) async {
     final r = asMap(await _api.upload('/pronunciation/assess', wav, fields: {'text': word, 'phoneme': phoneme}));

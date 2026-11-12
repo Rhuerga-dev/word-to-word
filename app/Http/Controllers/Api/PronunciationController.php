@@ -62,6 +62,47 @@ class PronunciationController extends Controller
         return ['reference' => $reference, 'score' => $score, 'assessment' => $result];
     }
 
+    /**
+     * Cuando no se te entiende al repetir: qué palabras y qué sonidos fallaron, para darte la técnica.
+     * No suma XP. Los sonidos flojos también van al Taller de pronunciación.
+     * Sin Azure devuelve available=false y la app usa pistas por la ortografía.
+     */
+    public function tips(Request $request, PronunciationService $pron)
+    {
+        $data = $request->validate([
+            'text' => ['required', 'string', 'max:200'],
+            'audio' => ['required', 'file', 'max:3072'],
+        ]);
+        $text = trim(preg_replace('/\s+/', ' ', preg_replace("/[^A-Za-z'’ ]/u", ' ', $data['text'])));
+        if ($text === '' || ! $pron->enabled()) {
+            return ['available' => false, 'words' => []];
+        }
+
+        try {
+            $result = $pron->assess($request->file('audio')->get(), $text);
+        } catch (Throwable $e) {
+            report($e);
+
+            return ['available' => false, 'words' => []];
+        }
+        $this->logWeakSounds($request->user()->id, $result['words']);
+
+        $words = collect($result['words'])
+            ->filter(fn ($w) => $w['word'] !== '' && ($w['accuracy'] < 70 || in_array($w['error'], ['Mispronunciation', 'Omission'], true)))
+            ->sortBy('accuracy')
+            ->take(3)
+            ->map(fn ($w) => [
+                'word' => $w['word'],
+                'accuracy' => $w['accuracy'],
+                'error' => $w['error'],
+                // Los sonidos de esa palabra que salieron flojos, del peor al mejor.
+                'phonemes' => collect($w['phonemes'])->filter(fn ($p) => $p['phoneme'] !== '' && $p['accuracy'] < 60)
+                    ->sortBy('accuracy')->pluck('phoneme')->unique()->values()->all(),
+            ])->values()->all();
+
+        return ['available' => true, 'score' => $result['scores']['pron'], 'words' => $words];
+    }
+
     /** Guarda los sonidos con puntaje bajo para ver cuáles te cuestan. */
     private function logWeakSounds(int $userId, array $words): void
     {

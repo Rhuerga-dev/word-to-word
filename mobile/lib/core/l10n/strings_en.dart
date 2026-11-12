@@ -288,4 +288,7 @@ const stringsEn = <String, String>{
   "Ahora no": "Not now",
   "Conectar": "Connect",
   "Conectar auriculares": "Connect headphones",
+  "Cómo decirla": "How to say it",
+  "Practica:": "Practice:",
+  "Oírla despacio": "Hear it slowly",
 };
