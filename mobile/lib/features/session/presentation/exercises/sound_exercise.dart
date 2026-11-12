@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback_bar.dart';
+import '../../../../core/widgets/how_to_say.dart';
 import '../../../../core/widgets/mic_button.dart';
 import '../../../../core/widgets/step_page.dart';
 import '../../data/session_plan.dart';
@@ -53,6 +54,9 @@ class _SoundExerciseState extends ConsumerState<SoundExercise> {
         if (s.pct != null) Text(tr('Último intento: {0}%', [s.pct]), style: const TextStyle(color: W.muted)),
         const SizedBox(height: 10),
         if (s.msg.isNotEmpty) Text(s.msg, style: const TextStyle(color: W.warn)),
+        // Al fallar, la técnica de este sonido.
+        if (s.pct != null && !s.passed && ref.read(provider.notifier).tips.isNotEmpty)
+          HowToSay(tips: ref.read(provider.notifier).tips, loading: false, target: w.word),
       ],
     );
   }

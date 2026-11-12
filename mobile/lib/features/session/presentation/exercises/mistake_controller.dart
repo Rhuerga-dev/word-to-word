@@ -4,14 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
+import '../../../../core/utils/compare.dart';
+import '../../../../core/utils/pron_tips.dart';
+import '../../../../core/widgets/how_to_say.dart';
+import '../../../auth/presentation/auth_controller.dart';
 import '../../data/session_repository.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
 import '../../../../core/l10n/tr.dart';
 
 class MistakeState {
-  const MistakeState({this.recording = false, this.review, this.tries = 0, this.msg = '', this.xp = 0});
-  final bool recording;
+  const MistakeState({this.recording = false, this.review, this.tries = 0, this.msg = '', this.xp = 0, this.tips = const [], this.loadingTips = false});
+  final bool recording, loadingTips;
+
+  /// Cuando no salió: cómo decir las palabras que no se entendieron.
+  final List<WordTips> tips;
   final MistakeReview? review;
   final int tries, xp;
   final String msg;
@@ -20,8 +27,14 @@ class MistakeState {
   bool get finished => review != null && (passed || tries >= 2);
   ExerciseOutcome get outcome => ExerciseOutcome(xp: xp, ok: passed);
 
-  MistakeState copyWith({bool? recording, MistakeReview? review, int? tries, String? msg, int? xp}) => MistakeState(
-      recording: recording ?? this.recording, review: review ?? this.review, tries: tries ?? this.tries, msg: msg ?? this.msg, xp: xp ?? this.xp);
+  MistakeState copyWith({bool? recording, MistakeReview? review, int? tries, String? msg, int? xp, List<WordTips>? tips, bool? loadingTips}) => MistakeState(
+      recording: recording ?? this.recording,
+      review: review ?? this.review,
+      tries: tries ?? this.tries,
+      msg: msg ?? this.msg,
+      xp: xp ?? this.xp,
+      tips: tips ?? this.tips,
+      loadingTips: loadingTips ?? this.loadingTips);
 }
 
 /// Un error de tus conversaciones: decirlo bien en voz alta (dos intentos).
@@ -39,7 +52,21 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
       return false;
     }
     state = state.copyWith(review: r, tries: state.tries + 1, xp: state.xp + r.xpGained, msg: '');
+    if (!r.passed) await _loadTips(r.heard, wav);
     return true;
+  }
+
+  /// No salió: qué sonidos fallaron y cómo decirlos (sin detalle, por la ortografía de lo que faltó).
+  Future<void> _loadTips(String heard, Uint8List wav) async {
+    final target = mistake.correct;
+    final missed = [for (final (w, ok) in matchWords(target, heard).tokens) if (!ok) w];
+    state = state.copyWith(loadingTips: true);
+    var weak = <(String, List<String>)>[];
+    try {
+      weak = await ref.read(sessionRepositoryProvider).pronTips(target, wav).timeout(const Duration(seconds: 10));
+    } catch (_) {}
+    if (weak.isEmpty) weak = [for (final w in missed) (w, const <String>[])];
+    state = state.copyWith(tips: buildTips(weak), loadingTips: false);
   }
 
   Future<void> attempt() async {
@@ -76,7 +103,9 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
       if (state.passed) {
         await hf.say('Perfect!');
       } else {
+        await sayTip(hf, state.tips, spanish: ref.read(spanishProvider).step <= 2);
         await hf.say('Listen.');
+        await hf.say(mistake.correct, slow: true);
         await hf.say(mistake.correct);
       }
     }

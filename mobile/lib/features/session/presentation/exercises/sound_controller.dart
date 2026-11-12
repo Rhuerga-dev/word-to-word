@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
+import '../../../../core/utils/pron_tips.dart';
+import '../../../../core/widgets/how_to_say.dart';
+import '../../../auth/presentation/auth_controller.dart';
 import '../../data/session_plan.dart';
 import '../../data/session_repository.dart';
 import 'exercise_outcome.dart';
@@ -31,6 +34,9 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
 
   @override
   SoundState build(SoundStep step) => const SoundState();
+
+  /// La técnica de este sonido, para mostrarla (o decirla) cuando no sale.
+  List<WordTips> get tips => [if (tipFor(phoneme) != null) WordTips(word, [tipFor(phoneme)!])];
 
   Future<void> _assess(Uint8List wav) async {
     final pct = await ref.read(sessionRepositoryProvider).assess(word, phoneme, wav);
@@ -68,7 +74,9 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
       if (state.passed) {
         await hf.say('Great!');
       } else if (!state.finished) {
-        await hf.say('Almost. Listen again.');
+        await hf.say('Almost.');
+        if (state.tries == 1) await sayTip(hf, tips, spanish: ref.read(spanishProvider).step <= 2);
+        await hf.say('Listen again.');
         await hf.say(word, slow: true);
       } else {
         await hf.say("Let's keep practicing this one.");

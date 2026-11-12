@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/l10n/tr.dart';
-import '../../../../core/services/audio_service.dart';
-import '../../../../core/utils/pron_tips.dart';
+import '../../../../core/widgets/how_to_say.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback_bar.dart';
 import '../../../../core/widgets/mic_button.dart';
@@ -168,7 +167,7 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
           const SizedBox(height: 6),
           Text('${tr('Entendí: “{0}”', [s.heard])} · ${s.match!.pct}%', textAlign: TextAlign.center, style: const TextStyle(color: W.muted)),
         ],
-        if (e.isRepeat && (s.loadingTips || s.tips.isNotEmpty)) _HowToSay(tips: s.tips, loading: s.loadingTips, target: e.target ?? e.word),
+        if (e.isRepeat && (s.loadingTips || s.tips.isNotEmpty)) HowToSay(tips: s.tips, loading: s.loadingTips, target: e.target ?? e.word),
         if (s.msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(s.msg, textAlign: TextAlign.center, style: const TextStyle(color: W.warn))),
         if (s.answered) ...[
           const SizedBox(height: 10),
@@ -181,60 +180,6 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
           ],
         ],
       ],
-    );
-  }
-}
-
-/// "Cómo decirla": las palabras que no se entendieron y la técnica para sus sonidos.
-class _HowToSay extends ConsumerWidget {
-  const _HowToSay({required this.tips, required this.loading, required this.target});
-  final List<WordTips> tips;
-  final bool loading;
-  final String target;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-      decoration: BoxDecoration(color: W.warn.withValues(alpha: .08), borderRadius: BorderRadius.circular(16), border: Border.all(color: W.warn.withValues(alpha: .3))),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.record_voice_over, size: 20, color: W.warn),
-          const SizedBox(width: 8),
-          Text(tr('Cómo decirla'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-          if (loading) ...[
-            const SizedBox(width: 10),
-            const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
-          ],
-        ]),
-        for (final w in tips) ...[
-          const SizedBox(height: 10),
-          Text('“${w.word}”', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: W.bad)),
-          for (final t in w.tips)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(tr(t.name), style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text(tr(t.how), style: const TextStyle(height: 1.35)),
-                if (t.pair.isNotEmpty) Text('${tr('Practica:')} ${t.pair}', style: const TextStyle(color: W.muted)),
-              ]),
-            ),
-        ],
-        if (!loading) ...[
-          const SizedBox(height: 10),
-          Text(tr(slowToNormal.name), style: const TextStyle(fontWeight: FontWeight.w700)),
-          Text(tr(slowToNormal.how), style: const TextStyle(height: 1.35)),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => ref.read(audioProvider).say(target, slow: true),
-              icon: const Icon(Icons.slow_motion_video),
-              label: Text(tr('Oírla despacio')),
-            ),
-          ),
-        ],
-      ]),
     );
   }
 }

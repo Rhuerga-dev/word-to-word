@@ -7,6 +7,7 @@ import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
 import '../../../../core/utils/compare.dart';
 import '../../../../core/utils/pron_tips.dart';
+import '../../../../core/widgets/how_to_say.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../data/ear_item.dart';
 import '../../data/session_repository.dart';
@@ -174,18 +175,6 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
     state = state.copyWith(tips: buildTips(weak), loadingTips: false);
   }
 
-  /// Manos libres: dice la primera técnica (en español mientras la app está en español).
-  Future<void> _sayTip(HandsFreeController hf) async {
-    if (state.tips.isEmpty) return;
-    final w = state.tips.first;
-    final t = w.tips.first;
-    if (ref.read(spanishProvider).step <= 2) {
-      await hf.say('Para "${w.word}": ${t.how}', lang: 'es');
-    } else {
-      await hf.say('Tip for ${w.word}: ${tr(t.how)}');
-    }
-  }
-
   Future<void> _send(bool ok, int ms, {required int chosen}) async {
     state = state.copyWith(chosen: chosen, ms: ms);
     try {
@@ -235,12 +224,12 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
         }
         if (h.wav != null) await _loadTips(h.wav!);
         if (done) {
-          await _sayTip(hf);
+          await sayTip(hf, state.tips, spanish: ref.read(spanishProvider).step <= 2);
           await hf.say("Let's practice it again tomorrow.");
           return outcome();
         }
         await hf.say('Almost.');
-        await _sayTip(hf);
+        await sayTip(hf, state.tips, spanish: ref.read(spanishProvider).step <= 2);
         await hf.say('Listen slowly, then say it.');
         await hf.say(item.target ?? item.word, slow: true);
         await sayItem();

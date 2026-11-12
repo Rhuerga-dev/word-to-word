@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback_bar.dart';
+import '../../../../core/widgets/how_to_say.dart';
 import '../../../../core/widgets/mic_button.dart';
 import '../../../../core/widgets/step_page.dart';
 import '../../data/word_card.dart';
@@ -41,6 +42,7 @@ class MistakeExercise extends ConsumerWidget {
           Text(tr('Entendí: “{0}”', [r.heard]), style: const TextStyle(color: W.muted)),
           Text(m.correct, style: W.display(22, color: W.good, weight: FontWeight.w600)),
         ],
+        if (!s.passed && (s.loadingTips || s.tips.isNotEmpty)) HowToSay(tips: s.tips, loading: s.loadingTips, target: m.correct),
         if (s.msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: Text(s.msg, style: const TextStyle(color: W.warn))),
       ],
     );
