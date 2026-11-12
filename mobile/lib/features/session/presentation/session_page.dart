@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/services/hands_free.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/ears_watcher.dart';
 import '../../../core/widgets/hands_free_bar.dart';
 import '../data/session_plan.dart';
 import 'exercises/exercise_outcome.dart';
@@ -34,7 +35,9 @@ class SessionPage extends ConsumerWidget {
     final s = ref.watch(provider);
     final c = ref.read(provider.notifier);
     final hf = ref.watch(handsFreeProvider.select((h) => h.on));
-    return Scaffold(
+    // EarsWatcher: pausa el manos libres si te quitas los AirPods (opción de Progreso).
+    return EarsWatcher(
+        child: Scaffold(
       backgroundColor: W.card,
       body: SafeArea(
         bottom: false,
@@ -74,7 +77,7 @@ class SessionPage extends ConsumerWidget {
           if (hf && !s.ending) const HandsFreeBar(),
         ]),
       ),
-    );
+    ));
   }
 
   Widget _exercise(SessionStep step, void Function(ExerciseOutcome) done) => switch (step) {

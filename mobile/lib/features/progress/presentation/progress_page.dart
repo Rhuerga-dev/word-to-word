@@ -52,6 +52,8 @@ class ProgressPage extends ConsumerWidget {
             if (AirPodsService.supported) ...[
               _h(tr('AirPods')),
               const _AirPodsCard(),
+              const SizedBox(height: 8),
+              const _EarsCard(),
             ],
             _h(tr('Recordatorio diario')),
             _ReminderCard(studiedToday: p.speakingToday > 0),
@@ -351,6 +353,85 @@ class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Text(
             _msg.isNotEmpty ? _msg : tr('Experimental: funciona en Android 16 QPR3 o más nuevo (Pixel, OnePlus, Oppo, realme). En otros teléfonos no hace nada.'),
+            style: const TextStyle(color: W.muted, fontSize: 13),
+          ),
+        ),
+        if (_askSettings)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => ref.read(airPodsProvider.notifier).openSettings(),
+                icon: const Icon(Icons.settings),
+                label: Text(tr('Abrir ajustes de la app')),
+              ),
+            ),
+          ),
+      ]),
+    );
+  }
+}
+
+/// "Pausar el manos libres al quitarte los AirPods", con el estado en directo para comprobarlo.
+class _EarsCard extends ConsumerStatefulWidget {
+  const _EarsCard();
+
+  @override
+  ConsumerState<_EarsCard> createState() => _EarsCardState();
+}
+
+class _EarsCardState extends ConsumerState<_EarsCard> {
+  String _msg = '';
+  bool _askSettings = false;
+
+  Future<void> _toggle(bool on) async {
+    final r = await ref.read(airPodsEarsSettingProvider.notifier).setEnabled(on);
+    var msg = '';
+    var settings = false;
+    if (on) {
+      switch (r) {
+        case AirPodsEnable.denied:
+          msg = tr('Falta el permiso «Dispositivos cercanos». Si no te salió la pregunta, dalo en los ajustes de la app: Permisos → Dispositivos cercanos → Permitir.');
+          settings = true;
+        case AirPodsEnable.reinstall:
+          msg = tr('Esta función es nueva y necesita reinstalar la app: detén la app y vuelve a ejecutar flutter run (el hot reload no la carga).');
+        case AirPodsEnable.unsupported:
+          msg = tr('Solo está disponible en Android.');
+        case AirPodsEnable.ok:
+          break;
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _msg = msg;
+        _askSettings = settings;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final on = ref.watch(airPodsEarsSettingProvider);
+    final live = on ? ref.watch(airPodsEarsProvider) : null;
+    String yes(bool b) => b ? tr('puesto') : tr('fuera');
+    final status = live?.when(
+            data: (e) => '${tr('Ahora')}: ${tr('izquierdo')} ${yes(e.left)} · ${tr('derecho')} ${yes(e.right)}  (0x${e.status.toRadixString(16).padLeft(2, '0')}, ${e.rssi} dBm)',
+            loading: () => tr('Buscando tus AirPods… (abre el estuche o póntelos)'),
+            error: (e, _) => tr('No se pudo leer el estado de los AirPods (¿Bluetooth apagado o falta el permiso?).'),
+          );
+    return Card(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SwitchListTile(
+          title: Text(tr('Pausar el manos libres al quitarte los AirPods')),
+          subtitle: Text(tr('Si te quitas los dos, el manos libres se pausa; al volver a ponértelos, sigue solo.')),
+          value: on,
+          onChanged: _toggle,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: Text(
+            _msg.isNotEmpty ? _msg : (status ?? tr('Experimental: solo AirPods y Beats, en Android. Lee lo que los AirPods emiten por Bluetooth.')),
             style: const TextStyle(color: W.muted, fontSize: 13),
           ),
         ),
