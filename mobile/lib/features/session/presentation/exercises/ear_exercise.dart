@@ -55,7 +55,8 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
     final s = ref.watch(provider), ctl = ref.read(provider.notifier), e = widget.item;
     final ok = ctl.passed, fast = ctl.fast;
     final secs = (s.ms / 1000).toStringAsFixed(1);
-    final up = fast && s.result?.mode != null && s.result!.mode != e.mode ? ' ${tr('Sube a: {0}.', [tr(_stepNames[s.result!.mode] ?? '')])}' : '';
+    final newMode = s.result?.mode;
+    final up = fast && newMode != null && newMode != e.mode ? ' ${tr('Sube a: {0}.', [tr(_stepNames[newMode] ?? '')])}' : '';
     final pct = s.match?.pct ?? 0;
     final String detail;
     if (s.error != null) {
@@ -70,7 +71,7 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
         : e.isRepeat
             ? (ok ? (s.result?.automatic == true ? tr('¡Automática! 🎧') : (pct >= 100 ? tr('¡Perfecto!') : tr('¡Bien dicho!'))) : tr('Sigue practicándolo'))
             : fast
-                ? (s.result!.automatic ? tr('¡Automática! 🎧') : tr('¡Al oído!'))
+                ? (s.result?.automatic == true ? tr('¡Automática! 🎧') : tr('¡Al oído!'))
                 : ok
                     ? tr('Bien, pero tardaste')
                     : tr('Era esta');
