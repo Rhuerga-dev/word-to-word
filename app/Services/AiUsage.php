@@ -29,6 +29,12 @@ class AiUsage
         self::put('azure', $kind, ['audio_ms' => $ms], $ms / 3_600_000 * $perHour);
     }
 
+    /** Lo que hizo un modelo local (Whisper): coste 0, pero se apunta para ver cuánto se ahorra. */
+    public static function local(string $provider, string $kind, string $wav): void
+    {
+        self::put($provider, $kind, ['audio_ms' => (int) max(0, (strlen($wav) - 44) / 32)], 0.0);
+    }
+
     public static function tts(string $text): void
     {
         $chars = mb_strlen($text);

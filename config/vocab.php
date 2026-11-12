@@ -109,6 +109,11 @@ return [
         'local_url' => env('KOKORO_URL'),
     ],
 
+    // Whisper local (whisper-local/): voz a texto gratis en este Mac. Sin WHISPER_URL, todo va a Azure.
+    'whisper' => [
+        'url' => env('WHISPER_URL'),
+    ],
+
     'azure_speech' => [
         'key' => env('AZURE_SPEECH_KEY'),
         'region' => env('AZURE_SPEECH_REGION') ?: 'eastus',

@@ -88,7 +88,8 @@ class SpeakingController extends Controller
             abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
             $request->validate(['audio' => ['required', 'file', 'max:4096']]);   // ~60 s de WAV 16 kHz mono
             try {
-                $out = $pron->transcribe($request->file('audio')->get());
+                // Conversación: habla libre → Whisper local (gratis), con Azure de respaldo.
+                $out = $pron->transcribe($request->file('audio')->get(), 'en-US', freeSpeech: true);
             } catch (Throwable $e) {
                 report($e);
                 abort(502, 'No se pudo entender el audio ahora. Intenta otra vez.');

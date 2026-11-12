@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Throwable;
 use RuntimeException;
 
 /**
@@ -97,7 +99,74 @@ class PronunciationService
      *
      * @return array{text: string, words: int, speech_ms: int, long_pauses: int, wpm: int|null}
      */
-    public function transcribe(string $wavBytes, string $language = 'en-US'): array
+    /** Desde aquí, el audio largo (narración) va a Whisper aunque no se pida: ahí no se califica palabra por palabra. */
+    public const LOCAL_FROM_SECS = 12;
+
+    /**
+     * Voz a texto. [$freeSpeech] = habla libre (conversación): se usa Whisper en este Mac (gratis).
+     * Lo corto que se califica (repetir, órdenes, errores) sigue en Azure, que no "arregla" lo que dices.
+     * Si Whisper no está o falla, Azure como siempre.
+     */
+    public function transcribe(string $wavBytes, string $language = 'en-US', bool $freeSpeech = false): array
+    {
+        $secs = max(0, (strlen($wavBytes) - 44) / 32000);
+        if (($freeSpeech || $secs >= self::LOCAL_FROM_SECS) && $this->whisperUp()) {
+            try {
+                return $this->whisper($wavBytes, $language);
+            } catch (Throwable $e) {
+                Cache::put('whisper:up', false, 60);   // apagado o colgado: un minuto con Azure
+                report($e);
+            }
+        }
+
+        return $this->azureTranscribe($wavBytes, $language);
+    }
+
+    /** ¿Hay Whisper local configurado y no falló hace poco? (WHISPER_URL en el .env). */
+    public function whisperUp(): bool
+    {
+        return filled(config('vocab.whisper.url')) && Cache::get('whisper:up', true) !== false;
+    }
+
+    /**
+     * Voz a texto con whisper-server (whisper.cpp, modelo large-v3-turbo en memoria).
+     * audio_ctx: para frases cortas solo se mira la parte con audio (la mitad de tiempo); 1500 = 30 s.
+     */
+    public function whisper(string $wavBytes, string $language = 'en-US'): array
+    {
+        $secs = max(0, (strlen($wavBytes) - 44) / 32000);
+        $fields = ['response_format' => 'verbose_json', 'language' => str_starts_with($language, 'es') ? 'es' : 'en', 'temperature' => '0'];
+        if ($secs < 29) {
+            $fields['audio_ctx'] = (string) min(1500, max(512, (int) (ceil(($secs + 1.5) * 50 / 64) * 64)));
+        }
+
+        $json = Http::timeout($secs > 20 ? 90 : 20)->connectTimeout(1)
+            ->attach('file', $wavBytes, 'audio.wav')
+            ->post(rtrim(config('vocab.whisper.url'), '/').'/inference', $fields)
+            ->throw()->json();
+        if (! is_array($json) || ! array_key_exists('text', $json)) {
+            throw new RuntimeException('Respuesta rara de Whisper');
+        }
+        AiUsage::local('whisper', 'transcribe', $wavBytes);
+
+        // Whisper se inventa frases con silencio o ruido ("Thank you for watching"): esos trozos se descartan.
+        $segments = collect($json['segments'] ?? [])->reject(fn ($s) => ($s['no_speech_prob'] ?? 0) > 0.6 && ($s['avg_logprob'] ?? 0) < -0.8);
+        $text = isset($json['segments']) ? $segments->pluck('text')->implode(' ') : (string) $json['text'];
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+        if (preg_match('/^\[?(blank_audio|music|silence|inaudible)\]?$/i', $text)) {
+            $text = '';
+        }
+
+        $timeline = $segments->flatMap(fn ($s) => $s['words'] ?? [])
+            ->filter(fn ($w) => preg_match('/[A-Za-z0-9]/', $w['word'] ?? ''))
+            ->map(fn ($w) => ['start' => (int) round(($w['start'] ?? 0) * 1000), 'end' => (int) round(($w['end'] ?? 0) * 1000)])
+            ->values()->all();
+
+        return ['text' => $text] + self::fluency($timeline);
+    }
+
+    /** Voz a texto con Azure (de pago). */
+    public function azureTranscribe(string $wavBytes, string $language = 'en-US'): array
     {
         if (! $this->enabled()) {
             throw new RuntimeException('Falta AZURE_SPEECH_KEY en el archivo .env');

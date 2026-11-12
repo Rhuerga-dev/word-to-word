@@ -58,7 +58,7 @@ class SpeechCompare extends Command
                 ->throw()->json('text');
         }
         if (! $this->option('no-azure') && $azure->enabled()) {
-            $engines['azure'] = fn (string $wav) => $azure->transcribe(file_get_contents($wav))['text'] ?? '';
+            $engines['azure'] = fn (string $wav) => $azure->azureTranscribe(file_get_contents($wav))['text'] ?? '';
         }
 
         $totals = [];
