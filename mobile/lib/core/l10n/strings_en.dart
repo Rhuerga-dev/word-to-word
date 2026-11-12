@@ -280,4 +280,10 @@ const stringsEn = <String, String>{
   "Auriculares conectados": "Headphones connected",
   "hablas al micrófono del teléfono": "you speak into the phone's mic",
   "Sin auriculares: la voz sale por el altavoz": "No headphones: the voice plays on the speaker",
+  "Hay una versión nueva de W2W.": "A new version of W2W is available.",
+  "Actualizar": "Update",
+  "Descargando la versión nueva…": "Downloading the new version…",
+  "La versión nueva está lista.": "The new version is ready.",
+  "Reiniciar": "Restart",
+  "Ahora no": "Not now",
 };
