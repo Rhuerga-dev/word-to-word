@@ -43,12 +43,16 @@ class W {
       scaffoldBackgroundColor: bg,
     );
     return base.copyWith(
-      textTheme: GoogleFonts.atkinsonHyperlegibleTextTheme(base.textTheme).apply(bodyColor: ink, displayColor: ink),
+      // Respaldo para lo que Atkinson no trae (símbolos fonéticos /ɪ/, /ʌ/…, emojis). En el teléfono el
+      // sistema ya tiene su propio respaldo; estos nombres sirven sobre todo para las capturas de prueba.
+      textTheme: GoogleFonts.atkinsonHyperlegibleTextTheme(base.textTheme)
+          .apply(bodyColor: ink, displayColor: ink, fontFamilyFallback: const ['Roboto', 'NotoSans', 'NotoEmoji']),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(54),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          // Misma letra que el resto de la app (antes heredaba la del sistema).
+          textStyle: GoogleFonts.atkinsonHyperlegible(fontSize: 17, fontWeight: FontWeight.w700),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(

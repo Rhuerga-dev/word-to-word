@@ -48,3 +48,6 @@ app.*.map.json
 .widget_preview/
 /android/build/
 /releases/
+
+# Fuentes para las capturas (las baja test/fonts/fetch.py)
+/test/fonts/*.ttf

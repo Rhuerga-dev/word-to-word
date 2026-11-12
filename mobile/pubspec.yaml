@@ -24,6 +24,7 @@ dependencies:
   in_app_update: ^4.2.3
 
 dev_dependencies:
+  path_provider_platform_interface: ^2.1.2
   flutter_test:
     sdk: flutter
   flutter_lints: ">=4.0.0 <7.0.0"
