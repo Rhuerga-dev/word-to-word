@@ -49,22 +49,22 @@ return [
     'narration_seconds' => 60,
     'narration_topics' => [
         ['Describe what you did this morning, step by step.', 'Describe lo que hiciste esta mañana, paso a paso.'],
-        ['Explain what you are building right now and why.', 'Explica qué estás construyendo ahora y por qué.'],
+        ['Explain what you are building right now and why.', 'Explica qué estás construyendo ahora y por qué.', 'tech'],
         ['Talk about your plans for this weekend.', 'Habla de tus planes para el fin de semana.'],
         ['Describe your neighborhood to someone who has never been there.', 'Describe tu barrio a alguien que nunca ha ido.'],
-        ['Tell the story of how you learned to code.', 'Cuenta cómo aprendiste a programar.'],
+        ['Tell the story of how you learned to code.', 'Cuenta cómo aprendiste a programar.', 'tech'],
         ['Describe your perfect working day.', 'Describe tu día de trabajo perfecto.'],
-        ['Explain a bug you fixed and how you found it.', 'Explica un error que arreglaste y cómo lo encontraste.'],
+        ['Explain a bug you fixed and how you found it.', 'Explica un error que arreglaste y cómo lo encontraste.', 'tech'],
         ['Talk about a place you would love to travel to.', 'Habla de un lugar al que te encantaría viajar.'],
         ['Describe your favorite food and how to make it.', 'Describe tu comida favorita y cómo se prepara.'],
-        ['Explain what a client should expect when they hire you.', 'Explica qué puede esperar un cliente cuando te contrata.'],
+        ['Explain what a client should expect when they hire you.', 'Explica qué puede esperar un cliente cuando te contrata.', 'tech'],
         ['Talk about something that was hard for you this week.', 'Habla de algo que te costó esta semana.'],
-        ['Describe one of your apps as if you were selling it.', 'Describe una de tus apps como si la vendieras.'],
+        ['Describe one of your apps as if you were selling it.', 'Describe una de tus apps como si la vendieras.', 'tech'],
         ['Talk about a person who has influenced you.', 'Habla de una persona que te ha influido.'],
         ['Explain how you organize your day.', 'Explica cómo organizas tu día.'],
         ['Describe the weather today and how it changes your plans.', 'Describe el clima de hoy y cómo cambia tus planes.'],
         ['Talk about your goals for the next six months.', 'Habla de tus metas para los próximos seis meses.'],
-        ['Explain what cybersecurity is to a friend.', 'Explica qué es la ciberseguridad a un amigo.'],
+        ['Explain what cybersecurity is to a friend.', 'Explica qué es la ciberseguridad a un amigo.', 'tech'],
         ['Describe the last movie or series you watched.', 'Describe la última película o serie que viste.'],
         ['Talk about the differences between your home country and the US.', 'Habla de las diferencias entre tu país y Estados Unidos.'],
         ['Explain how to do something you are good at.', 'Explica cómo hacer algo que sabes hacer bien.'],
@@ -74,7 +74,7 @@ return [
         ['Describe what you see around you right now.', 'Describe lo que ves a tu alrededor ahora mismo.'],
         ['Talk about a tool or app you use every day.', 'Habla de una herramienta o app que usas todos los días.'],
         ['Tell a funny thing that happened to you.', 'Cuenta algo gracioso que te pasó.'],
-        ['Explain how you would plan a small web project.', 'Explica cómo planearías un proyecto web pequeño.'],
+        ['Explain how you would plan a small web project.', 'Explica cómo planearías un proyecto web pequeño.', 'tech'],
         ['Talk about your family.', 'Habla de tu familia.'],
         ['Describe a typical day in your city.', 'Describe un día típico en tu ciudad.'],
         ['Talk about what you would do with an extra free day every week.', 'Habla de qué harías con un día libre extra cada semana.'],
@@ -88,24 +88,28 @@ return [
             'role' => 'You are a friendly conversation partner. Chat about everyday life, work and plans, and get the student to use the target words.',
         ],
         'upwork_call' => [
+            'only' => ['tech'],   // de developer: con otra profesión va la plantilla equivalente
             'title' => 'Llamada con un cliente de Upwork',
             'emoji' => '💼',
             'desc' => 'Un cliente de EE. UU. te entrevista para un proyecto web: experiencia, plan, plazos y precio.',
             'role' => 'You are Mike, a small-business owner in Texas who posted an Upwork job for a web app (Laravel backend, admin panel, simple mobile-friendly frontend). You are on a short video call interviewing the student, a freelance developer. Ask one thing at a time: experience, similar projects, how they would approach it, timeline, price, communication. Be realistic and sometimes ask a follow-up or raise a small concern.',
         ],
         'present_project' => [
+            'only' => ['tech'],   // de developer: con otra profesión va la plantilla equivalente
             'title' => 'Presenta uno de tus proyectos',
             'emoji' => '🚀',
             'desc' => 'Explica una de tus apps a alguien interesado: qué hace, para quién y cómo la hiciste.',
             'role' => 'You are a curious tech-savvy person (possible client or investor). Ask the student to present one of their own software projects. Ask follow-up questions about what it does, who it is for, the main features, the tech stack, problems they solved and what is next.',
         ],
         'job_interview' => [
+            'only' => ['tech'],   // de developer: con otra profesión va la plantilla equivalente
             'title' => 'Entrevista de trabajo',
             'emoji' => '🧑‍💼',
             'desc' => 'Entrevista para un puesto de desarrollador web en una empresa de EE. UU.',
             'role' => 'You are a friendly hiring manager at a US software company interviewing the student for a web developer position. Ask typical interview questions one at a time: tell me about yourself, a project you are proud of, a hard bug, teamwork, why this job.',
         ],
         'standup' => [
+            'only' => ['tech'],   // de developer: con otra profesión va la plantilla equivalente
             'title' => 'Reunión diaria del equipo',
             'emoji' => '🧩',
             'desc' => 'El "daily stand-up": qué hiciste ayer, qué harás hoy y qué te bloquea.',
@@ -146,6 +150,41 @@ return [
             'emoji' => '🔧',
             'desc' => 'Reportar una reparación (aire acondicionado, una fuga) y acordar cuándo vienen.',
             'role' => 'You are the landlord of the student\'s apartment, answering a phone call. The student reports something that needs repair. Ask what happened, since when, and agree on a day and time for the repair.',
+        ],
+
+        // Plantillas: sirven para cualquier profesión; la IA recibe el trabajo del alumno ({job}, {who}).
+        // Solo se ven cuando el alumno eligió una profesión (y no las de developer, que tienen las suyas).
+        'job_interview_any' => [
+            'template' => true,
+            'except' => ['tech'],
+            'title' => 'Entrevista de trabajo',
+            'emoji' => '🤝',
+            'desc' => 'Te entrevistan para un trabajo de lo tuyo: experiencia, horarios y por qué tú.',
+            'role' => 'You are a friendly hiring manager at a local business in Miami interviewing the student for a {job} position. The student is {who}. Ask typical interview questions one at a time: tell me about yourself, past experience, availability and schedule, a difficult situation at work, why this job. Keep it realistic and kind.',
+        ],
+        'work_boss' => [
+            'template' => true,
+            'except' => ['tech', 'student', 'home'],
+            'title' => 'Hablar con tu jefe',
+            'emoji' => '🧑‍💼',
+            'desc' => 'Pide un día libre, explica un problema o cuenta cómo va tu trabajo.',
+            'role' => 'You are the student\'s manager at work. The student is {who}. Have a short, realistic talk about their work: how the week is going, a schedule change, a problem they need to explain, or a day off they want to ask for. Ask one thing at a time and react like a real boss in their field.',
+        ],
+        'work_customer' => [
+            'template' => true,
+            'except' => ['tech', 'student', 'home'],
+            'title' => 'Atender a un cliente',
+            'emoji' => '🙋',
+            'desc' => 'Un cliente te pide ayuda o se queja: escucha, pregunta y resuelve.',
+            'role' => 'You are a customer (or patient, if they work in healthcare) dealing with the student, who is {who}, at their job. Ask for help with something typical of their work, or make a polite complaint. Answer their questions and react naturally to how they help you.',
+        ],
+        'explain_job' => [
+            'template' => true,
+            'except' => ['tech'],
+            'title' => 'Explica lo que haces',
+            'emoji' => '🗣️',
+            'desc' => 'Alguien curioso te pregunta por tu trabajo o tu día a día, y tú se lo cuentas.',
+            'role' => 'You are a curious new friend. The student is {who}. Ask them to explain what they do every day: their tasks, the people they deal with, what is hard, what they like and their plans. Ask natural follow-up questions one at a time.',
         ],
     ],
 ];

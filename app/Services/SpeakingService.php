@@ -31,7 +31,9 @@ class SpeakingService
     public function topic(User $user, int $skip = 0): array
     {
         $topics = config('speaking.narration_topics');
-        $i = ((int) $this->srs->today($user)->format('z') + $user->id + $skip) % count($topics);
+        // Los temas de developer solo salen a quien eligió tecnología (o no eligió profesión).
+        $allowed = \App\Support\Professions::topicIndexes($user->profession);
+        $i = $allowed[((int) $this->srs->today($user)->format('z') + $user->id + $skip) % count($allowed)];
 
         return ['en' => $topics[$i][0], 'es' => $topics[$i][1], 'index' => $i];
     }

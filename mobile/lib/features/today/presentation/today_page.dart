@@ -13,6 +13,7 @@ import '../../../core/services/airpods_service.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/hands_free.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/profession_picker.dart';
 import '../../path/data/path_models.dart';
 import '../../path/presentation/path_providers.dart';
 import '../../session/data/session_plan.dart';
@@ -121,6 +122,11 @@ class _TodayBody extends ConsumerWidget {
               ),
           ]),
         ),
+        // Hasta que elija su profesión: la app le pregunta a qué se dedica.
+        if (ref.watch(authControllerProvider).valueOrNull?.profession == null) ...[
+          const SizedBox(height: 12),
+          const ProfessionCard(onlyIfMissing: true),
+        ],
         const SizedBox(height: 12),
         Card(
           margin: EdgeInsets.zero,

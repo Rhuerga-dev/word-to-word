@@ -48,7 +48,7 @@ class ConversationController extends Controller
 
         try {
             $out = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->converse($data['messages'], $targets->all(), $weak ?: null,
-                $data['scenario'] ?? 'free', (bool) ($data['voice'] ?? false), $user->cefr_level);
+                $data['scenario'] ?? 'free', (bool) ($data['voice'] ?? false), $user->cefr_level, $user->profession);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'La IA no respondió. Intenta otra vez.');

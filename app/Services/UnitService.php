@@ -65,6 +65,7 @@ class UnitService
         $out = [];
         $previousDone = true;
         foreach ($units as $i => $u) {
+            $u = $this->forProfession($u, $user->profession);
             $row = $rows[$u['id']] ?? null;
             $words = $this->words($u);
             $need = min($target, $words->count());
@@ -102,6 +103,22 @@ class UnitService
             'current' => $current['id'] ?? null,
             'completed' => collect($out)->where('state', 'done')->count(),
         ];
+    }
+
+    /** La unidad adaptada a la profesión: otra conversación y, si la unidad trae "alt", su título y palabras. */
+    public function forProfession(array $u, ?string $profession): array
+    {
+        $scenario = \App\Support\Professions::scenarioFor($profession, $u['scenario']);
+        if ($scenario === $u['scenario']) {
+            return $u;
+        }
+        $alt = $u['alt'] ?? [];
+        unset($u['alt']);
+        if (isset($alt['words'])) {
+            unset($u['source'], $u['family']);
+        }
+
+        return array_merge($u, $alt, ['scenario' => $scenario]);
     }
 
     /** ¿Puede el alumno trabajar en esta unidad? (de su nivel y desbloqueada) */

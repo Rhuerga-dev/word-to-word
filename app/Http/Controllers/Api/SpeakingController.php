@@ -20,9 +20,13 @@ class SpeakingController extends Controller
 {
     public function __construct(private SpeakingService $speaking, private SrsService $srs) {}
 
-    public function scenarios()
+    public function scenarios(Request $request)
     {
+        // Solo las que le tocan por su profesión (sin profesión: las de siempre).
+        $profession = $request->user()->profession;
+
         return ['scenarios' => collect(config('speaking.scenarios'))
+            ->filter(fn ($s) => \App\Support\Professions::visible($s, $profession))
             ->map(fn ($s, $id) => ['id' => $id, 'title' => $s['title'], 'emoji' => $s['emoji'], 'desc' => $s['desc']])
             ->values()];
     }

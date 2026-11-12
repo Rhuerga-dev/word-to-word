@@ -59,14 +59,18 @@ class SpanishInfo {
 
 /// El alumno con sesión iniciada (GET /me).
 class UserProfile {
-  const UserProfile({required this.name, required this.cefrLevel, required this.xpGoal, required this.reminder, this.spanish = const SpanishInfo()});
+  const UserProfile({required this.name, required this.cefrLevel, required this.xpGoal, required this.reminder, this.spanish = const SpanishInfo(), this.profession, this.goal});
   final String name;
+  /// A qué se dedica ("tech", "health"…) y para qué quiere el inglés. null = no lo eligió (todo como siempre).
+  final String? profession;
+  final String? goal;
   final String cefrLevel;
   final int xpGoal;
   final Reminder reminder;
   final SpanishInfo spanish;
 
-  UserProfile withSpanish(SpanishInfo s) => UserProfile(name: name, cefrLevel: cefrLevel, xpGoal: xpGoal, reminder: reminder, spanish: s);
+  UserProfile withSpanish(SpanishInfo s) =>
+      UserProfile(name: name, cefrLevel: cefrLevel, xpGoal: xpGoal, reminder: reminder, spanish: s, profession: profession, goal: goal);
 
   /// Nombre de pila para saludar ("" en la demo).
   String get firstName {
@@ -80,5 +84,15 @@ class UserProfile {
         xpGoal: asInt(j['xp_goal'], 100),
         reminder: Reminder.fromJson(asMap(j['reminder'])),
         spanish: SpanishInfo.fromJson(asMap(j['spanish'])),
+        profession: asStringOrNull(j['profession']),
+        goal: asStringOrNull(j['goal']),
       );
+}
+
+/// Una opción para elegir (profesión u objetivo), de GET /professions.
+class ProfileOption {
+  const ProfileOption(this.id, this.label, [this.emoji = '']);
+  final String id;
+  final String label;
+  final String emoji;
 }

@@ -51,6 +51,10 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     state = AsyncData(await _repo.saveReminder(enabled: enabled, time: time, timezone: timezone));
   }
 
+  Future<void> saveProfile({String? profession, String? goal}) async {
+    state = AsyncData(await _repo.saveProfile(profession: profession, goal: goal));
+  }
+
   /// Vuelve a pedir el perfil (por ejemplo, tras cambiar el escalón de español).
   Future<void> refreshProfile() async {
     final p = await _repo.me();

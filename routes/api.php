@@ -51,6 +51,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/stats', [StudyController::class, 'stats']);
     Route::get('/families', [StudyController::class, 'families']);
     Route::put('/settings', [StudyController::class, 'settings']);
+    Route::get('/professions', [StudyController::class, 'professions']);
+    Route::put('/profile', [StudyController::class, 'profile']);
     Route::post('/debug/next-day', [StudyController::class, 'nextDay']);
     Route::post('/reset', [StudyController::class, 'reset']);
 

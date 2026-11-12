@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
 import '../../auth/data/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../auth/presentation/profession_picker.dart';
 import '../../spanish/data/spanish_repository.dart';
 import '../data/progress_models.dart';
 import '../data/progress_repository.dart';
@@ -47,6 +48,8 @@ class ProgressPage extends ConsumerWidget {
               ],
             ),
             for (final t in p.todo) Padding(padding: const EdgeInsets.only(top: 8), child: Text(t)),
+            _h(tr('Tu trabajo')),
+            const ProfessionCard(),
             _h('Tu español'),
             const _SpanishCard(),
             if (AirPodsService.supported) ...[

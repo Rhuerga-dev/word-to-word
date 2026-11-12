@@ -17,6 +17,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name', 'email', 'password', 'daily_new',
         'freelance_pack', 'family', 'reminder_enabled', 'reminder_time', 'timezone', 'speaking_goal', 'xp_goal',
+        'profession', 'goal',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -51,6 +52,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'cefr_level' => $this->cefr_level,
             'freelance_pack' => (bool) $this->freelance_pack,
             'family' => $this->family,
+            'profession' => $this->profession,
+            'goal' => $this->goal,
             'xp_goal' => (int) ($this->xp_goal ?: 100),
             'league_visible' => (bool) ($this->league_visible ?? true),
             'xp_total' => (int) $this->xp_total,

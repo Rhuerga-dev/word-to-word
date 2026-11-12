@@ -47,6 +47,17 @@ class AuthRepository {
   Future<UserProfile> saveReminder({required bool enabled, required String time, required String timezone}) async =>
       UserProfile.fromJson(asMap(await _api.put('/reminders', {'enabled': enabled, 'time': time, 'timezone': timezone})));
 
+  /// Profesiones y objetivos para elegir.
+  Future<(List<ProfileOption>, List<ProfileOption>)> professions() async {
+    final j = asMap(await _api.get('/professions'));
+    List<ProfileOption> list(String k) => listOf(j[k], (o) => ProfileOption(asString(o['id']), asString(o['label']), asString(o['emoji'])));
+    return (list('professions'), list('goals'));
+  }
+
+  /// Guarda profesión y objetivo y devuelve el perfil actualizado.
+  Future<UserProfile> saveProfile({String? profession, String? goal}) async =>
+      UserProfile.fromJson(asMap(await _api.put('/profile', {'profession': profession, 'goal': goal})));
+
   Future<void> _useToken(String token) async {
     _api.token = token;
     await _storage.write(key: 'token', value: token);

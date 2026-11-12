@@ -9,6 +9,7 @@ import 'package:word_to_word/core/services/hands_free.dart';
 import 'package:word_to_word/core/services/reminder_service.dart';
 import 'package:word_to_word/core/storage/offline_cache.dart';
 import 'package:word_to_word/core/utils/format.dart';
+import 'package:word_to_word/features/auth/data/user_profile.dart';
 import 'package:word_to_word/features/path/data/path_models.dart';
 import 'package:word_to_word/features/session/data/session_plan.dart';
 import 'package:word_to_word/features/session/data/word_card.dart';
@@ -17,6 +18,14 @@ import 'package:word_to_word/features/session/presentation/session_controller.da
 import 'package:word_to_word/features/today/data/today.dart';
 
 void main() {
+  test('perfil: profesión y objetivo (null si no los eligió) y se conservan al cambiar el español', () {
+    final none = UserProfile.fromJson({'name': 'Ana', 'reminder': {}, 'spanish': {}});
+    expect(none.profession, isNull);
+    final p = UserProfile.fromJson({'name': 'Ana', 'profession': 'health', 'goal': 'work', 'reminder': {}, 'spanish': {}});
+    expect(p.profession, 'health');
+    expect(p.withSpanish(const SpanishInfo(step: 2)).goal, 'work');
+  });
+
   test('plainExample quita asteriscos o deja un hueco', () {
     expect(plainExample('I *think* so'), 'I think so');
     expect(plainExample('I *think* so', cloze: true), 'I _____ so');

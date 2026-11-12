@@ -72,6 +72,33 @@ class StudyController extends Controller
         return $request->user()->profile();
     }
 
+    /** Las profesiones y objetivos para elegir (lo que ve el alumno). */
+    public function professions()
+    {
+        return [
+            'professions' => collect(config('professions.list'))->map(fn ($p, $k) => ['id' => $k, 'label' => $p['label'], 'emoji' => $p['emoji']])->values(),
+            'goals' => collect(config('professions.goals'))->map(fn ($label, $k) => ['id' => $k, 'label' => $label])->values(),
+        ];
+    }
+
+    /**
+     * Profesión y objetivo. El mazo de palabras freelance queda solo para quien elige tecnología.
+     */
+    public function profile(Request $request)
+    {
+        $data = $request->validate([
+            'profession' => ['sometimes', 'nullable', Rule::in(\App\Support\Professions::keys())],
+            'goal' => ['sometimes', 'nullable', Rule::in(array_keys(config('professions.goals')))],
+        ]);
+        $user = $request->user();
+        if (array_key_exists('profession', $data) && $data['profession'] !== $user->profession) {
+            $data['freelance_pack'] = $data['profession'] === null || $data['profession'] === 'tech';
+        }
+        $user->update($data);
+
+        return $user->profile();
+    }
+
     /**
      * Agrega una palabra a tus fichas (p. ej. una que te faltó al describir una foto).
      * Si no existe, se crea como palabra personal: nunca aparece como "nueva" a otros alumnos.

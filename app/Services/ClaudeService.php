@@ -368,11 +368,11 @@ TXT;
      *
      * @return array{reply: string, feedback: ?string, used: array<int, string>, mistakes: array<int, array{said: string, correct: string, why: ?string}>}
      */
-    public function converse(array $history, array $targetWords, ?string $weakSounds = null, string $scenario = 'free', bool $voice = false, ?string $level = null): array
+    public function converse(array $history, array $targetWords, ?string $weakSounds = null, string $scenario = 'free', bool $voice = false, ?string $level = null, ?string $profession = null): array
     {
         $words = implode(', ', $targetWords) ?: '(none)';
         $types = implode(', ', array_keys(config('speaking.mistake_categories')));
-        $role = config("speaking.scenarios.{$scenario}.role") ?? config('speaking.scenarios.free.role');
+        $role = \App\Support\Professions::role(config("speaking.scenarios.{$scenario}.role") ?? config('speaking.scenarios.free.role'), $profession);
         $level = $level ?: 'A2-B1';
         $input = $voice
             ? 'The student is SPEAKING: their messages are speech-to-text transcripts. Ignore punctuation, capitalization and spelling; correct only grammar, word choice and natural phrasing.'
@@ -394,6 +394,9 @@ Rules:
 TXT;
         if ($weakSounds) {
             $system .= "\nThe student struggles with these sounds: {$weakSounds}. Occasionally include words with them.";
+        }
+        if ($who = \App\Support\Professions::get($profession)['en'] ?? null) {
+            $system .= "\nAbout the student: they are {$who}. When it fits, use situations and words from their work.";
         }
 
         // La API pide que el primer mensaje sea del alumno: si la IA abrió la conversación, va un saludo antes.
