@@ -1,3 +1,5 @@
+**Antes de empezar, lee `PENDIENTES.md`** (estado, lo que falta y lo decidido). Al terminar, actualízalo.
+
 <laravel-boost-guidelines>
 # Laravel Application
 

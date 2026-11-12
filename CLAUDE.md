@@ -46,6 +46,18 @@ php artisan boost:install
 Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
 </laravel-boost-guidelines>
 
+# W2W (Word to Word)
+
+**Antes de empezar, lee `PENDIENTES.md`** (estado, lo que falta y lo decidido). Al terminar, actualízalo.
+
+App para aprender inglés hablando (estilo Duolingo, enfocada en fluidez). Servidor Laravel en esta carpeta
+(`w2w.huergalabs.dev`) y app Flutter en `mobile/` (Android en Play con Shorebird; iPhone usa la web).
+- Publicar: cambios en `main` de GitHub → el Mac prueba y publica solo (panel → «Publicación»). App Android: parche de Shorebird
+  si solo cambia Dart; versión nueva en Play si cambia algo nativo o de assets.
+- Conector de Claude "Huerga Labs" (`mcp.huergalabs.dev/mcp`): estado, logs, reiniciar procesos, pedir tests/push.
+- Commits con autor «Reynaldo Huerga <rhuerga@iMac.local>». No romper lo que funciona: tests antes de terminar.
+
+
 - Servidor: `php -S` con `router.php` (no el server.php de Laravel): sirve /app/ con cabeceras de seguridad y bloquea copias *.bak*. La lógica de la app está en `public/app/app.js`, nunca dentro de index.html.
 
 ## Reglas de seguridad (Huerga Labs) — obligatorias
