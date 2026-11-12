@@ -81,6 +81,18 @@ return [
     // Recordatorios: no enviar si pasaron más de estas horas desde la hora elegida.
     'reminder_window_hours' => 3,
 
+    // Tarifas para medir el coste por alumno (USD; revísalas si cambian). ai:costs las usa.
+    // Claude Haiku 5.5 por millón de tokens; Azure Speech pago por uso (STT por hora de audio,
+    // evaluación de pronunciación = STT + extra, voz neural por millón de caracteres).
+    'prices' => [
+        'claude_input' => (float) env('PRICE_CLAUDE_INPUT', 0.10),
+        'claude_cached' => (float) env('PRICE_CLAUDE_CACHED', 0.01),
+        'claude_output' => (float) env('PRICE_CLAUDE_OUTPUT', 0.50),
+        'azure_stt_hour' => (float) env('PRICE_AZURE_STT_HOUR', 1.00),
+        'azure_assess_hour' => (float) env('PRICE_AZURE_ASSESS_HOUR', 1.30),
+        'azure_tts_million_chars' => (float) env('PRICE_AZURE_TTS_M', 15.00),
+    ],
+
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-haiku-5-5'),

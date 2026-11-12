@@ -48,6 +48,7 @@ class PronunciationService
         if ($response->failed()) {
             throw new RuntimeException('Error de Azure Speech: '.$response->status());
         }
+        AiUsage::speech('assess', $wavBytes);
 
         $json = $response->json();
         if (($json['RecognitionStatus'] ?? '') !== 'Success' || empty($json['NBest'][0])) {
@@ -117,6 +118,7 @@ class PronunciationService
         if ($response->failed()) {
             throw new RuntimeException('Error de Azure Speech: '.$response->status());
         }
+        AiUsage::speech('transcribe', $wavBytes);
 
         $json = $response->json();
         $best = $json['NBest'][0] ?? null;

@@ -101,6 +101,7 @@ class TtsService
         }
 
         Storage::disk('local')->put($path, $response->body());
+        AiUsage::tts($text);   // solo cuando Azure genera audio nuevo (lo cacheado y Kokoro no cuestan)
 
         return $path;
     }

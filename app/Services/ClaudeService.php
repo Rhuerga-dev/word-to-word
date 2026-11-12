@@ -64,6 +64,9 @@ class ClaudeService
             throw new RuntimeException('Error de la API de Claude: '.$response->status().' '.$response->json('error.message', ''));
         }
 
+        // Para el coste por alumno: qué función de este servicio llamó (converse, narration…).
+        AiUsage::claude(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? 'message', $response->json('usage'));
+
         $text = collect($response->json('content', []))
             ->where('type', 'text')
             ->pluck('text')
