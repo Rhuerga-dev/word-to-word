@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
+import '../../../core/services/audio_service.dart';
 import '../../../core/services/hands_free.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../path/data/path_models.dart';
@@ -86,7 +87,10 @@ class _TodayBody extends ConsumerWidget {
         SwitchListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 4),
           title: Text(tr('Manos libres'), style: const TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: Text(tr('La app habla, te escucha y sigue sola. Ideal con AirPods.')),
+          subtitle: Text(switch (ref.watch(headphonesProvider).valueOrNull) {
+            final String phones => '${tr('Auriculares conectados')}: $phones',
+            _ => tr('La app habla, te escucha y sigue sola. Ideal con AirPods.'),
+          }),
           value: handsFree,
           onChanged: (v) => ref.read(handsFreeProvider.notifier).setOn(v),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../services/audio_service.dart';
 import '../services/hands_free.dart';
 import '../theme/app_theme.dart';
 import '../../core/l10n/tr.dart';
@@ -19,6 +20,7 @@ class HandsFreeBar extends ConsumerWidget {
       HfPhase.idle => ('Manos libres', Icons.headphones),
     };
     final listening = s.phase == HfPhase.listening;
+    final phones = ref.watch(headphonesProvider).valueOrNull;
     return Container(
       decoration: const BoxDecoration(color: W.navy, borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -46,6 +48,19 @@ class HandsFreeBar extends ConsumerWidget {
                 else if (s.prompt.isNotEmpty)
                   Text(s.prompt, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: W.mist)),
               ]),
+            ),
+          ]),
+          const SizedBox(height: 10),
+          Row(children: [
+            Icon(phones != null ? Icons.headphones : Icons.volume_up, size: 18, color: W.mist),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                phones != null ? '$phones · ${tr('hablas al micrófono del teléfono')}' : tr('Sin auriculares: la voz sale por el altavoz'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: W.mist, fontSize: 13),
+              ),
             ),
           ]),
           const SizedBox(height: 12),

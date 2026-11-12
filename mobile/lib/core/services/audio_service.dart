@@ -16,6 +16,8 @@ import '../../core/l10n/tr.dart';
 ///
 /// En el iPhone se usa la categoría "play and record" permitiendo Bluetooth A2DP: con AirPods puestos, la voz sale
 /// por los AirPods en alta calidad y se graba con el micrófono del iPhone (sin pasar a "modo llamada").
+/// En Android igual: la grabación NO activa el Bluetooth de llamada (SCO). Si lo activara, los auriculares
+/// pasarían a modo llamada: baja el volumen y la calidad, y los AirPods quitan la cancelación de ruido.
 class AppAudio {
   AppAudio(this.api);
 
@@ -80,7 +82,16 @@ class AppAudio {
     final dir = await getTemporaryDirectory();
     final path = '${dir.path}/voz_${DateTime.now().millisecondsSinceEpoch}.wav';
     await _rec.start(
-      const RecordConfig(encoder: AudioEncoder.wav, sampleRate: 16000, numChannels: 1, autoGain: true, echoCancel: true, noiseSuppress: true),
+      const RecordConfig(
+        encoder: AudioEncoder.wav,
+        sampleRate: 16000,
+        numChannels: 1,
+        autoGain: true,
+        echoCancel: true,
+        noiseSuppress: true,
+        // Micrófono del teléfono; los auriculares siguen en modo música (A2DP) para oír la voz.
+        androidConfig: AndroidRecordConfig(manageBluetooth: false),
+      ),
       path: path,
     );
     final started = DateTime.now();
@@ -124,6 +135,28 @@ class AppAudio {
     if (c != null && !c.isCompleted) c.complete();
   }
 
+  /// Los auriculares conectados (Bluetooth o con cable), o null si la voz sale por el altavoz.
+  Future<String?> headphones() async {
+    try {
+      final session = await AudioSession.instance;
+      final devices = await session.getDevices(includeInputs: false);
+      for (final d in devices) {
+        final t = d.type.name.toLowerCase();
+        if (t.contains('bluetooth') || t.contains('ble') || t.contains('wired') || t.contains('headset') || t.contains('headphone') || t.contains('hearing')) {
+          final name = d.name.trim();
+          return name.isEmpty ? tr('Auriculares') : name;
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Avisa cuando conectas o desconectas unos auriculares.
+  Stream<void> devicesChanged() async* {
+    final session = await AudioSession.instance;
+    yield* session.devicesChangedEventStream.map((_) {});
+  }
+
   void dispose() {
     _player.dispose();
     _rec.dispose();
@@ -147,4 +180,13 @@ final audioProvider = Provider<AppAudio>((ref) {
   final audio = AppAudio(ref.watch(apiProvider));
   ref.onDispose(audio.dispose);
   return audio;
+});
+
+/// Los auriculares conectados ahora mismo (null: altavoz del teléfono). Se actualiza al conectar o desconectar.
+final headphonesProvider = StreamProvider<String?>((ref) async* {
+  final audio = ref.watch(audioProvider);
+  yield await audio.headphones();
+  await for (final _ in audio.devicesChanged()) {
+    yield await audio.headphones();
+  }
 });

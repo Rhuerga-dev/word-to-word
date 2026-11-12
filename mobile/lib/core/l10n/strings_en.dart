@@ -276,4 +276,8 @@ const stringsEn = <String, String>{
   "Tu contraseña": "Your password",
   "Política de privacidad": "Privacy policy",
   "La contraseña no es correcta.": "The password is incorrect.",
+  "Auriculares": "Headphones",
+  "Auriculares conectados": "Headphones connected",
+  "hablas al micrófono del teléfono": "you speak into the phone's mic",
+  "Sin auriculares: la voz sale por el altavoz": "No headphones: the voice plays on the speaker",
 };
