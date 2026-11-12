@@ -14,7 +14,7 @@ use Throwable;
  */
 class SpeechCompare extends Command
 {
-    protected $signature = 'speech:compare {dir} {--models=ggml-small.en.bin,ggml-large-v3-turbo-q5_0.bin} {--no-azure}';
+    protected $signature = 'speech:compare {dir} {--models=ggml-small.en.bin,ggml-large-v3-turbo-q5_0.bin} {--no-azure} {--server= : URL de whisper-server (modelo ya cargado en memoria)}';
 
     protected $description = 'Compara Whisper local con Azure en unas grabaciones';
 
@@ -50,6 +50,12 @@ class SpeechCompare extends Command
             foreach ($models as $m) {
                 $engines[basename($m, '.bin')] = fn (string $wav) => $this->whisper($cli, $m, $wav);
             }
+        }
+        if ($url = $this->option('server')) {
+            $engines['whisper-server'] = fn (string $wav) => (string) \Illuminate\Support\Facades\Http::timeout(60)
+                ->attach('file', file_get_contents($wav), basename($wav))
+                ->post(rtrim($url, '/').'/inference', ['response_format' => 'json', 'language' => 'en', 'temperature' => '0'])
+                ->throw()->json('text');
         }
         if (! $this->option('no-azure') && $azure->enabled()) {
             $engines['azure'] = fn (string $wav) => $azure->transcribe(file_get_contents($wav))['text'] ?? '';
