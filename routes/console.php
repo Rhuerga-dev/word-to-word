@@ -30,3 +30,6 @@ Schedule::command('i18n:translate')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('words:simplify --limit=100')->hourly()->withoutOverlapping();
 // Y las palabras más comunes (las que salen dentro de las definiciones), poco a poco.
 Schedule::command('words:simplify --all --limit=100')->hourlyAt(30)->withoutOverlapping();
+
+// Copia diaria de la base de datos (se quedan las 14 últimas). Carpeta: BACKUP_PATH.
+Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping();

@@ -8,9 +8,11 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Clave de subida a Google Play (android/key.properties y android/upload-keystore.jks, fuera de git).
+// Clave de subida a Google Play. Vive FUERA del proyecto, en ~/.android/w2w/ (key.properties + upload-keystore.jks),
+// para que no viaje con el repo, backups ni sincronizaciones. Si no está ahí, se busca android/key.properties (antiguo).
 val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("key.properties")
+val keystorePropertiesFile = File(System.getProperty("user.home"), ".android/w2w/key.properties")
+    .takeIf { it.exists() } ?: rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
@@ -47,7 +49,7 @@ android {
             create("release") {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
+                storeFile = keystorePropertiesFile.parentFile.resolve(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }
