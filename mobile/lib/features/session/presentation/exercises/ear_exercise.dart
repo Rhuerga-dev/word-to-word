@@ -151,7 +151,7 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
                   side: BorderSide(color: s.answered && i == e.answer ? W.good : (s.chosen == i && !ok ? W.bad : W.line), width: 2),
                 ),
                 onPressed: s.answered ? null : () => ctl.choose(i),
-                child: Text(e.options[i], style: TextStyle(color: W.ink, fontSize: e.mode == 'sound' ? 22 : 17, height: 1.3)),
+                child: Text(e.mode == 'sound' ? '${i + 1}   ${e.options[i]}' : e.options[i], style: TextStyle(color: W.ink, fontSize: e.mode == 'sound' ? 22 : 17, height: 1.3)),
               ),
             ),
         // Escalones de repetir: qué palabras salieron bien.

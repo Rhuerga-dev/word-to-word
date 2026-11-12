@@ -184,6 +184,8 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
     }
   }
 
+  static const _numbers = ['one', 'two', 'three', 'four', 'five', 'six'];
+
   static String _plain(String t) => t.replaceAll(RegExp(r'[^\x00-\x7F]'), '').trim();
   static String _norm(String t) => t.toLowerCase().replaceAll(RegExp(r"[^a-z' ]"), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
 
@@ -239,6 +241,7 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
 
     if (item.mode == 'sound') {
       await hf.say('Which word did you hear? Say it.');
+      var misses = 0;
       while (true) {
         final h = await hf.listen(maxMs: 5000, onVoice: () => voice ??= DateTime.now());
         if (h.silent) {
@@ -247,9 +250,18 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
         }
         if (await handleCommand(hf, h, onHelp: sayItem)) continue;
         final heard = ' ${_norm(h.text)} ';
-        final said = item.options.indexWhere((o) => heard.contains(' ${o.toLowerCase()} '));
+        var said = item.options.indexWhere((o) => heard.contains(' ${o.toLowerCase()} '));
+        // También vale decir el número de la opción ("one", "the second"…): se entiende mucho mejor.
+        if (said < 0) said = parseOptionNumber(heard, item.options.length);
         if (said < 0) {
-          await hf.say('Say it again: which word did you hear?');
+          misses++;
+          if (misses == 1) {
+            await hf.say("I didn't catch it. Say the word slowly and clearly, or say its number.");
+          } else {
+            // Las opciones en voz alta con su número, para que puedas elegir sin que dependa de tu pronunciación.
+            final opts = [for (var i = 0; i < item.options.length; i++) '${_numbers[i]}: ${item.options[i]}'].join('. ');
+            await hf.say('Your options. $opts. Say the number.');
+          }
           continue;
         }
         final ms = (voice ?? DateTime.now()).difference(t0).inMilliseconds;

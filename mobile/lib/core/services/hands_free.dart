@@ -27,6 +27,25 @@ VoiceCommand? parseCommand(String text) {
   return null;
 }
 
+/// El número de una opción dicho en voz alta ("one", "number two", "the third one") → índice, o -1.
+/// Solo en respuestas cortas, para que "to" o "for" dentro de una frase no cuenten.
+int parseOptionNumber(String text, int count) {
+  const words = [
+    ['one', 'first', '1', 'won'],
+    ['two', 'second', '2', 'to', 'too'],
+    ['three', 'third', '3', 'tree'],
+    ['four', 'fourth', '4', 'for'],
+    ['five', 'fifth', '5'],
+    ['six', 'sixth', '6'],
+  ];
+  final t = _clean(text).split(' ').where((w) => w.isNotEmpty).toList();
+  if (t.isEmpty || t.length > 4) return -1;
+  final found = [for (var i = 0; i < count && i < words.length; i++) if (t.any(words[i].contains)) i];
+  // "the second one": el "one" es de relleno.
+  if (found.length > 1) found.remove(0);
+  return found.length == 1 ? found.first : -1;
+}
+
 /// La nota de una ficha dicha en voz alta: again · hard · good · easy (o null si no se entendió).
 String? parseGrade(String text) {
   final t = _clean(text);

@@ -19,9 +19,10 @@ class _FakeAudio extends AppAudio {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  // El almacenamiento seguro no existe en los tests: se ignora.
-  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'), (_) async => null);
+  // Los plugins nativos (almacenamiento, grabadora, reproductor) no existen en los tests: se ignoran.
+  for (final ch in ['plugins.it_nomads.com/flutter_secure_storage', 'com.llfbandit.record/messages', 'com.ryanheise.just_audio.methods']) {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel(ch), (_) async => null);
+  }
 
   test('manos libres: al salir de una pantalla su vuelta se corta y la nueva funciona', () async {
     final audio = _FakeAudio();
@@ -39,5 +40,14 @@ void main() {
     hf.cancel(now); // saliste otra vez
     await expectLater(hf.runAs(now, () => hf.say('late')), throwsA(isA<HandsFreePaused>()));
     expect(c.read(handsFreeProvider).on, isTrue); // salir no apaga el manos libres
+  });
+
+  test('opción por número: "two", "number three", "the second one"; no dentro de frases', () {
+    expect(parseOptionNumber('two', 3), 1);
+    expect(parseOptionNumber('Number three.', 3), 2);
+    expect(parseOptionNumber('the second one', 3), 1);
+    expect(parseOptionNumber('one', 3), 0);
+    expect(parseOptionNumber('I want to go for it', 3), -1);
+    expect(parseOptionNumber('four', 3), -1); // solo hay 3 opciones
   });
 }
