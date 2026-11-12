@@ -115,4 +115,10 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    // Si alguien responde a un correo de la app (que sale de noreply@), la respuesta va aquí.
+    'reply_to' => env('MAIL_REPLY_TO_ADDRESS') ? [
+        'address' => env('MAIL_REPLY_TO_ADDRESS'),
+        'name' => env('MAIL_REPLY_TO_NAME', env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel'))),
+    ] : null,
+
 ];

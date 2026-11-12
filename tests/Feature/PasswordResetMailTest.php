@@ -24,4 +24,23 @@ class PasswordResetMailTest extends TestCase
         $this->assertStringNotContainsString('Regards', $html);
         $this->assertStringNotContainsString("having trouble", $html);
     }
+
+    public function test_app_mails_have_reply_to_support_when_configured(): void
+    {
+        config([
+            'mail.default' => 'array',
+            'mail.reply_to' => ['address' => 'soporte@huergalabs.dev', 'name' => 'Soporte de W2W'],
+        ]);
+        app()->forgetInstance('mail.manager');
+        app()->forgetInstance('mailer');
+        \Illuminate\Support\Facades\Mail::clearResolvedInstances();
+
+        $user = User::factory()->create(['email' => 'ana@example.com']);
+        $user->notify(new ResetPassword('tok'));
+
+        $sent = app('mail.manager')->mailer('array')->getSymfonyTransport()->messages();
+        $this->assertCount(1, $sent);
+        $replyTo = $sent[0]->getOriginalMessage()->getReplyTo();
+        $this->assertSame('soporte@huergalabs.dev', $replyTo[0]->getAddress());
+    }
 }
