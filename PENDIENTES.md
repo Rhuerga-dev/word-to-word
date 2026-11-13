@@ -29,6 +29,7 @@ _Última actualización: 2026-11-13_
 - [ ] «Reiniciar progreso» (`/api/reset`) sin pedir contraseña: pedirla o escribir BORRAR.
 - [ ] Más tests en la app Flutter (login, sesión diaria).
 - [ ] Revisar si sobran `_to_delete/` y `env.additions`.
+- [ ] Subir laravel/framework a 12.71+ (aviso de seguridad bajo CVE-2026-128083 en Concurrency; W2W no lo usa).
 
 ## Decisiones
 - Estilo Duolingo: sesión diaria guiada, camino por unidades, XP; enfoque en hablar con fluidez.
