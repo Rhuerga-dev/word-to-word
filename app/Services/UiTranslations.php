@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\File;
 use RuntimeException;
 
 /**
- * Traducciones de la interfaz guardadas en lang/{idioma}.json (clave = texto en español).
- * Las comparten la web y la app; los textos nuevos que piden las apps se traducen con la IA.
+ * Traducciones de la interfaz (clave = texto en español). Las comparten la web y la app.
+ * - lang/{idioma}.json: las revisadas, en git (mandan si hay choque).
+ * - storage/app/i18n/{idioma}.json: las que tradujo la IA sola, fuera de git.
  */
 class UiTranslations
 {
@@ -24,23 +25,39 @@ class UiTranslations
         return rtrim(config('i18n.path'), '/')."/{$lang}.json";
     }
 
+    private function learnedFile(string $lang): string
+    {
+        return rtrim(config('i18n.learned_path'), '/')."/{$lang}.json";
+    }
+
+    /** @return array<string, string> */
+    private function read(string $path): array
+    {
+        return File::exists($path) ? (json_decode(File::get($path), true) ?: []) : [];
+    }
+
     /** @return array<string, string> */
     public function all(string $lang): array
     {
-        $path = $this->file($lang);
-        if (! $this->supported($lang) || ! File::exists($path)) {
+        if (! $this->supported($lang)) {
             return [];
         }
 
-        return json_decode(File::get($path), true) ?: [];
+        return $this->read($this->file($lang)) + $this->read($this->learnedFile($lang));
     }
 
-    /** Cambia cuando cambia el archivo: las apps solo vuelven a descargar si no coincide. */
+    /** @return array<string, string> las que tradujo la IA y aún no están en lang/ */
+    public function learned(string $lang): array
+    {
+        return array_diff_key($this->read($this->learnedFile($lang)), $this->read($this->file($lang)));
+    }
+
+    /** Cambia cuando cambia algún archivo: las apps solo vuelven a descargar si no coincide. */
     public function version(string $lang): string
     {
-        $path = $this->file($lang);
+        $sums = array_map(fn ($p) => File::exists($p) ? md5_file($p) : '', [$this->file($lang), $this->learnedFile($lang)]);
 
-        return File::exists($path) ? substr(md5_file($path), 0, 12) : '0';
+        return $sums === ['', ''] ? '0' : substr(md5(implode('|', $sums)), 0, 12);
     }
 
     /**
@@ -69,7 +86,7 @@ class UiTranslations
     }
 
     /**
-     * Traduce con la IA los textos pendientes y los escribe en lang/{idioma}.json.
+     * Traduce con la IA los textos pendientes y los guarda en storage/app/i18n/{idioma}.json.
      *
      * @return int cuántos se tradujeron
      */
@@ -137,18 +154,25 @@ TXT;
         return $m[0];
     }
 
-    /** @param  array<string, string>  $add */
-    public function merge(string $lang, array $add): void
+    /**
+     * Añade traducciones. Por defecto van al archivo de la IA (fuera de git); con $reviewed, a lang/.
+     *
+     * @param  array<string, string>  $add
+     */
+    public function merge(string $lang, array $add, bool $reviewed = false): void
     {
         if (! $add) {
             return;
         }
-        $path = $this->file($lang);
+        $path = $reviewed ? $this->file($lang) : $this->learnedFile($lang);
         File::ensureDirectoryExists(dirname($path));
-        $fp = fopen($path.'.lock', 'c');
+        // El candado vive fuera de lang/ para no dejar archivos sueltos en git.
+        $lockDir = storage_path('framework/cache');
+        File::ensureDirectoryExists($lockDir);
+        $fp = fopen($lockDir."/i18n-{$lang}.lock", 'c');
         flock($fp, LOCK_EX);
         try {
-            $all = $this->all($lang) + $add;
+            $all = $this->read($path) + $add;
             ksort($all, SORT_STRING);
             $tmp = $path.'.tmp';
             File::put($tmp, json_encode($all, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n");

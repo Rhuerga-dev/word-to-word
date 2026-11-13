@@ -5,6 +5,10 @@
 return [
     'path' => base_path('lang'),
 
+    // Lo que traduce la IA sola (i18n:translate) va aquí, fuera de git: así no deja cambios sin guardar
+    // en lang/ que pausan la publicación automática. Para fijarlas en git: php artisan i18n:promote.
+    'learned_path' => storage_path('app/i18n'),
+
     // Idiomas a los que se traduce la interfaz (el español es el original).
     'languages' => ['en'],
 

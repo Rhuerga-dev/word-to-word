@@ -23,7 +23,7 @@ class UiTranslationsTest extends TestCase
         $this->dir = storage_path('framework/testing/i18n-'.uniqid());
         File::ensureDirectoryExists($this->dir);
         File::put($this->dir.'/en.json', json_encode(['Hoy' => 'Today', 'Unidad {0} de {1}' => 'Unit {0} of {1}']));
-        config(['i18n.path' => $this->dir, 'vocab.anthropic.key' => 'test-key']);
+        config(['i18n.path' => $this->dir, 'i18n.learned_path' => $this->dir.'/learned', 'vocab.anthropic.key' => 'test-key']);
     }
 
     protected function tearDown(): void
@@ -68,7 +68,7 @@ class UiTranslationsTest extends TestCase
         $this->postJson('/api/i18n/missing', ['lang' => 'en', 'keys' => ['Hola']])->assertUnauthorized();
     }
 
-    public function test_la_ia_traduce_los_pendientes_y_se_guardan_en_el_archivo(): void
+    public function test_la_ia_traduce_los_pendientes_y_se_guardan_fuera_de_git(): void
     {
         Sanctum::actingAs(User::factory()->create());
         $this->postJson('/api/i18n/missing', ['lang' => 'en', 'keys' => ['Tus palabras', 'Nuevas hoy: {0} de {1}', 'Roto {0}']]);
@@ -80,13 +80,39 @@ class UiTranslationsTest extends TestCase
 
         $this->artisan('i18n:translate')->assertSuccessful();
 
-        $file = json_decode(File::get($this->dir.'/en.json'), true);
+        $file = json_decode(File::get($this->dir.'/learned/en.json'), true);
         $this->assertSame('Your words', $file['Tus palabras']);
         $this->assertSame('New today: {0} of {1}', $file['Nuevas hoy: {0} de {1}']);
         $this->assertArrayNotHasKey('Roto {0}', $file);
-        $this->assertSame('Today', $file['Hoy']);
+        // lang/en.json (en git) no se toca: así no se pausa la publicación automática.
+        $this->assertSame(['Hoy' => 'Today', 'Unidad {0} de {1}' => 'Unit {0} of {1}'], json_decode(File::get($this->dir.'/en.json'), true));
+        $this->assertFileDoesNotExist($this->dir.'/en.json.lock');
         // Lo traducido sale de la cola; lo que falló queda para otro intento.
         $this->assertSame(['Roto {0}'], DB::table('i18n_missing')->pluck('key')->all());
         $this->getJson('/api/i18n/en')->assertJsonPath('strings.Tus palabras', 'Your words');
+    }
+
+    public function test_las_revisadas_mandan_y_la_version_cambia_con_lo_aprendido(): void
+    {
+        $before = $this->getJson('/api/i18n/en')->json('version');
+        File::ensureDirectoryExists($this->dir.'/learned');
+        File::put($this->dir.'/learned/en.json', json_encode(['Hoy' => 'Nowadays', 'Salir' => 'Exit']));
+
+        $r = $this->getJson('/api/i18n/en');
+        $r->assertJsonPath('strings.Hoy', 'Today')->assertJsonPath('strings.Salir', 'Exit');
+        $this->assertNotSame($before, $r->json('version'));
+    }
+
+    public function test_promote_pasa_lo_aprendido_a_lang(): void
+    {
+        File::ensureDirectoryExists($this->dir.'/learned');
+        File::put($this->dir.'/learned/en.json', json_encode(['Hoy' => 'Nowadays', 'Salir' => 'Exit']));
+
+        $this->artisan('i18n:promote')->assertSuccessful();
+
+        $lang = json_decode(File::get($this->dir.'/en.json'), true);
+        $this->assertSame('Exit', $lang['Salir']);
+        $this->assertSame('Today', $lang['Hoy']);
+        $this->assertFileDoesNotExist($this->dir.'/learned/en.json');
     }
 }
