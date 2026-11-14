@@ -102,7 +102,7 @@ class SessionTest extends TestCase
         $this->putJson('/api/settings', ['xp_goal' => 5])->assertUnprocessable();
         $this->putJson('/api/settings', ['xp_goal' => 150])->assertOk()->assertJsonPath('xp_goal', 150);
         app(XpService::class)->add($this->user, 'lab');
-        $this->postJson('/api/reset')->assertNoContent();
+        $this->postJson('/api/reset', ['password' => 'password'])->assertNoContent();
         $this->assertSame(0, DB::table('xp_days')->where('user_id', $this->user->id)->count());
         $this->assertSame(0, $this->user->fresh()->xp_total);
     }

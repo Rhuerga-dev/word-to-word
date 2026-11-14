@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -88,15 +89,27 @@ class TtsService
         $ssml = '<speak version="1.0" xml:lang="'.$xmlLang.'"><voice name="'.$voice.'">'
             .'<prosody rate="'.$rate.'">'.$this->body($text, $slow).'</prosody></voice></speak>';
 
+        // Si Azure acaba de fallar por red o caída, no esperar otra vez: la app usa la voz del teléfono.
+        if (Cache::get('tts:azure-down')) {
+            throw new RuntimeException('Azure TTS caído hace poco; se reintenta en un minuto.');
+        }
         $region = config('vocab.azure_speech.region');
-        $response = Http::timeout(15)->withHeaders([
-            'Ocp-Apim-Subscription-Key' => config('vocab.azure_speech.key'),
-            'X-Microsoft-OutputFormat' => 'audio-24khz-48kbitrate-mono-mp3',
-            'User-Agent' => 'word-to-word',
-        ])->withBody($ssml, 'application/ssml+xml')
-            ->post("https://{$region}.tts.speech.microsoft.com/cognitiveservices/v1");
+        try {
+            $response = Http::connectTimeout(3)->timeout(8)->withHeaders([
+                'Ocp-Apim-Subscription-Key' => config('vocab.azure_speech.key'),
+                'X-Microsoft-OutputFormat' => 'audio-24khz-48kbitrate-mono-mp3',
+                'User-Agent' => 'word-to-word',
+            ])->withBody($ssml, 'application/ssml+xml')
+                ->post("https://{$region}.tts.speech.microsoft.com/cognitiveservices/v1");
+        } catch (ConnectionException $e) {
+            Cache::put('tts:azure-down', true, 60);   // sin red o sin respuesta: un minuto sin preguntar
+            throw $e;
+        }
 
         if (! $response->successful() || $response->body() === '') {
+            if ($response->serverError()) {
+                Cache::put('tts:azure-down', true, 60);
+            }
             throw new RuntimeException('Azure TTS respondió '.$response->status());
         }
 

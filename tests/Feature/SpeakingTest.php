@@ -237,7 +237,7 @@ class SpeakingTest extends TestCase
     {
         $s = $this->talk(['speech_ms' => 1000]);
         SpeakingMistake::create(['user_id' => $this->user->id, 'speaking_session_id' => $s->id, 'said' => 'a', 'correct' => 'b', 'next_review' => $this->day()]);
-        $this->postJson('/api/reset')->assertNoContent();
+        $this->postJson('/api/reset', ['password' => 'password'])->assertNoContent();
         $this->assertSame(0, SpeakingSession::count() + SpeakingMistake::count());
     }
 }

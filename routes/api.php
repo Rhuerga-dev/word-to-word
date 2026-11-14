@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/professions', [StudyController::class, 'professions']);
     Route::put('/profile', [StudyController::class, 'profile']);
     Route::post('/debug/next-day', [StudyController::class, 'nextDay']);
-    Route::post('/reset', [StudyController::class, 'reset']);
+    Route::post('/reset', [StudyController::class, 'reset'])->middleware('throttle:5,1');
 
     Route::post('/words/{word}/learn', [StudyController::class, 'learn']);
     Route::post('/words/{word}/review', [StudyController::class, 'review']);

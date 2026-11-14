@@ -860,7 +860,9 @@ body:not([data-nav="progress"]) .grid{max-width:none}
           <button id="resetBtn" type="button">Reiniciar progreso</button>
           <div id="confirmBox" hidden class="confirm">
             <span>Se borra todo tu progreso. ¿Seguro?</span>
+            <input type="password" id="resetPass" autocomplete="current-password" placeholder="Tu contraseña" aria-label="Tu contraseña">
             <div class="row"><button id="resetYes" type="button" class="g-again">Sí, borrar</button><button id="resetNo" type="button">Cancelar</button></div>
+            <p class="note" id="resetMsg"></p>
           </div>
           <button id="delAccBtn" type="button">Borrar mi cuenta</button>
           <div id="delAccBox" hidden class="confirm">
@@ -907,7 +909,7 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 </div>
 
 <script src="/app/i18n.js?v=5"></script>
-<script src="/app/app.js?v=15"></script>
+<script src="/app/app.js?v=16"></script>
 <script src="/app/speak.js?v=10"></script>
 <script src="/app/progress.js?v=4"></script>
 <script src="/app/today.js?v=7"></script>

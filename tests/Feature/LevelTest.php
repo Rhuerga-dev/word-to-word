@@ -190,7 +190,7 @@ class LevelTest extends TestCase
         DB::table('level_results')->insert(['user_id' => $user->id, 'kind' => 'exam', 'level' => 'A2',
             'score' => 90, 'passed' => true, 'new_level' => 'B1', 'created_at' => now(), 'updated_at' => now()]);
 
-        $this->postJson('/api/reset')->assertNoContent();
+        $this->postJson('/api/reset', ['password' => 'password'])->assertNoContent();
 
         $this->assertNull($user->fresh()->cefr_level);
         $this->assertDatabaseMissing('level_results', ['user_id' => $user->id]);

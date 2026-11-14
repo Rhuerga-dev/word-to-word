@@ -185,6 +185,13 @@ class StudyController extends Controller
     public function reset(Request $request)
     {
         $user = $request->user();
+        // Borra meses de progreso: se pide la contraseña (como al borrar la cuenta), salvo en la demo.
+        if (! \App\Services\DemoService::isDemo($user)) {
+            $data = $request->validate(['password' => ['required', 'string']]);
+            if (! \Illuminate\Support\Facades\Hash::check($data['password'], $user->password)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['password' => 'La contraseña no es correcta.']);
+            }
+        }
         DB::transaction(function () use ($user) {
             UserWord::where('user_id', $user->id)->delete();
             DB::table('study_days')->where('user_id', $user->id)->delete();

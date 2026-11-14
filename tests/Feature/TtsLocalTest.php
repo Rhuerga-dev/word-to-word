@@ -56,4 +56,31 @@ class TtsLocalTest extends TestCase
         Http::fake(['127.0.0.1:8880/*' => Http::response('', 500), '*' => Http::response('AZUREMP3')]);
         $this->tts(['provider' => 'kokoro'])->assertStatus(502);
     }
+
+    public function test_si_azure_no_responde_no_se_vuelve_a_esperar_durante_un_minuto(): void
+    {
+        $azureCalls = 0;
+        Http::fake(function (HttpRequest $r) use (&$azureCalls) {
+            if (str_contains($r->url(), '127.0.0.1:8880')) {
+                throw new \Illuminate\Http\Client\ConnectionException('local apagado');
+            }
+            $azureCalls++;
+            throw new \Illuminate\Http\Client\ConnectionException('Resolving timed out');
+        });
+
+        $this->tts()->assertStatus(502);
+        $this->tts(['text' => 'Another phrase'])->assertStatus(502);
+        $this->assertSame(1, $azureCalls);   // la segunda vez responde al momento, sin esperar a Azure
+
+        $this->travel(61)->seconds();
+        $this->tts(['text' => 'Third phrase'])->assertStatus(502);
+        $this->assertSame(2, $azureCalls);
+    }
+
+    public function test_un_error_500_de_azure_tambien_lo_marca_caido(): void
+    {
+        Http::fake(['127.0.0.1:8880/*' => Http::response('', 500), '*' => Http::response('', 503)]);
+        $this->tts()->assertStatus(502);
+        $this->assertTrue(\Illuminate\Support\Facades\Cache::get('tts:azure-down'));
+    }
 }

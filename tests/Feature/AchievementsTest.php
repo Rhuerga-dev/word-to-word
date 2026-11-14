@@ -84,7 +84,7 @@ class AchievementsTest extends TestCase
     public function test_reset_clears_achievements(): void
     {
         $this->postJson('/api/session/complete');
-        $this->postJson('/api/reset')->assertNoContent();
+        $this->postJson('/api/reset', ['password' => 'password'])->assertNoContent();
         $this->assertSame(0, DB::table('achievements')->where('user_id', $this->user->id)->count());
     }
 }

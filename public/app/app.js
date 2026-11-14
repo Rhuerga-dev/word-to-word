@@ -43,7 +43,11 @@ function unlockTts() { try { ttsAudio.src = SILENT_MP3; const p = ttsAudio.play(
 async function ttsUrl(text, lang, slow) {
   const key = lang + "|" + (slow ? 1 : 0) + "|" + text;
   if (ttsCache.has(key)) return ttsCache.get(key);
-  const res = await fetch(API + "/tts?" + new URLSearchParams({ text, lang, slow: slow ? 1 : 0 }), { headers: { Accept: "audio/mpeg", Authorization: "Bearer " + token } });
+  // Si el servidor tarda más de 10 s, se usa la voz del teléfono en vez de dejar al alumno esperando.
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 10000);
+  let res;
+  try { res = await fetch(API + "/tts?" + new URLSearchParams({ text, lang, slow: slow ? 1 : 0 }), { headers: { Accept: "audio/mpeg", Authorization: "Bearer " + token }, signal: ctl.signal }); }
+  finally { clearTimeout(timer); }
   if (!res.ok) throw new Error("tts " + res.status);
   const url = URL.createObjectURL(await res.blob());
   ttsCache.set(key, url);
@@ -809,8 +813,8 @@ $("speakGoal").onchange = async e => { try { await api("/speaking/goal", { metho
 $("dailyNew").onchange = async e => { try { await api("/settings", { method: "PUT", body: { daily_new: +e.target.value } }); refresh(); } catch (err) { alertSide(err.message); } };
 async function nextDay() { try { await api("/debug/next-day", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } }
 $("nextDay").onclick = nextDay;
-$("resetBtn").onclick = () => $("confirmBox").hidden = false;
-$("resetNo").onclick = () => $("confirmBox").hidden = true;
+$("resetBtn").onclick = () => { $("confirmBox").hidden = false; $("resetPass").focus(); };
+$("resetNo").onclick = () => { $("confirmBox").hidden = true; $("resetPass").value = ""; $("resetMsg").textContent = ""; };
 // Borrar la cuenta y todo lo que tiene (también desde /cuenta/borrar/).
 $("delAccBtn").onclick = () => { $("delAccBox").hidden = false; $("delAccPass").focus(); };
 $("delAccNo").onclick = () => { $("delAccBox").hidden = true; $("delAccPass").value = ""; $("delAccMsg").textContent = ""; };
@@ -822,7 +826,14 @@ $("delAccYes").onclick = async () => {
   } catch (e) { $("delAccMsg").textContent = e.message; }
   $("delAccYes").disabled = false;
 };
-$("resetYes").onclick = async () => { $("confirmBox").hidden = true; try { await api("/reset", { method: "POST" }); refresh(); } catch (e) { alertSide(e.message); } };
+$("resetYes").onclick = async () => {
+  $("resetYes").disabled = true; $("resetMsg").textContent = "Borrando…";
+  try {
+    await api("/reset", { method: "POST", body: { password: $("resetPass").value } });
+    $("confirmBox").hidden = true; $("resetPass").value = ""; $("resetMsg").textContent = ""; refresh();
+  } catch (e) { $("resetMsg").textContent = e.message; }
+  $("resetYes").disabled = false;
+};
 function alertSide(m) { $("svc").textContent = m; }
 
 // ===== Modo manos libres =====

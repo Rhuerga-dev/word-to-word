@@ -93,4 +93,17 @@ class SecurityRulesTest extends TestCase
         $disk->assertMissing('tts/viejo.mp3');
         $disk->assertExists('tts/nuevo.mp3');
     }
+
+    public function test_reiniciar_progreso_pide_la_contrasena(): void
+    {
+        $user = \App\Models\User::factory()->create(['xp_total' => 50]);
+        \Laravel\Sanctum\Sanctum::actingAs($user);
+
+        $this->postJson('/api/reset')->assertStatus(422)->assertJsonValidationErrors('password');
+        $this->postJson('/api/reset', ['password' => 'otra-cosa'])->assertStatus(422);
+        $this->assertSame(50, $user->fresh()->xp_total);
+
+        $this->postJson('/api/reset', ['password' => 'password'])->assertNoContent();
+        $this->assertSame(0, $user->fresh()->xp_total);
+    }
 }
