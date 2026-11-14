@@ -7,7 +7,7 @@ _Última actualización: 2026-11-13_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1 (elegir profesión) y 2 (fuentes del tema) publicados.
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1 (elegir profesión), 2 (fuentes del tema) y 3 (pestaña Ajustes y cargando propio, 13/11) publicados.
 - iPhone: versión web (no hay app nativa).
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
@@ -16,6 +16,7 @@ _Última actualización: 2026-11-13_
 - Manos libres sin bucles: número de opción, nota hard/good/easy (también en español y con errores de oído) y sí/no; tras 3 fallos pide tocar la pantalla.
 - Profesión y meta del alumno: escenarios y temas según su trabajo (12 profesiones; las de developer solo para «tech»).
 - (13/11) Las traducciones que hace la IA sola (`i18n:translate`) ya no tocan `lang/en.json`: van a `storage/app/i18n/` (fuera de git), así no pausan la publicación. Para fijarlas en git: `php artisan i18n:promote` y commit.
+- (13/11) App Android (parche 3): pestaña Ajustes (recordatorio, trabajo, español, AirPods, salir, borrar cuenta) y W2WLoader, barras de voz en vez de la rueda de Material. Tests de pantalla con la app de verdad gracias a `test/support/test_fonts.dart`.
 - (13/11) Web: «Ajustes» es ahora la 5.ª pestaña de la barra de abajo (antes estaba al final de Progreso y no se encontraba).
 - (13/11) Recordatorios en el iPhone: ya estaban hechos (web push desde la app instalada en pantalla de inicio); el 13/11 a las 19:00 salió uno.
 - (13/11) Voz: Azure espera como mucho 8 s y, si falla, queda «caído» 1 minuto; la web corta a los 10 s y usa la voz del teléfono.
@@ -28,7 +29,7 @@ _Última actualización: 2026-11-13_
 ## Pendiente (Reynaldo)
 - [ ] Confirmar que al iPhone le llegó el recordatorio de las 19:00 del 13/11 (el servidor lo envió sin error).
 - [ ] Decidir si borrar `_to_delete/` (2 copias viejas de index.html del 31/10, fuera de git).
-- [ ] (opcional) En la app Android, «Ajustes» sigue dentro de Progreso: decidir si también va como pestaña (sería parche de Shorebird).
+- [ ] Abrir la app Android 2 veces para que baje el parche 3 y mirar la pestaña Ajustes y el nuevo «cargando» (no probado en teléfono real).
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
@@ -36,6 +37,7 @@ _Última actualización: 2026-11-13_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- Parches de Shorebird: solo iconos de Material que ya estaban en la versión de Play (la fuente de iconos va recortada). Un icono nuevo = versión nueva en Play, o elegir uno que ya se use.
 - Estilo Duolingo: sesión diaria guiada, camino por unidades, XP; enfoque en hablar con fluidez.
 - Abierto a otros usuarios, no solo para Reynaldo.
 - Nombre visible: W2W.

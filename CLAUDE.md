@@ -58,6 +58,7 @@ App para aprender inglés hablando (estilo Duolingo, enfocada en fluidez). Servi
 - Commits con autor «Reynaldo Huerga <rhuerga@iMac.local>». No romper lo que funciona: tests antes de terminar.
 
 
+- App Android y Shorebird: la fuente de iconos de Material va recortada en la versión de Play. Un parche no puede añadir iconos nuevos (`Icons.x` que no se usara ya): usa uno existente o sube versión. Haz siempre `shorebird patch ... --dry-run` antes; nunca `--allow-asset-diffs` sin entender el cambio.
 - Servidor: `php -S` con `router.php` (no el server.php de Laravel): sirve /app/ con cabeceras de seguridad y bloquea copias *.bak*. La lógica de la app está en `public/app/app.js`, nunca dentro de index.html.
 
 ## Reglas de seguridad (Huerga Labs) — obligatorias
