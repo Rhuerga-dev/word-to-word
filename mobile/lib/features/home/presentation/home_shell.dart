@@ -53,7 +53,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           NavigationDestination(icon: const Icon(Icons.map_outlined), selectedIcon: const Icon(Icons.map), label: tr('Camino')),
           NavigationDestination(icon: const Icon(Icons.mic_none), selectedIcon: const Icon(Icons.mic), label: tr('Practicar')),
           NavigationDestination(icon: const Icon(Icons.bar_chart_outlined), selectedIcon: const Icon(Icons.bar_chart), label: tr('Progreso')),
-          NavigationDestination(icon: const Icon(Icons.settings_outlined), selectedIcon: const Icon(Icons.settings), label: tr('Ajustes')),
+          // Icons.settings ya va en la fuente de iconos de la 1.0.14 (un parche de Shorebird no puede añadir iconos nuevos).
+          NavigationDestination(icon: const Icon(Icons.settings), label: tr('Ajustes')),
         ],
       ),
     );
