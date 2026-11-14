@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/step_page.dart';
 import '../data/session_repository.dart';
 import '../../../core/l10n/tr.dart';
+import '../../../core/widgets/w2w_loader.dart';
 
 /// Fin de la sesión: puntos, aciertos, tiempo, racha y logros nuevos.
 class SessionSummary extends StatelessWidget {
@@ -16,7 +17,7 @@ class SessionSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = result;
-    if (r == null) return const Center(child: CircularProgressIndicator());
+    if (r == null) return const Center(child: W2WLoader());
     final x = r.xp;
     return Column(children: [
       Expanded(

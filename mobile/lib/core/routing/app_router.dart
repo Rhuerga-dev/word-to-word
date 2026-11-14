@@ -8,11 +8,13 @@ import '../../features/home/presentation/home_shell.dart';
 import '../../features/path/presentation/path_page.dart';
 import '../../features/practice/presentation/practice_page.dart';
 import '../../features/progress/presentation/progress_page.dart';
+import '../../features/settings/presentation/settings_page.dart';
 import '../../features/session/data/session_plan.dart';
 import '../../features/session/presentation/session_page.dart';
 import '../../features/today/presentation/today_page.dart';
 import '../../features/words/presentation/words_page.dart';
 import 'routes.dart';
+import '../widgets/w2w_loader.dart';
 
 /// Decide a dónde va cada ruta según la sesión. Pura, para poder probarla sin pantallas.
 String? authRedirect({required bool loading, required bool loggedIn, required String location}) {
@@ -38,7 +40,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       return authRedirect(loading: auth.isLoading && !auth.hasValue, loggedIn: auth.valueOrNull != null, location: state.matchedLocation);
     },
     routes: [
-      GoRoute(path: Routes.splash, builder: (_, __) => const Scaffold(body: Center(child: CircularProgressIndicator()))),
+      GoRoute(path: Routes.splash, builder: (_, __) => const W2WLoadingScreen()),
       GoRoute(path: Routes.login, builder: (_, __) => const LoginPage()),
       StatefulShellRoute.indexedStack(
         builder: (_, __, shell) => HomeShell(shell: shell),
@@ -47,6 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [GoRoute(path: Routes.path, builder: (_, __) => const PathPage())]),
           StatefulShellBranch(routes: [GoRoute(path: Routes.practice, builder: (_, __) => const PracticePage())]),
           StatefulShellBranch(routes: [GoRoute(path: Routes.progress, builder: (_, __) => const ProgressPage())]),
+          StatefulShellBranch(routes: [GoRoute(path: Routes.settings, builder: (_, __) => const SettingsPage())]),
         ],
       ),
       GoRoute(path: Routes.words, parentNavigatorKey: rootKey, builder: (_, __) => const WordsPage()),

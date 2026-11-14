@@ -8,6 +8,7 @@ import 'exercise_outcome.dart';
 import 'narration_controller.dart';
 import '../../../../core/l10n/tr.dart';
 import '../../../../core/widgets/spanish_peek.dart';
+import '../../../../core/widgets/w2w_loader.dart';
 
 /// Narración del día, estilo "Llamada": fondo azul, el tema grande y lo que dijiste con su corrección.
 class NarrationExercise extends ConsumerWidget {
@@ -44,7 +45,7 @@ class NarrationExercise extends ConsumerWidget {
             const SizedBox(height: 22),
           ],
           switch (s.phase) {
-            NarrationPhase.loading => const Center(child: CircularProgressIndicator(color: Colors.white)),
+            NarrationPhase.loading => const Center(child: W2WLoader(color: Colors.white)),
             NarrationPhase.ready => Text(tr('Hablas un minuto sin parar, sin preparar nada. Si te quedas en blanco, describe lo que ves y sigue.'), style: TextStyle(fontSize: 17, color: Colors.white)),
             NarrationPhase.recording => Text(tr('Te escucho…'), style: W.display(32, color: W.yellow)),
             NarrationPhase.waiting => Text(tr('Revisando lo que dijiste…'), style: TextStyle(fontSize: 17, color: Colors.white)),

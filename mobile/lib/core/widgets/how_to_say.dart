@@ -6,6 +6,7 @@ import '../services/audio_service.dart';
 import '../services/hands_free.dart';
 import '../theme/app_theme.dart';
 import '../utils/pron_tips.dart';
+import 'w2w_loader.dart';
 
 /// Manos libres: dice la primera técnica (en español mientras la app está en español: [spanish]).
 Future<void> sayTip(HandsFreeController hf, List<WordTips> tips, {required bool spanish}) async {
@@ -39,7 +40,7 @@ class HowToSay extends ConsumerWidget {
           Text(tr('Cómo decirla'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           if (loading) ...[
             const SizedBox(width: 10),
-            const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+            const W2WLoader.small(),
           ],
         ]),
         for (final w in tips) ...[

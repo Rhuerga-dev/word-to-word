@@ -8,6 +8,7 @@ import '../../today/presentation/today_providers.dart';
 import '../data/auth_repository.dart';
 import '../data/user_profile.dart';
 import 'auth_controller.dart';
+import '../../../core/widgets/w2w_loader.dart';
 
 final _optionsProvider = FutureProvider.autoDispose((ref) => ref.watch(authRepositoryProvider).professions());
 
@@ -78,7 +79,7 @@ class _PickerState extends ConsumerState<_Picker> {
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
       child: options.when(
-        loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+        loading: () => const SizedBox(height: 200, child: Center(child: W2WLoader())),
         error: (e, _) => SizedBox(height: 200, child: Center(child: Text('$e'))),
         data: (o) => SingleChildScrollView(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

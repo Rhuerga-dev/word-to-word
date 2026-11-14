@@ -6,8 +6,9 @@ import '../../../core/services/app_update.dart';
 import '../../../core/storage/offline_cache.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/tr.dart';
+import '../../../core/widgets/w2w_loader.dart';
 
-/// Las 4 pestañas con la barra de abajo. Cada pestaña guarda su posición al cambiar.
+/// Las 5 pestañas con la barra de abajo. Cada pestaña guarda su posición al cambiar.
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key, required this.shell});
   final StatefulNavigationShell shell;
@@ -52,6 +53,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           NavigationDestination(icon: const Icon(Icons.map_outlined), selectedIcon: const Icon(Icons.map), label: tr('Camino')),
           NavigationDestination(icon: const Icon(Icons.mic_none), selectedIcon: const Icon(Icons.mic), label: tr('Practicar')),
           NavigationDestination(icon: const Icon(Icons.bar_chart_outlined), selectedIcon: const Icon(Icons.bar_chart), label: tr('Progreso')),
+          NavigationDestination(icon: const Icon(Icons.settings_outlined), selectedIcon: const Icon(Icons.settings), label: tr('Ajustes')),
         ],
       ),
     );
@@ -83,7 +85,7 @@ class _UpdateBanner extends ConsumerWidget {
         if (stage == UpdateStage.downloading)
           const Padding(
             padding: EdgeInsets.all(12),
-            child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+            child: W2WLoader.small(color: Colors.white),
           ),
         if (action != null)
           TextButton(

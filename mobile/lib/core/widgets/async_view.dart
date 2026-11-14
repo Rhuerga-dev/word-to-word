@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/tr.dart';
 import '../theme/app_theme.dart';
+import 'w2w_loader.dart';
 
 /// Dibuja un AsyncValue: rueda mientras carga, el error con "Reintentar", o los datos.
 class AsyncView<T> extends StatelessWidget {
@@ -15,7 +16,7 @@ class AsyncView<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) => value.when(
         data: data,
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(child: W2WLoader(label: tr('Cargando…'))),
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
