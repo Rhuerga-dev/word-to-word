@@ -749,7 +749,7 @@ $("dictBtn").onclick = async () => {
 };
 // Secciones. Abajo: today (Hoy), path (Camino), practice (Practicar), progress (Progreso).
 // Dentro de Practicar: cards (fichas), speak (hablar), chat. true/false = chat/fichas (llamadas viejas).
-const NAV_OF = { today: "today", path: "path", practice: "practice", progress: "progress", cards: "practice", speak: "practice", chat: "practice" };
+const NAV_OF = { today: "today", path: "path", practice: "practice", progress: "progress", settings: "settings", cards: "practice", speak: "practice", chat: "practice" };
 let currentTab = "today";
 function showTab(which) {
   which = which === true ? "chat" : which === false ? "cards" : which;
@@ -760,7 +760,7 @@ function showTab(which) {
   if ($("labView") && !$("labView").hidden) { lab.on = false; if (stopRecording) stopRecording(); $("labView").hidden = true; }
   $("tabCards").setAttribute("aria-selected", which === "cards"); $("tabChat").setAttribute("aria-selected", which === "chat"); $("tabSpeak").setAttribute("aria-selected", which === "speak"); $("tabProgress").setAttribute("aria-selected", which === "progress");
   $("main").hidden = which !== "cards"; $("queue").hidden = which !== "cards"; $("chatView").hidden = which !== "chat"; $("speakView").hidden = which !== "speak"; $("progressView").hidden = which !== "progress";
-  $("todayView").hidden = which !== "today"; $("pathView").hidden = which !== "path"; $("practiceView").hidden = which !== "practice";
+  $("todayView").hidden = which !== "today"; $("settingsView").hidden = which !== "settings"; $("pathView").hidden = which !== "path"; $("practiceView").hidden = which !== "practice";
   document.querySelectorAll("#bottomNav [data-nav]").forEach(b => b.toggleAttribute("aria-current", false) || (b.dataset.nav === NAV_OF[which] && b.setAttribute("aria-current", "page")));
   if (which === "chat") renderChat();
   if (which === "speak" && typeof spOpen === "function") spOpen();
@@ -768,6 +768,7 @@ function showTab(which) {
   if (which === "today" && typeof tdOpen === "function") tdOpen();
   if (which === "practice" && typeof prOpen === "function") prOpen();
   if (which === "path" && typeof pathOpen === "function") pathOpen();
+  if (which === "settings") renderSettings();
   window.scrollTo({ top: 0 });
 }
 $("tabCards").onclick = () => showTab("cards");

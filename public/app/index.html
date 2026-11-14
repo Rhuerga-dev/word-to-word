@@ -538,7 +538,7 @@ button.chip{cursor:pointer}
 
 /* ===== Fase 1: navegación de abajo, Hoy y sesión guiada ===== */
 body[data-nav] #appView{padding-bottom:84px}
-.bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--card);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom,0px))}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--card);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom,0px))}
 .bnav button{border:none;background:none;display:grid;justify-items:center;gap:2px;font-size:12px;color:var(--muted);padding:6px 0;min-height:52px;border-radius:12px}
 .bnav button svg{width:24px;height:24px}
 .bnav button[aria-current="page"]{color:var(--accent);font-weight:700}
@@ -548,6 +548,7 @@ body:not([data-nav="progress"]) .grid{grid-template-columns:minmax(0,1fr)}
 body:not([data-nav="cards"]) #hfBar,body:not([data-nav="cards"]) #hello,body:not([data-nav="cards"]) #queue{display:none}
 .wrap{max-width:820px}
 body[data-nav="progress"] .wrap{max-width:1040px}
+#settingsView .settings{max-width:640px;margin:0 auto}
 
 .tday{display:grid;gap:16px}
 .td-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -799,6 +800,43 @@ body:not([data-nav="progress"]) .grid{max-width:none}
         <main id="main" aria-live="polite"></main>
         <section id="speakView" hidden class="card"><div class="card-top sp-top"></div><div class="card-body sp" id="speakBody"></div></section>
         <section id="progressView" hidden class="card"><div class="card-top sp-top"></div><div class="card-body sp" id="progressBody"></div></section>
+        <section id="settingsView" hidden aria-label="Ajustes">
+        <div class="panel settings">
+          <h2>Ajustes</h2>
+          <label class="inl" for="dailyNew">Palabras nuevas por día <input type="number" id="dailyNew" min="1" max="50" value="10"></label>
+          <div class="row" id="voiceCmp" hidden><span class="note">Comparar voces:</span><button type="button" id="cmpAzure">🔊 Azure</button><button type="button" id="cmpKokoro">🔊 Kokoro (local)</button></div>
+          <p class="note" id="voiceCmpState"></p>
+          <label class="inl" for="micSel">Micrófono <select id="micSel" style="width:auto;max-width:180px"><option value="">Automático</option></select></label>
+          <p class="note" id="micNote"></p>
+          <p class="note">Con AirPods: elige el <b>micrófono del iPhone</b> y la voz de la app se oirá con mejor calidad en los AirPods.</p>
+          <div class="row"><button type="button" id="micTest">🎙️ Probar micrófono</button></div>
+          <div id="micTestOut" class="mic-test" hidden aria-live="polite"></div>
+          <label class="inl" for="speakGoal">Minutos hablando por día <input type="number" id="speakGoal" min="1" max="60" value="5"></label>
+          <label class="inl" for="freelancePack">Vocabulario para clientes (freelance) <input type="checkbox" id="freelancePack"></label>
+          <label class="inl" for="remOn">Recordatorio diario <input type="checkbox" id="remOn"></label>
+          <label class="inl" for="remTime">Hora del recordatorio <input type="time" id="remTime" value="19:00"></label>
+          <p class="note" id="remMsg"></p>
+          <button id="nextDay" type="button">Adelantar un día (para probar)</button>
+          <details class="advanced"><summary>Opciones avanzadas</summary>
+          <button id="resetBtn" type="button">Reiniciar progreso</button>
+          <div id="confirmBox" hidden class="confirm">
+            <span>Se borra todo tu progreso. ¿Seguro?</span>
+            <input type="password" id="resetPass" autocomplete="current-password" placeholder="Tu contraseña" aria-label="Tu contraseña">
+            <div class="row"><button id="resetYes" type="button" class="g-again">Sí, borrar</button><button id="resetNo" type="button">Cancelar</button></div>
+            <p class="note" id="resetMsg"></p>
+          </div>
+          <button id="delAccBtn" type="button">Borrar mi cuenta</button>
+          <div id="delAccBox" hidden class="confirm">
+            <span>Se borran tu cuenta y todo lo que tiene. No se puede deshacer.</span>
+            <input type="password" id="delAccPass" autocomplete="current-password" placeholder="Tu contraseña" aria-label="Tu contraseña">
+            <div class="row"><button id="delAccYes" type="button" class="g-again">Borrar para siempre</button><button id="delAccNo" type="button">Cancelar</button></div>
+            <p class="note" id="delAccMsg"></p>
+          </div>
+          <p class="note"><a href="/privacidad/" target="_blank" rel="noopener">Política de privacidad</a></p>
+          </details>
+          <span class="sync" id="svc"></span>
+        </div>
+        </section>
         <section id="chatView" hidden class="card"><div class="card-top"></div><div class="card-body chat">
           <div class="kind"><span>Habla usando tus palabras de hoy</span><span id="chatMode"></span></div>
           <div class="row" id="targets"></div>
@@ -840,41 +878,6 @@ body:not([data-nav="progress"]) .grid{max-width:none}
           <p class="note">Elige un tema y tus palabras nuevas serán de esa familia. Aprender palabras agrupadas ayuda a recordarlas.</p>
           <div class="fams" id="fams"></div>
         </div>
-        <div class="panel">
-          <h2>Ajustes</h2>
-          <label class="inl" for="dailyNew">Palabras nuevas por día <input type="number" id="dailyNew" min="1" max="50" value="10"></label>
-          <div class="row" id="voiceCmp" hidden><span class="note">Comparar voces:</span><button type="button" id="cmpAzure">🔊 Azure</button><button type="button" id="cmpKokoro">🔊 Kokoro (local)</button></div>
-          <p class="note" id="voiceCmpState"></p>
-          <label class="inl" for="micSel">Micrófono <select id="micSel" style="width:auto;max-width:180px"><option value="">Automático</option></select></label>
-          <p class="note" id="micNote"></p>
-          <p class="note">Con AirPods: elige el <b>micrófono del iPhone</b> y la voz de la app se oirá con mejor calidad en los AirPods.</p>
-          <div class="row"><button type="button" id="micTest">🎙️ Probar micrófono</button></div>
-          <div id="micTestOut" class="mic-test" hidden aria-live="polite"></div>
-          <label class="inl" for="speakGoal">Minutos hablando por día <input type="number" id="speakGoal" min="1" max="60" value="5"></label>
-          <label class="inl" for="freelancePack">Vocabulario para clientes (freelance) <input type="checkbox" id="freelancePack"></label>
-          <label class="inl" for="remOn">Recordatorio diario <input type="checkbox" id="remOn"></label>
-          <label class="inl" for="remTime">Hora del recordatorio <input type="time" id="remTime" value="19:00"></label>
-          <p class="note" id="remMsg"></p>
-          <button id="nextDay" type="button">Adelantar un día (para probar)</button>
-          <details class="advanced"><summary>Opciones avanzadas</summary>
-          <button id="resetBtn" type="button">Reiniciar progreso</button>
-          <div id="confirmBox" hidden class="confirm">
-            <span>Se borra todo tu progreso. ¿Seguro?</span>
-            <input type="password" id="resetPass" autocomplete="current-password" placeholder="Tu contraseña" aria-label="Tu contraseña">
-            <div class="row"><button id="resetYes" type="button" class="g-again">Sí, borrar</button><button id="resetNo" type="button">Cancelar</button></div>
-            <p class="note" id="resetMsg"></p>
-          </div>
-          <button id="delAccBtn" type="button">Borrar mi cuenta</button>
-          <div id="delAccBox" hidden class="confirm">
-            <span>Se borran tu cuenta y todo lo que tiene. No se puede deshacer.</span>
-            <input type="password" id="delAccPass" autocomplete="current-password" placeholder="Tu contraseña" aria-label="Tu contraseña">
-            <div class="row"><button id="delAccYes" type="button" class="g-again">Borrar para siempre</button><button id="delAccNo" type="button">Cancelar</button></div>
-            <p class="note" id="delAccMsg"></p>
-          </div>
-          <p class="note"><a href="/privacidad/" target="_blank" rel="noopener">Política de privacidad</a></p>
-          </details>
-          <span class="sync" id="svc"></span>
-        </div>
       </aside>
     </div>
     <nav class="bnav" id="bottomNav" aria-label="Secciones">
@@ -882,6 +885,7 @@ body:not([data-nav="progress"]) .grid{max-width:none}
       <button type="button" data-nav="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Camino</button>
       <button type="button" data-nav="practice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Practicar</button>
       <button type="button" data-nav="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progreso</button>
+      <button type="button" data-nav="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
     </nav>
     <div class="sess" id="sessionView" hidden role="dialog" aria-modal="true" aria-label="Sesión de hoy">
       <div class="sess-top">
@@ -909,7 +913,7 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 </div>
 
 <script src="/app/i18n.js?v=5"></script>
-<script src="/app/app.js?v=17"></script>
+<script src="/app/app.js?v=18"></script>
 <script src="/app/handsfree.js?v=1"></script>
 <script src="/app/lab.js?v=1"></script>
 <script src="/app/speak.js?v=10"></script>
