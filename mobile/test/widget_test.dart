@@ -123,6 +123,14 @@ void main() {
     expect(parseGrade('Fácil'), 'easy');
     expect(parseGrade('difícil'), 'hard');
     expect(parseGrade('Bien'), 'good');
+    // Casi igual (una letra) y por número.
+    expect(parseGrade('East.'), 'easy');
+    expect(parseGrade('Goo'), 'good');
+    expect(parseGrade('card'), 'hard');
+    expect(parseGrade('Three.'), 'good');
+    expect(parseGrade('number 4'), 'easy');
+    expect(parseGrade('one'), 'again');
+    expect(parseGrade('I like pizza'), isNull);
     expect(parseGrade('otra vez'), 'again');
   });
 

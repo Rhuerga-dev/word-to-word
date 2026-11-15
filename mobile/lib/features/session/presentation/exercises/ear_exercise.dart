@@ -167,6 +167,10 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
           const SizedBox(height: 6),
           Text('${tr('Entendí: “{0}”', [s.heard])} · ${s.match!.pct}%', textAlign: TextAlign.center, style: const TextStyle(color: W.muted)),
         ],
+        // «¿Qué palabra oíste?» por voz: lo que se entendió cuando no coincide con ninguna opción.
+        if (!e.isRepeat && !s.answered && s.heard.isNotEmpty)
+          Text(tr('Entendí: “{0}”', [s.heard]), textAlign: TextAlign.center, style: const TextStyle(color: W.muted)),
+        if (!e.isRepeat && !s.answered && s.tips.isNotEmpty) HowToSay(tips: s.tips, loading: false, target: s.tips.first.word),
         if (e.isRepeat && (s.loadingTips || s.tips.isNotEmpty)) HowToSay(tips: s.tips, loading: s.loadingTips, target: e.target ?? e.word),
         if (s.msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(s.msg, textAlign: TextAlign.center, style: const TextStyle(color: W.warn))),
         if (s.answered) ...[

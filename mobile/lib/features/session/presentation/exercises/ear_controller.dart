@@ -189,6 +189,18 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
   static String _plain(String t) => t.replaceAll(RegExp(r'[^\x00-\x7F]'), '').trim();
   static String _norm(String t) => t.toLowerCase().replaceAll(RegExp(r"[^a-z' ]"), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
 
+  /// Manos libres: dice qué se entendió, para que sepas cómo sonó lo que dijiste.
+  Future<void> _sayHeard(HandsFreeController hf, String text) async {
+    final t = text.trim();
+    if (t.isEmpty) return;
+    if (ref.read(spanishProvider).step <= 2) {
+      await hf.say('Entendí:', lang: 'es');
+      await hf.say(t);
+    } else {
+      await hf.say('I heard: $t.');
+    }
+  }
+
   /// Manos libres: sonido → repites la palabra y se compara con las opciones; significado → dices qué
   /// significa y luego si la sabías; repetir → repites lo que oíste (dos intentos).
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {
@@ -224,6 +236,7 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
           await hf.say(state.match!.pct >= 100 ? 'Perfect!' : 'Good!');
           return outcome();
         }
+        await _sayHeard(hf, h.text);
         if (h.wav != null) await _loadTips(h.wav!);
         if (done) {
           await sayTip(hf, state.tips, spanish: ref.read(spanishProvider).step <= 2);
@@ -255,12 +268,31 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
         if (said < 0) said = parseOptionNumber(h.text, item.options.length);
         if (said < 0) {
           misses++;
+          state = state.copyWith(heard: h.text);
+          // Se parece a una opción ("beach" ≈ "peach"): qué entendió y cómo decir esa palabra bien.
+          final near = closestOption(h.text, item.options);
+          if (near >= 0 && misses < 3) {
+            await _sayHeard(hf, h.text);
+            var weak = <(String, List<String>)>[];
+            if (h.wav != null) {
+              try {
+                weak = await ref.read(sessionRepositoryProvider).pronTips(item.options[near], h.wav!).timeout(const Duration(seconds: 10));
+              } catch (_) {}
+            }
+            final tips = buildTips(weak.isEmpty ? [(item.options[near], const <String>[])] : weak);
+            state = state.copyWith(tips: tips);
+            await sayTip(hf, tips, spanish: ref.read(spanishProvider).step <= 2);
+            await hf.say('Listen: ${item.options[near]}. Now you.');
+            await hf.say(item.options[near], slow: true);
+            continue;
+          }
           if (misses >= 3) {
             // Sin bucles: tras tres intentos se pausa y se elige tocando la pantalla.
             await hf.say("I can't understand. Tap the word on the screen.");
             hf.pause();
             throw HandsFreePaused();
           }
+          await _sayHeard(hf, h.text);
           if (misses == 1) {
             await hf.say("Sorry, I didn't understand. Say the word slowly and clearly, or say its number.");
           } else {

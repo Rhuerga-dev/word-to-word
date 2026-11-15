@@ -7,14 +7,16 @@ _Última actualización: 2026-11-15_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) y **5** (15/11: loader al pensar; micrófono de AirPods solo iPhone) publicados.
-- Tests: servidor 182 ✓, app 56 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído) y **7** (nota por voz más tolerante), todos del 15/11.
+- Tests: servidor 182 ✓, app 61 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (15/11) Manos libres: cuando no te entiende, dice qué oyó («I heard: …»). En «¿Qué palabra oíste?», si se parece a una opción (beach≈peach) da el consejo de pronunciación de Azure y te la dice despacio.
+- (15/11) Nota por voz más tolerante: acepta casi-iguales (east→easy, goo→good) y números (one=again … four=easy); al 2.º fallo lo recuerda. Parches 6 y 7.
 - (15/11) Loader de W2W mientras la app «piensa»: manos libres (círculo) y narración («Revisando lo que dijiste…»). Parche 5 de Android e iPhone reinstalado.
 - (15/11) iPhone: interruptor «Micrófono de los AirPods» en Ajustes (encendido por defecto): graba por los AirPods (HFP). La app es la única que configura el audio de iOS (`record` con `manageAudioSession(false)`); antes la grabadora lo cambiaba al grabar. Android sin cambios.
 - (15/11) Protector de racha: salva un día sin estudiar; 1 nuevo cada 7 días de racha (máx. 2). Migración del 15/11 aplicada (solo columnas nuevas; copia previa en `~/Backups/w2w/`).

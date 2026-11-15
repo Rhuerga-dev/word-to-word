@@ -75,22 +75,35 @@ class ReviewController extends AutoDisposeFamilyNotifier<ReviewState, WordCard> 
     // La nota solo la pones tú: sin respuesta no se califica.
     var misses = 0;
     for (var i = 0;; i++) {
-      await hf.say(i == 0 ? 'Again, hard, good or easy?' : 'Say again, hard, good or easy.');
+      if (i == 0) await hf.say('Again, hard, good or easy?');
       final h = await hf.listen(maxMs: 5000, silenceMs: 900);
-      if (h.silent || await handleCommand(hf, h)) continue;
+      if (h.silent) {
+        await hf.say('Say again, hard, good or easy.');
+        continue;
+      }
+      if (await handleCommand(hf, h)) {
+        await hf.say('Again, hard, good or easy?');
+        continue;
+      }
       final g = parseGrade(h.text);
-      if (g == null && ++misses >= 3) {
+      if (g == null && ++misses < 3) {
+        // Qué se entendió, y al segundo intento la opción de los números (se entienden mejor que "easy").
+        await hf.say('I heard: ${h.text.trim()}.');
+        await hf.say(misses == 1
+            ? 'Say again, hard, good or easy.'
+            : 'Or say a number. One: again. Two: hard. Three: good. Four: easy.');
+        continue;
+      }
+      if (g == null) {
         // Sin bucles: tras tres intentos se pausa y la nota se toca en pantalla.
         await hf.say("Sorry, I didn't understand. Tap your answer on the screen.");
         hf.pause();
         throw HandsFreePaused();
       }
-      if (g != null) {
-        await rate(g);
-        final aid = aidOf(card);
-        if (g == 'again' && aid != null && aid.isNotEmpty) await hf.say(aid, lang: 'es');
-        return state.outcome;
-      }
+      await rate(g);
+      final aid = aidOf(card);
+      if (g == 'again' && aid != null && aid.isNotEmpty) await hf.say(aid, lang: 'es');
+      return state.outcome;
     }
   }
 }

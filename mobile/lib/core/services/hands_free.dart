@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../network/api_client.dart';
+import '../utils/compare.dart';
 import '../utils/json.dart';
 import 'audio_service.dart';
 import '../../features/auth/presentation/auth_controller.dart';
@@ -57,7 +58,16 @@ String? parseGrade(String text) {
   if (RegExp(r'\b(hard|heart|hart|harder|difficult|dificil)\b').hasMatch(t)) return 'hard';
   if (RegExp(r'\b(easy|easily|easier|is he|facil)\b').hasMatch(t)) return 'easy';
   if (RegExp(r'\b(good|could|goods|great|fine|ok|okay|got it|bien)\b').hasMatch(t)) return 'good';
-  return null;
+  // Casi igual (una letra distinta: "east", "goo", "card"): el reconocedor falla mucho con palabras tan cortas.
+  const grades = ['again', 'hard', 'good', 'easy'];
+  for (final w in t.split(' ').where((w) => w.length >= 3)) {
+    for (final g in grades) {
+      if (editDistance(w, g) <= 1) return g;
+    }
+  }
+  // O el número, en el orden en que se pregunta: one = again, two = hard, three = good, four = easy.
+  final n = parseOptionNumber(text, 4);
+  return n >= 0 ? grades[n] : null;
 }
 
 enum HfPhase { idle, speaking, listening, thinking }
