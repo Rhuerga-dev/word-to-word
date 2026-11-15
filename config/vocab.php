@@ -43,6 +43,9 @@ return [
         'feelings' => ['label' => 'Emociones', 'emoji' => '😊'],
     ],
 
+    // Registro solo con código de invitación (los crea Reynaldo desde el panel). W2W_INVITE_REQUIRED=false lo abre.
+    'invites_required' => (bool) env('W2W_INVITE_REQUIRED', true),
+
     // Permite el botón "Adelantar un día" (solo para pruebas).
     // Apagado por defecto: actívalo solo en tu Mac para probar (VOCAB_ALLOW_TIME_TRAVEL=true).
     'allow_time_travel' => (bool) env('VOCAB_ALLOW_TIME_TRAVEL', false),

@@ -30,6 +30,8 @@ class StudyController extends Controller
             'intervals' => config('vocab.intervals'),
             'tts_local' => filled(config('vocab.tts.local_url')),
             'pictures' => app(\App\Services\PictureService::class)->enabled(),
+            // El formulario de registro pide el código de invitación.
+            'invite_required' => (bool) config('vocab.invites_required'),
         ];
     }
 

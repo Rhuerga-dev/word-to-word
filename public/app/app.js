@@ -13,7 +13,9 @@ async function api(path, opts = {}) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = data.errors ? Object.values(data.errors).flat()[0] : (data.message || ("Error " + res.status));
-    throw new Error(msg);
+    // Los errores por campo (p. ej. errors.invite) van aparte para mostrarlos debajo de su campo.
+    const err = new Error(msg); err.status = res.status; err.errors = data.errors || null;
+    throw err;
   }
   return data;
 }
@@ -163,6 +165,18 @@ let cards = [], revealed = false, showHint = false, stats = null;
 // ===== Auth =====
 // Modos: login | register | forgot | reset
 let authMode = "login", resetToken = null;
+// Registro solo con código de invitación. Si no se puede leer /config, se muestra el campo igual.
+let inviteRequired = true, inviteCfgLoaded = false;
+function loadInviteCfg() {
+  if (inviteCfgLoaded) return;
+  inviteCfgLoaded = true;
+  fetch(API + "/config", { headers: { Accept: "application/json" } })
+    .then(r => r.ok ? r.json() : null)
+    .then(c => { if (c) { inviteRequired = c.invite_required !== false; showInviteField(); } })
+    .catch(() => { inviteCfgLoaded = false; });
+}
+function showInviteField() { $("inviteWrap").hidden = !(authMode === "register" && inviteRequired); }
+function cleanInvite(v) { return String(v || "").replace(/\s+/g, "").toUpperCase().slice(0, 40); }
 function setAuthMode(mode) {
   authMode = mode;
   const titles = { login: "Entrar", register: "Crear cuenta", forgot: "Recuperar contraseña", reset: "Contraseña nueva" };
@@ -180,13 +194,22 @@ function setAuthMode(mode) {
   $("forgotLink").hidden = mode !== "login";
   $("authHelp").hidden = !(mode === "forgot" || mode === "reset");
   $("authHelp").textContent = mode === "forgot" ? "Escribe tu correo y te enviamos un enlace para crear una contraseña nueva." : mode === "reset" ? "Elige una contraseña nueva de al menos 8 caracteres." : "";
-  $("authErr").textContent = ""; $("authOk").textContent = "";
+  $("authErr").textContent = ""; $("authOk").textContent = ""; $("inviteErr").textContent = "";
+  showInviteField();
+  if (mode === "register") loadInviteCfg();
 }
 function showAuth() { $("authView").hidden = false; $("appView").hidden = true; $("logoutBtn").hidden = true; $("daypill").hidden = true; $("lvlChip").hidden = true; $("streakChip").hidden = true; }
 $("authSwitch").onclick = () => setAuthMode(authMode === "login" ? "register" : "login");
 $("forgotLink").onclick = () => setAuthMode("forgot");
+// Mayúsculas mientras escribe, sin mover el cursor.
+$("aInvite").addEventListener("input", e => {
+  const el = e.target, up = el.value.toUpperCase();
+  if (up === el.value) return;
+  const pos = el.selectionStart; el.value = up;
+  try { el.setSelectionRange(pos, pos); } catch (x) {}
+});
 $("authForm").onsubmit = async e => {
-  e.preventDefault(); $("authErr").textContent = ""; $("authOk").textContent = "";
+  e.preventDefault(); $("authErr").textContent = ""; $("authOk").textContent = ""; $("inviteErr").textContent = "";
   const btn = $("authSubmit"); btn.disabled = true;
   try {
     const email = $("aEmail").value.trim(), password = $("aPass").value;
@@ -200,11 +223,24 @@ $("authForm").onsubmit = async e => {
       setAuthMode("login"); $("authOk").textContent = r.message;
     } else {
       const body = { email, password };
-      if (authMode === "register") { body.name = $("aName").value || "Estudiante"; body.timezone = userTimezone(); }
+      if (authMode === "register") {
+        body.name = $("aName").value || "Estudiante"; body.timezone = userTimezone();
+        const invite = cleanInvite($("aInvite").value);
+        if (invite || inviteRequired) body.invite = invite;
+      }
       const r = await api(authMode === "register" ? "/auth/register" : "/auth/login", { method: "POST", body });
       setToken(r.token); start();
     }
-  } catch (err) { $("authErr").textContent = err.message; }
+  } catch (err) {
+    // El error del código va debajo de su campo; lo demás (o el 503 de registro cerrado), arriba del botón.
+    const errs = err.errors || {}, inv = errs.invite && errs.invite[0];
+    if (inv && authMode === "register") {
+      $("inviteWrap").hidden = false; $("inviteErr").textContent = inv;
+      const other = Object.keys(errs).filter(k => k !== "invite").map(k => errs[k][0]).filter(Boolean)[0];
+      $("authErr").textContent = other || "";
+      $("aInvite").focus();
+    } else $("authErr").textContent = err.message;
+  }
   btn.disabled = false;
 };
 async function startDemo() {

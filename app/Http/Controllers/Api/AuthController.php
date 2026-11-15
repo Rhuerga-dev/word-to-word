@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -24,15 +25,38 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email', 'not_regex:/@'.preg_quote(\App\Services\DemoService::DOMAIN, '/').'$/i'],
             'password' => ['required', 'string', PasswordRule::min(10)->letters()->numbers(), 'max:72'],
             'timezone' => ['nullable', 'timezone:all'],
-        ]);
+            'invite' => [config('vocab.invites_required') ? 'required' : 'nullable', 'string', 'max:40'],
+        ], ['invite.required' => 'Necesitas un código de invitación para registrarte.']);
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'daily_new' => config('vocab.daily_new_default'),
-            'timezone' => $data['timezone'] ?? config('vocab.timezone'),
-        ]);
+        $required = config('vocab.invites_required');
+        if ($required && ! \App\Services\InviteService::available()) {
+            // La tabla de códigos aún no existe: mejor cerrado que abierto a cualquiera.
+            abort(503, 'El registro está cerrado un momento. Vuelve a intentarlo más tarde.');
+        }
+
+        // Gastar el uso del código y crear la cuenta van juntos: si algo falla, el uso no se pierde.
+        $user = DB::transaction(function () use ($data, $required) {
+            $inviteId = null;
+            if ($required || filled($data['invite'] ?? null)) {
+                $inviteId = app(\App\Services\InviteService::class)->redeem((string) ($data['invite'] ?? ''));
+                if ($required && ! $inviteId) {
+                    // Mismo mensaje si no existe, se agotó, caducó o está desactivado: no se puede adivinar cuáles hay.
+                    throw ValidationException::withMessages(['invite' => 'Código de invitación no válido.']);
+                }
+            }
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'daily_new' => config('vocab.daily_new_default'),
+                'timezone' => $data['timezone'] ?? config('vocab.timezone'),
+            ]);
+            if ($inviteId) {
+                $user->forceFill(['invitation_code_id' => $inviteId])->save();
+            }
+
+            return $user;
+        });
 
         $this->sendVerification($user);
 

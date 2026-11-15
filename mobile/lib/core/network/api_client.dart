@@ -8,9 +8,12 @@ import '../../core/l10n/tr.dart';
 
 /// Error de la API con el mensaje que da el servidor (en español).
 class ApiException implements Exception {
-  ApiException(this.message, [this.status = 0]);
+  ApiException(this.message, [this.status = 0, this.errors = const {}]);
   final String message;
   final int status;
+
+  /// Primer error de cada campo (p. ej. `errors['invite']`), para mostrarlo debajo de su campo.
+  final Map<String, String> errors;
 
   /// Sin respuesta del servidor (sin internet o tiempo agotado).
   bool get isNetwork => status == 0;
@@ -70,12 +73,24 @@ class Api {
         onUnauthorized?.call();
         throw ApiException(tr('Tu sesión expiró. Entra otra vez.'), 401);
       }
-      if (e.response != null) throw ApiException(errorMessage(e.response!.data, status), status);
+      if (e.response != null) throw ApiException(errorMessage(e.response!.data, status), status, fieldErrors(e.response!.data));
       throw ApiException(switch (e.type) {
         DioExceptionType.connectionTimeout || DioExceptionType.sendTimeout || DioExceptionType.receiveTimeout => tr('El servidor tardó demasiado. Prueba otra vez.'),
         _ => tr('Sin conexión. Revisa tu internet.'),
       });
     }
+  }
+
+  /// El primer error de cada campo de validación (vacío si no hay).
+  static Map<String, String> fieldErrors(dynamic data) {
+    final out = <String, String>{};
+    final errors = data is Map ? data['errors'] : null;
+    if (errors is Map) {
+      errors.forEach((k, v) {
+        if (v is List && v.isNotEmpty) out['$k'] = v.first.toString();
+      });
+    }
+    return out;
   }
 
   /// El primer error de validación, o el mensaje, o "Error 500".

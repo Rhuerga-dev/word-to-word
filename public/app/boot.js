@@ -12,6 +12,9 @@
   }
   // huergalabs.dev enlaza aquí con ?demo=1 ("Probar demo").
   if (qs.get("demo") === "1") { clean(); if (!token) { showAuth(); setAuthMode("login"); startDemo(); return; } }
+  // Enlace de invitación (…/app/?invite=FAMILIA): abre «Crear cuenta» con el código puesto.
+  const invite = cleanInvite(qs.get("invite"));
+  if (invite) { clean(); if (!token) { showAuth(); setAuthMode("register"); $("aInvite").value = invite; $("aName").focus(); return; } }
   const verified = qs.get("verified") === "1"; if (verified) clean();
   setAuthMode("login");
   if (token) {

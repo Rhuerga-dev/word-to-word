@@ -19,12 +19,14 @@ class AccountTest extends TestCase
     public function test_register_creates_unverified_account_and_sends_verification_email(): void
     {
         Notification::fake();
+        app(\App\Services\InviteService::class)->create(5, null, 'test', 'FAMILIA');
 
         $res = $this->postJson('/api/auth/register', [
             'name' => 'Rey',
             'email' => 'rey@example.com',
             'password' => 'secret-pass-123',
             'timezone' => 'America/New_York',
+            'invite' => 'familia',
         ])->assertCreated();
 
         $res->assertJsonPath('user.email_verified', false)

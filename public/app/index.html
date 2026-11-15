@@ -359,6 +359,9 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
 .auth input{border-radius:var(--radius-sm);border-color:var(--line-2);background:var(--card);padding:12px}
 .auth input:focus{border-color:var(--accent)}
 .auth .row button{flex:1 1 auto}
+.auth .invite{display:grid;gap:6px}
+.auth .invite .err{min-height:0}
+.auth #aInvite{text-transform:uppercase;letter-spacing:.04em}
 
 /* ================= Amigable ================= */
 .hello{display:grid;gap:10px;padding:16px 18px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--card)),var(--card))}
@@ -769,6 +772,11 @@ body:not([data-nav="progress"]) .grid{max-width:none}
       <p class="note" id="authHelp" hidden></p>
       <label for="aPass" id="passWrap">Contraseña<input id="aPass" type="password" required minlength="8" autocomplete="current-password"></label>
       <label for="aPass2" id="pass2Wrap" hidden>Repite la contraseña<input id="aPass2" type="password" minlength="8" autocomplete="new-password"></label>
+      <div class="invite" id="inviteWrap" hidden>
+        <label for="aInvite">Código de invitación<input id="aInvite" maxlength="40" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="W2W-XXXX-XXXX" aria-describedby="inviteHelp inviteErr"></label>
+        <p class="note" id="inviteHelp">W2W es solo por invitación. Pide un código a quien te invitó.</p>
+        <p class="err" id="inviteErr" role="alert"></p>
+      </div>
       <p class="err" id="authErr" role="alert"></p>
       <p class="okmsg" id="authOk" role="status"></p>
       <div class="row"><button class="primary" type="submit" id="authSubmit">Entrar</button><button type="button" id="authSwitch">Crear cuenta</button></div>
@@ -921,12 +929,12 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 </div>
 
 <script src="/app/i18n.js?v=5"></script>
-<script src="/app/app.js?v=19"></script>
+<script src="/app/app.js?v=20"></script>
 <script src="/app/handsfree.js?v=2"></script>
 <script src="/app/lab.js?v=1"></script>
 <script src="/app/speak.js?v=10"></script>
 <script src="/app/progress.js?v=5"></script>
 <script src="/app/today.js?v=7"></script>
 <script src="/app/mictest.js?v=3"></script>
-<script src="/app/boot.js?v=1"></script>
+<script src="/app/boot.js?v=2"></script>
 </body></html>

@@ -21,6 +21,25 @@ class AuthRepository {
   Future<void> login(String email, String password) async =>
       _useToken(asString(asMap(await _api.post('/auth/login', {'email': email, 'password': password}))['token']));
 
+  /// Crea la cuenta y entra. [invite] es el código de invitación (el servidor ignora espacios y mayúsculas).
+  Future<void> register({required String name, required String email, required String password, String? invite, String? timezone}) async =>
+      _useToken(asString(asMap(await _api.post('/auth/register', {
+        'name': name,
+        'email': email,
+        'password': password,
+        if (timezone != null) 'timezone': timezone,
+        if (invite != null) 'invite': invite,
+      }))['token']));
+
+  /// Si el registro pide código de invitación. Si no se puede saber (sin conexión), se pide por si acaso.
+  Future<bool> inviteRequired() async {
+    try {
+      return asMap(await _api.get('/config'))['invite_required'] != false;
+    } catch (_) {
+      return true;
+    }
+  }
+
   Future<void> demo() async => _useToken(asString(asMap(await _api.post('/auth/demo'))['token']));
 
   Future<UserProfile> me() async => UserProfile.fromJson(asMap(await _api.get('/me')));
