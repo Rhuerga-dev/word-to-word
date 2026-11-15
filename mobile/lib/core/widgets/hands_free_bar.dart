@@ -7,6 +7,7 @@ import '../services/airpods_service.dart';
 import '../services/audio_service.dart';
 import '../services/hands_free.dart';
 import '../theme/app_theme.dart';
+import 'w2w_loader.dart';
 import '../../core/l10n/tr.dart';
 
 /// La barra del modo manos libres: qué está pasando, las órdenes de voz y "Pausar".
@@ -40,7 +41,10 @@ class HandsFreeBar extends ConsumerWidget {
                 color: listening ? W.yellow : W.blueDeep,
                 boxShadow: [BoxShadow(color: (listening ? W.yellow : W.mist).withValues(alpha: .25), spreadRadius: listening ? 8 : 4)],
               ),
-              child: Icon(icon, color: listening ? W.navy : Colors.white),
+              // Pensando (transcribir y decidir): barras animadas para que se vea que la app sigue trabajando.
+              child: s.phase == HfPhase.thinking
+                  ? const Center(child: W2WLoader.small(color: Colors.white))
+                  : Icon(icon, color: listening ? W.navy : Colors.white),
             ),
             const SizedBox(width: 14),
             Expanded(

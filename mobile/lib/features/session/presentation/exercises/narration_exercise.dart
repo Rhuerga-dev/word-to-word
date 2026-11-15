@@ -48,7 +48,11 @@ class NarrationExercise extends ConsumerWidget {
             NarrationPhase.loading => const Center(child: W2WLoader(color: Colors.white)),
             NarrationPhase.ready => Text(tr('Hablas un minuto sin parar, sin preparar nada. Si te quedas en blanco, describe lo que ves y sigue.'), style: TextStyle(fontSize: 17, color: Colors.white)),
             NarrationPhase.recording => Text(tr('Te escucho…'), style: W.display(32, color: W.yellow)),
-            NarrationPhase.waiting => Text(tr('Revisando lo que dijiste…'), style: TextStyle(fontSize: 17, color: Colors.white)),
+            NarrationPhase.waiting => Column(mainAxisSize: MainAxisSize.min, children: [
+                const W2WLoader(color: Colors.white),
+                const SizedBox(height: 14),
+                Text(tr('Revisando lo que dijiste…'), style: const TextStyle(fontSize: 17, color: Colors.white)),
+              ]),
             NarrationPhase.error => Text(s.error, style: const TextStyle(color: W.yellow, fontSize: 16)),
             NarrationPhase.done => const SizedBox.shrink(),
           },
