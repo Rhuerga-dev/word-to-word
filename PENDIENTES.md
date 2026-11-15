@@ -10,7 +10,7 @@ _Última actualización: 2026-11-15_
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3 y **4 (15/11: protector de racha, informe semanal, recordatorio automático)** publicados.
 - Tests: servidor 182 ✓, app 54 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
-- iPhone: versión web (no hay app nativa).
+- iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales).
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
@@ -35,7 +35,7 @@ _Última actualización: 2026-11-15_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
-- [ ] **iPhone (app nativa)**: iniciar sesión con tu Apple ID en Xcode → Ajustes → Cuentas (equipo PTJG6N43MX). Sin eso no se puede firmar; luego Claude compila e instala en el iPhone Air (R3Y).
+- [ ] Mirar la app nativa en el iPhone Air (instalada el 15/11): entrar, Progreso, Ajustes y un recordatorio.
 - [ ] Gateway de IA: en el panel crear el agente `w2w` (solo Claude, sin modelo local, max_tokens ≥ 4000, instrucciones: «Sigue exactamente las instrucciones del mensaje y responde solo lo pedido») y una clave de app; poner `HUERGA_AI_KEY` en el .env de W2W.
 - [ ] Abrir la app Android 2 veces para que baje el parche 4 y mirar Progreso y Ajustes (no probado en teléfono real).
 - [ ] Confirmar que al iPhone le llegó el recordatorio de las 19:00 del 13/11 (el servidor lo envió sin error).
