@@ -27,6 +27,8 @@
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
         <env name="KOKORO_URL" value=""/>
+        <!-- Los tests nunca llaman a la IA de verdad: sin gateway, las llamadas van a Anthropic y ahí Http::fake las atrapa. -->
+        <env name="HUERGA_AI_KEY" value=""/>
         <env name="UNSPLASH_ACCESS_KEY" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

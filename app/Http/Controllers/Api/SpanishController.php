@@ -12,6 +12,15 @@ use Throwable;
 /** Escalera de español: ver y elegir el escalón, registrar cuando se pide español y traducir con límite. */
 class SpanishController extends Controller
 {
+    /** Manos libres: pidió "repeat" o "slower" (no entendió al oír). Cuenta para la escalera. */
+    public function listeningHelp(Request $request, \App\Services\ListeningService $listening)
+    {
+        $request->validate(['kind' => ['sometimes', 'in:repeat,slower']]);
+        $listening->record($request->user(), 'repeats');
+
+        return response()->noContent();
+    }
+
     public function __construct(private SpanishService $spanish) {}
 
     public function show(Request $request)

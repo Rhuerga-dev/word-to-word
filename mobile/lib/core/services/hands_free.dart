@@ -178,6 +178,12 @@ class HandsFreeController extends Notifier<HandsFreeState> {
 
   Future<void> repeatLast({bool slow = false}) => say(_last, lang: _lastLang, slow: slow);
 
+  /// Pediste "repeat" o "slower": no entendiste al oír. Se avisa al servidor para la escalera de español
+  /// (sin esperar: si falla, la práctica sigue igual).
+  void noteListeningHelp(String kind) {
+    ref.read(apiProvider).post('/listening/help', {'kind': kind}).catchError((_) => null);
+  }
+
   /// Escucha hasta tu pausa. Con [transcribe] también lo pasa a texto y busca órdenes de voz.
   Future<Heard> listen({int maxMs = 6000, int silenceMs = 1200, bool transcribe = true, void Function()? onVoice}) async {
     _check();
@@ -234,9 +240,11 @@ class SkipExercise implements Exception {}
 Future<bool> handleCommand(HandsFreeController hf, Heard h, {Future<void> Function()? onHelp}) async {
   switch (h.command) {
     case VoiceCommand.repeat:
+      hf.noteListeningHelp('repeat');
       await hf.repeatLast();
       return true;
     case VoiceCommand.slower:
+      hf.noteListeningHelp('slower');
       await hf.repeatLast(slow: true);
       return true;
     case VoiceCommand.help:

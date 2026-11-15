@@ -14,12 +14,18 @@ class SpanishService
 {
     public const KINDS = ['translation', 'hint', 'explain', 'translate'];
 
-    public function __construct(private SrsService $srs) {}
+    public function __construct(private SrsService $srs, private ListeningService $listening) {}
 
-    /** Escalón según el nivel, sin contar el uso. */
-    public function base(User $user): int
+    /** Escalón que corresponde al nivel de la prueba (que mide sobre todo leer). */
+    public function levelStep(User $user): int
     {
         return (int) (config('spanish.base')[$user->cefr_level ?? 'A1'] ?? 1);
+    }
+
+    /** Escalón de partida: el del nivel, pero como mucho start_max hasta que demuestre que entiende al oír. */
+    public function base(User $user): int
+    {
+        return min($this->levelStep($user), (int) config('spanish.start_max', 2));
     }
 
     public function step(User $user): int
@@ -27,16 +33,29 @@ class SpanishService
         return $user->spanish_step ? max(1, min(4, (int) $user->spanish_step)) : $this->autoStep($user);
     }
 
-    /** El automático: el del nivel, o uno más si la última semana estudió casi sin pedir español. */
+    /**
+     * El automático:
+     * - Entiende bien al oír → el escalón de su nivel (y uno más si casi no pidió español).
+     * - Sin datos de escucha → el de partida (+1 si casi no pidió español, pero sin pasar de start_max).
+     * - Le cuesta oír → uno menos.
+     */
     public function autoStep(User $user): int
     {
         $base = $this->base($user);
+        $cap = (int) config('spanish.start_max', 2);
         $p = config('spanish.promote');
         $from = $this->srs->today($user)->subDays(6)->toDateString();
         $days = DB::table('xp_days')->where('user_id', $user->id)->where('day', '>=', $from)->where('xp', '>', 0)->count();
         $uses = (int) DB::table('spanish_uses')->where('user_id', $user->id)->whereDate('day', '>=', $from)->sum('count');
+        $fewSpanish = $days >= $p['days'] && $uses <= $p['max_uses'];
 
-        return $days >= $p['days'] && $uses <= $p['max_uses'] ? min(4, $base + 1) : $base;
+        $step = match ($this->listening->verdict($user)) {
+            'good' => $fewSpanish ? min(4, max($base, $this->levelStep($user)) + 1) : max($base, $this->levelStep($user)),
+            'struggling' => $base - 1,
+            default => $fewSpanish ? min(max($base, $cap), $base + 1) : $base,
+        };
+
+        return max(1, min(4, $step));
     }
 
     /** Idioma de las explicaciones del coach: es · simple (inglés sencillo) · en. */
@@ -110,6 +129,9 @@ class SpanishService
             'auto' => $user->spanish_step === null,
             'base' => $this->base($user),
             'auto_step' => $this->autoStep($user),
+            'level_step' => $this->levelStep($user),
+            // Escucha de la semana: aciertos en Oído y cuántas veces pidió repetir.
+            'listening' => $this->listening->week($user) + ['verdict' => $this->listening->verdict($user)],
             'ui' => $step >= 3 ? 'en' : 'es',
             'coach' => $this->coachLang($user),
             'limit' => $limit,

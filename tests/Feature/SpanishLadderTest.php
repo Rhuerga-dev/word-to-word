@@ -39,14 +39,67 @@ class SpanishLadderTest extends TestCase
         }
     }
 
-    public function test_the_step_starts_from_the_level(): void
+    /** Escucha de hoy: aciertos y fallos en Oído y "repeat"/"slower". */
+    private function listened(int $ok, int $fail = 0, int $repeats = 0): void
     {
-        foreach (['A1' => 1, 'A2' => 1, 'B1' => 2, 'B2' => 3, 'C1' => 4] as $level => $step) {
+        DB::table('listening_days')->insert(['user_id' => $this->user->id, 'day' => $this->day(), 'ear_ok' => $ok, 'ear_fail' => $fail, 'repeats' => $repeats, 'created_at' => now(), 'updated_at' => now()]);
+    }
+
+    public function test_the_step_starts_from_the_level_but_at_most_simple_english(): void
+    {
+        // La prueba mide leer: hasta demostrar que entiende al oír, como mucho el escalón 2 (inglés sencillo).
+        foreach (['A1' => 1, 'A2' => 1, 'B1' => 2, 'B2' => 2, 'C1' => 2] as $level => $step) {
             $this->user->forceFill(['cefr_level' => $level])->save();
             $this->getJson('/api/spanish')->assertOk()->assertJsonPath('step', $step)->assertJsonPath('auto', true)
                 ->assertJsonPath('ui', $step >= 3 ? 'en' : 'es');
         }
-        $this->getJson('/api/me')->assertOk()->assertJsonPath('spanish.step', 4);
+        $this->getJson('/api/me')->assertOk()->assertJsonPath('spanish.step', 2)->assertJsonPath('spanish.level_step', 4);
+    }
+
+    public function test_understanding_by_ear_unlocks_the_step_of_the_level(): void
+    {
+        $this->user->forceFill(['cefr_level' => 'B2'])->save();
+        $this->listened(18, 2);   // 90 % en 20 respuestas, sin pedir repetir
+        $this->getJson('/api/spanish')->assertJsonPath('step', 3)->assertJsonPath('listening.verdict', 'good')
+            ->assertJsonPath('listening.pct', 90);
+        $this->studied(5);        // y casi sin español: uno más
+        $this->getJson('/api/spanish')->assertJsonPath('step', 4);
+    }
+
+    public function test_struggling_by_ear_moves_down_a_step(): void
+    {
+        $this->user->forceFill(['cefr_level' => 'B2'])->save();
+        $this->listened(4, 8);    // 33 % de aciertos
+        $this->getJson('/api/spanish')->assertJsonPath('step', 1)->assertJsonPath('listening.verdict', 'struggling');
+    }
+
+    public function test_asking_to_repeat_a_lot_also_counts_as_struggling(): void
+    {
+        $this->user->forceFill(['cefr_level' => 'B1'])->save();
+        foreach (range(1, 15) as $i) {
+            $this->postJson('/api/listening/help', ['kind' => $i % 2 ? 'repeat' : 'slower'])->assertNoContent();
+        }
+        $this->getJson('/api/spanish')->assertJsonPath('listening.repeats', 15)->assertJsonPath('step', 1);
+        $this->postJson('/api/listening/help', ['kind' => 'dance'])->assertUnprocessable();
+    }
+
+    public function test_ear_answers_are_recorded_for_the_ladder(): void
+    {
+        $word = \App\Models\Word::create(['word' => 'peach', 'rank' => 1, 'source' => 'ngsl', 'translation' => 'melocotón']);
+        $uw = \App\Models\UserWord::create(['user_id' => $this->user->id, 'word_id' => $word->id, 'level' => 1, 'introduced_at' => $this->day(2), 'next_review' => $this->day(1)]);
+        $ear = app(\App\Services\EarService::class);
+        $ear->answer($this->user, $uw, true, 900);
+        $ear->answer($this->user, $uw->fresh(), false, 3000);
+
+        $this->assertSame(['answers' => 2, 'ok' => 1, 'pct' => 50, 'repeats' => 0], app(\App\Services\ListeningService::class)->week($this->user));
+    }
+
+    public function test_listening_data_is_only_your_own(): void
+    {
+        $other = User::factory()->create(['cefr_level' => 'B2']);
+        DB::table('listening_days')->insert(['user_id' => $other->id, 'day' => $this->day(), 'ear_ok' => 30, 'ear_fail' => 0, 'repeats' => 0, 'created_at' => now(), 'updated_at' => now()]);
+        $this->user->forceFill(['cefr_level' => 'B2'])->save();
+        $this->getJson('/api/spanish')->assertJsonPath('step', 2)->assertJsonPath('listening.answers', 0);
     }
 
     public function test_the_step_can_be_fixed_by_hand_and_back_to_auto(): void
@@ -58,7 +111,12 @@ class SpanishLadderTest extends TestCase
 
     public function test_it_moves_up_a_step_after_a_week_almost_without_spanish(): void
     {
+        $this->user->forceFill(['cefr_level' => 'A2'])->save();   // escalón 1 → 2 sin datos de escucha
         $this->studied(5);
+        $this->getJson('/api/spanish')->assertJsonPath('step', 2);
+        $this->user->forceFill(['cefr_level' => 'B1'])->save();   // del 2 al 3 hace falta demostrar que entiende al oír
+        $this->getJson('/api/spanish')->assertJsonPath('step', 2);
+        $this->listened(16, 2);
         $this->getJson('/api/spanish')->assertJsonPath('step', 3);
         DB::table('spanish_uses')->insert(['user_id' => $this->user->id, 'day' => $this->day(1), 'kind' => 'translation', 'count' => 4, 'created_at' => now(), 'updated_at' => now()]);
         $this->getJson('/api/spanish')->assertJsonPath('step', 2)->assertJsonPath('week', 4);

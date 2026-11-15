@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/speaking/scenarios', [SpeakingController::class, 'scenarios']);
     Route::get('/speaking/stats', [SpeakingController::class, 'stats']);
     Route::get('/speaking/weekly', [SpeakingController::class, 'weekly']);
+    Route::post('/listening/help', [\App\Http\Controllers\Api\SpanishController::class, 'listeningHelp'])->middleware('throttle:60,1');
     Route::put('/speaking/goal', [SpeakingController::class, 'goal']);
     Route::post('/speaking/sessions', [SpeakingController::class, 'start'])->middleware('throttle:20,1');
     Route::post('/speaking/sessions/{session}/turns', [SpeakingController::class, 'turn'])->middleware('throttle:40,1');

@@ -104,10 +104,12 @@ async function hfAsk(lang, ms, askAgain) {
   return null;
 }
 function noAccents(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9ñ\s]/g, " ").replace(/\s+/g, " ").trim(); }
+// Pediste repetir: no entendiste al oír. La escalera de español lo tiene en cuenta (sin esperar respuesta).
+function noteRepeat() { api("/listening/help", { method: "POST", body: { kind: "repeat" } }).catch(() => {}); }
 function command(alts) {
   const t = noAccents(alts.join(" "));
   if (/\b(pausa|pausar|detente|deten|stop|para ya|terminar)\b/.test(t)) return "pause";
-  if (/\b(repite|repetir|otra vez|again|repeat)\b/.test(t)) return "repeat";
+  if (/\b(repite|repetir|otra vez|again|repeat)\b/.test(t)) { noteRepeat(); return "repeat"; }
   if (/\b(siguiente|salta|saltar|next|skip)\b/.test(t)) return "skip";
   if (/\b(no se|no lo se|ni idea|no recuerdo|no me acuerdo)\b/.test(t)) return "dontknow";
   return null;

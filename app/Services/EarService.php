@@ -188,6 +188,8 @@ class EarService
      */
     public function answer(User $user, UserWord $uw, bool $ok, int $ms): array
     {
+        // Para la escalera de español: cómo entiende al oír.
+        app(ListeningService::class)->record($user, $ok ? 'ear_ok' : 'ear_fail');
         $today = $this->srs->today($user);
         $level = (int) $uw->ear_level;
         $fast = $ok && $ms <= self::fastMs($level);
