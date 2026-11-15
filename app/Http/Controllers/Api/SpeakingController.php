@@ -39,6 +39,12 @@ class SpeakingController extends Controller
         return $this->speaking->stats($request->user(), $skip);
     }
 
+    /** Informe semanal de fluidez (esta semana contra la anterior). */
+    public function weekly(Request $request)
+    {
+        return $this->speaking->weekly($request->user());
+    }
+
     public function start(Request $request)
     {
         $data = $request->validate([

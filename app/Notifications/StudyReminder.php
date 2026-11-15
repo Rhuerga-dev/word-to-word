@@ -13,6 +13,7 @@ class StudyReminder extends Notification
         public int $reviews,
         public int $newWords,
         public int $streak,
+        public ?string $word = null,
     ) {}
 
     public function via(object $notifiable): array
@@ -49,8 +50,11 @@ class StudyReminder extends Notification
             $parts[] = $this->newWords.' '.($this->newWords === 1 ? 'palabra nueva' : 'palabras nuevas');
         }
 
-        return $parts
+        $body = $parts
             ? 'Hoy te esperan '.implode(' y ', $parts).'. Son unos minutos.'
             : 'Abre W2W y practica speaking unos minutos.';
+
+        // La palabra concreta engancha más que un número.
+        return $this->word ? "Hoy te toca: «{$this->word}». ".$body : $body;
     }
 }

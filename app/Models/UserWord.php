@@ -18,6 +18,9 @@ class UserWord extends Model
             'next_review' => 'date',
             'introduced_at' => 'date',
             'ear_next' => 'date:Y-m-d',
+            'stability' => 'float',
+            'difficulty' => 'float',
+            'last_reviewed_on' => 'date',
         ];
     }
 

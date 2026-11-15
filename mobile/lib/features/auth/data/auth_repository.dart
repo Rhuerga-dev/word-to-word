@@ -44,8 +44,9 @@ class AuthRepository {
   }
 
   /// Guarda el recordatorio en el servidor y devuelve el perfil actualizado.
-  Future<UserProfile> saveReminder({required bool enabled, required String time, required String timezone}) async =>
-      UserProfile.fromJson(asMap(await _api.put('/reminders', {'enabled': enabled, 'time': time, 'timezone': timezone})));
+  /// [auto] es opcional: si es null no se manda y el servidor deja el que tenía.
+  Future<UserProfile> saveReminder({required bool enabled, required String time, required String timezone, bool? auto}) async =>
+      UserProfile.fromJson(asMap(await _api.put('/reminders', {'enabled': enabled, 'time': time, 'timezone': timezone, if (auto != null) 'auto': auto})));
 
   /// Profesiones y objetivos para elegir.
   Future<(List<ProfileOption>, List<ProfileOption>)> professions() async {

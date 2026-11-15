@@ -1,7 +1,7 @@
 /* Word to Word · Panel de progreso: qué hacer hoy, nivel, vocabulario, hablar, pronunciación y errores. */
 "use strict";
 
-const pg = { data: null, error: "", ach: null, league: null };
+const pg = { data: null, error: "", ach: null, league: null, week: null };
 const ACH_ICON = {
   flag: '<path d="M5 21V4h11l-2 4 2 4H5"/>', fire: '<path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5.2.2 1.8 1 3 2.2 3.4C11 8.6 11 5 12 2z"/>',
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>', book: '<path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-6"/><path d="M20 4v14h-6"/>',
@@ -16,8 +16,8 @@ async function pgOpen() {
   const el = $("progressBody"); if (!el) return;
   if (!pg.data) el.innerHTML = '<p class="note">Cargando tu progreso…</p>';
   try {
-    const [d, a, l] = await Promise.all([api("/progress"), api("/achievements").catch(() => null), api("/league").catch(() => null)]);
-    pg.data = d; pg.ach = a; pg.league = l; pg.error = "";
+    const [d, a, l, w] = await Promise.all([api("/progress"), api("/achievements").catch(() => null), api("/league").catch(() => null), api("/speaking/weekly").catch(() => null)]);
+    pg.data = d; pg.ach = a; pg.league = l; pg.week = w; pg.error = "";
   } catch (e) { pg.error = e.message; }
   pgRender();
 }
@@ -34,6 +34,36 @@ function pgSpark(values, invert) {
 function pgBars(items, max, cls) {
   max = Math.max(1, max || Math.max(...items.map(i => i.value)));
   return `<div class="pg-bars ${cls || ""}">${items.map(i => `<div class="pg-bar" title="${esc(i.title || "")}"><span class="pg-c"><i style="height:${Math.round(i.value / max * 100)}%"></i></span><small>${esc(i.label)}</small></div>`).join("")}</div>`;
+}
+
+// Cambio frente a la semana pasada. lowerBetter: en reacción y pausas, bajar es mejorar.
+function pgDelta(now, before, lowerBetter) {
+  if (now == null || before == null) return '<small class="pg-delta">sin datos de la semana pasada</small>';
+  const diff = Math.round((now - before) * 10) / 10;
+  if (!diff) return '<small class="pg-delta">igual que la semana pasada</small>';
+  const better = lowerBetter ? diff < 0 : diff > 0;
+  return `<small class="pg-delta ${better ? "up" : "down"}">${diff > 0 ? "↑" : "↓"} ${pgNum(Math.abs(diff))} vs. semana pasada</small>`;
+}
+// Tarjeta «Tu semana hablando»: últimos 7 días frente a los 7 anteriores.
+function pgWeekSection(w) {
+  if (!w || !w.now) return "";
+  const n = w.now, b = w.before || {};
+  let html = `<section class="pg-sec"><h3>Tu semana hablando</h3>`;
+  if (!n.minutes && !n.sessions) {
+    html += `<p class="note">Aún no hablaste esta semana.${b.minutes ? ` La semana pasada fueron ${pgNum(b.minutes)} min.` : ""} Con 5 minutos en Hablar ya empiezas a notar el cambio.</p>
+      <div class="row"><button type="button" data-pg-go="speak">🎙️ Hablar ahora</button></div>`;
+  } else {
+    html += `<div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="stat"><b>${pgNum(n.minutes)}</b><span>min hablando</span>${pgDelta(n.minutes, b.minutes)}</div>
+      <div class="stat"><b>${pgNum(n.wpm)}</b><span>palabras por minuto</span>${pgDelta(n.wpm, b.wpm)}</div>
+      <div class="stat"><b>${n.reaction == null ? "—" : pgNum(n.reaction) + " s"}</b><span>para arrancar (menos es mejor)</span>${pgDelta(n.reaction, b.reaction, true)}</div>
+      <div class="stat"><b>${n.mistakes_mastered || 0}</b><span>errores superados</span>${pgDelta(n.mistakes_mastered || 0, b.mistakes_mastered || 0)}</div>
+    </div>
+    <p class="note">${n.days} ${n.days === 1 ? "día" : "días"} · ${n.sessions} ${n.sessions === 1 ? "sesión" : "sesiones"} · ${n.words} palabras dichas${n.pauses_per_min != null ? ` · ${pgNum(n.pauses_per_min)} pausas largas/min` : ""}.</p>`;
+    if (n.pauses_per_min != null && b.pauses_per_min != null) html += `<p class="note">Pausas largas: ${pgDelta(n.pauses_per_min, b.pauses_per_min, true)}</p>`;
+  }
+  if (w.conquered && w.conquered.length) html += `<p class="note">Superaste esta semana:</p>${w.conquered.map(c => `<p class="sp-fix">Ya no dices «<s>${esc(c.said)}</s>» → «<b>${esc(c.correct)}</b>»</p>`).join("")}`;
+  return html + `</section>`;
 }
 
 function pgRender() {
@@ -82,8 +112,12 @@ function pgRender() {
   const lvLabels = ["nuevas", ...((cfg.intervals || [1, 3, 7, 15, 30, 60, 120]).map(n => n + "d"))];
   html += `<section class="pg-sec"><h3>Vocabulario</h3>
     <div class="stats"><div class="stat"><b>${v.learned}</b><span>aprendidas</span></div><div class="stat"><b>${v.mastered}</b><span>dominadas</span></div><div class="stat"><b>${v.streak}</b><span>días seguidos</span></div></div>
+    ${pgFreeze(v)}
     <p class="note">Palabras según cada cuánto las repasas: a la derecha, las que ya tienes firmes.</p>
     ${pgBars(v.by_level.map((n, i) => ({ value: n, label: lvLabels[i] || "+", title: n + " palabras" })), 0, "vocab")}</section>`;
+
+  // Tu semana hablando
+  html += pgWeekSection(pg.week);
 
   // Hablar
   html += `<section class="pg-sec"><h3>Hablar</h3>
@@ -113,7 +147,17 @@ function pgRender() {
   el.innerHTML = html;
   el.querySelectorAll("[data-pg]").forEach(b => b.onclick = () => pgAction(d.todo[+b.dataset.pg]));
   const lv2 = $("pgLeagueVis"); if (lv2) lv2.onchange = async e => { try { pg.league = await api("/league/visibility", { method: "PUT", body: { visible: e.target.checked } }); } catch (er) {} pgRender(); };
+  el.querySelectorAll("[data-pg-go]").forEach(b => b.onclick = () => { unlockAudio(); showTab(b.dataset.pgGo); });
   el.querySelectorAll("[data-pg-lab]").forEach(b => b.onclick = () => { unlockAudio(); openLab(b.dataset.pgLab); });
+}
+
+// Protectores de racha. /progress puede no traerlos: entonces se usan los de /stats (ya cargados).
+function pgFreeze(v) {
+  const src = v.streak_freezes != null ? v : (typeof stats !== "undefined" && stats) || {};
+  const fz = src.streak_freezes || 0;
+  let html = fz ? `<p class="note" title="Protector de racha: salva un día sin estudiar">🛡️ ×${fz} · Protector de racha: salva un día sin estudiar</p>` : "";
+  if (src.streak_protected) html += '<p class="warnbox">🛡️ Tu racha está protegida: estudia hoy para no perderla</p>';
+  return html;
 }
 
 function pgAction(t) {

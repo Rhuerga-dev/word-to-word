@@ -1,1 +1,3 @@
 #include "Generated.xcconfig"
+// Firma local (equipo de Apple de este Mac). No va a git.
+#include? "Signing.xcconfig"

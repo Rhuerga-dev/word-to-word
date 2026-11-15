@@ -57,14 +57,17 @@ class ReminderController extends Controller
             'enabled' => ['required', 'boolean'],
             'time' => ['required', 'date_format:H:i'],
             'timezone' => ['required', 'timezone:all'],
+            'auto' => ['sometimes', 'boolean'],   // opcional: las apps viejas no lo mandan
         ]);
 
         $user = $request->user();
-        $changed = $user->reminder_time !== $data['time'] || $user->timezone !== $data['timezone'];
+        $auto = array_key_exists('auto', $data) ? (bool) $data['auto'] : (bool) $user->reminder_auto;
+        $changed = $user->reminder_time !== $data['time'] || $user->timezone !== $data['timezone'] || $auto !== (bool) $user->reminder_auto;
         $user->forceFill([
             'reminder_enabled' => $data['enabled'],
             'reminder_time' => $data['time'],
             'timezone' => $data['timezone'],
+            'reminder_auto' => $auto,
             // Si cambió la hora, que hoy pueda volver a avisar.
             'last_reminded_on' => $changed ? null : $user->last_reminded_on,
         ])->save();

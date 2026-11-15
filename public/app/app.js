@@ -333,6 +333,7 @@ function renderHello() {
   const streak = stats ? stats.streak : 0, pct = dayTotal ? Math.round(done / dayTotal * 100) : 100;
   let line;
   if (!left) line = "Terminaste por hoy 🎉 ¡Gran trabajo!";
+  else if (!done && stats && stats.streak_protected) line = "🛡️ Tu racha está protegida: estudia hoy para no perderla.";
   else if (!done) line = streak ? `Llevas ${streak} ${streak === 1 ? "día" : "días"} seguidos 🔥 Unos minutos hoy y la mantienes.` : "Empecemos con calma: una palabra a la vez. 🌱";
   else if (pct < 50) line = pick(["¡Buen comienzo! Sigue así.", "Vas muy bien 💪", "¡Una a una se aprende!"]);
   else if (pct < 90) line = pick(["¡Ya pasaste la mitad! 🙌", "¡Te falta poco!", "Vas volando 🚀"]);
@@ -782,6 +783,14 @@ function renderSide() {
   if (!stats) return;
   $("sLearned").textContent = stats.learned; $("sMastered").textContent = stats.mastered; $("sStreak").textContent = stats.streak;
   $("streakChip").hidden = !stats.streak; $("streakChip").innerHTML = ICON_FLAME + stats.streak + (stats.streak === 1 ? " día" : " días");
+  // Protectores de racha: cada uno salva un día sin estudiar (se gana uno cada 7 días seguidos, máx. 2).
+  const fz = stats.streak_freezes || 0;
+  if (fz) $("streakChip").insertAdjacentHTML("beforeend", `<span class="shield">🛡️×${fz}</span>`);
+  $("streakChip").title = fz ? "Protector de racha: salva un día sin estudiar" : "";
+  $("sFreeze").hidden = !fz;
+  $("sFreeze").textContent = fz ? `🛡️ ×${fz} · Protector de racha: salva un día sin estudiar` : "";
+  $("sProtected").hidden = !stats.streak_protected;
+  $("sProtected").textContent = stats.streak_protected ? "🛡️ Tu racha está protegida: estudia hoy para no perderla" : "";
   $("sLeft").textContent = `${stats.total_words - stats.learned} palabras por aprender de ${stats.total_words}.`;
   const max = Math.max(1, ...stats.forecast.map(x => x.count));
   $("forecast").innerHTML = stats.forecast.map((x, i) => { const d = new Date(x.date + "T12:00"); const lbl = i === 0 ? "mañana" : d.toLocaleDateString("es", { weekday: "short", day: "numeric" }); return `<div class="fc-row"><span class="lbl">${lbl}</span><span class="fc-bar"><i style="width:${x.count / max * 100}%"></i></span><span class="n">${x.count}</span></div>`; }).join("");
@@ -974,10 +983,22 @@ function renderSettings() {
   $("speakGoal").value = profile.speaking_goal || 5;
   $("voiceCmp").hidden = !cfg.tts_local;   // comparar voces solo si la voz local está configurada
   renderMicSelect();
-  $("remOn").checked = !!profile.reminder.enabled;
-  $("remTime").value = profile.reminder.time || "19:00";
-  $("remTime").disabled = !profile.reminder.enabled;
-  $("remMsg").textContent = profile.reminder.enabled ? "Te avisaremos a las " + profile.reminder.time + " si no has estudiado." : "";
+  const r = profile.reminder;
+  $("remOn").checked = !!r.enabled;
+  $("remAuto").checked = !!r.auto;
+  $("remAuto").disabled = !r.enabled;
+  $("remTime").value = r.time || "19:00";
+  $("remTime").disabled = !r.enabled || !!r.auto;   // en automático manda la hora habitual
+  $("remMsg").textContent = remText(r);
+}
+/** Texto bajo el recordatorio. En automático avisa 30 min después de su hora habitual (como el servidor). */
+function remText(r) {
+  if (!r.enabled) return "";
+  if (!r.auto) return "Te avisaremos a las " + r.time + " si no has estudiado.";
+  if (!r.usual_time) return "Usaremos las " + (r.time || "19:00") + " hasta conocer tu hora habitual (3 días de práctica).";
+  const [h, m] = r.usual_time.split(":").map(Number), at = (h * 60 + m + 30) % 1440;
+  const send = String(Math.floor(at / 60)).padStart(2, "0") + ":" + String(at % 60).padStart(2, "0");
+  return "Sueles practicar hacia las " + r.usual_time + ". Te avisaremos a las " + send + " (30 min después) si no has estudiado.";
 }
 $("freelancePack").onchange = async e => {
   try { profile = await api("/settings", { method: "PUT", body: { freelance_pack: e.target.checked } }); refresh(); }
@@ -1010,7 +1031,7 @@ async function unsubscribePush() {
   } catch (e) {}
 }
 async function saveReminder(enabled) {
-  profile = await api("/reminders", { method: "PUT", body: { enabled, time: $("remTime").value || "19:00", timezone: userTimezone() } });
+  profile = await api("/reminders", { method: "PUT", body: { enabled, time: $("remTime").value || "19:00", timezone: userTimezone(), auto: $("remAuto").checked } });
   renderSettings();
 }
 $("remOn").onchange = async e => {
@@ -1020,6 +1041,12 @@ $("remOn").onchange = async e => {
   e.target.disabled = false;
 };
 $("remTime").onchange = async () => { try { await saveReminder(true); } catch (err) { $("remMsg").textContent = err.message; } };
+$("remAuto").onchange = async e => {
+  e.target.disabled = true;
+  try { await saveReminder($("remOn").checked); }
+  catch (err) { e.target.checked = !e.target.checked; $("remMsg").textContent = err.message; }
+  e.target.disabled = !$("remOn").checked;
+};
 
 // ===== PWA: instalable en el iPhone =====
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("/app/sw.js").catch(() => {})); }

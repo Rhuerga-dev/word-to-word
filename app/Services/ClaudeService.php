@@ -32,7 +32,12 @@ class ClaudeService
 
     public function enabled(): bool
     {
-        return filled(config('vocab.anthropic.key'));
+        return $this->viaGateway() || filled(config('vocab.anthropic.key'));
+    }
+
+    private function viaGateway(): bool
+    {
+        return filled(config('vocab.ai_gateway.key'));
     }
 
     /**
@@ -41,7 +46,21 @@ class ClaudeService
     public function message(string $system, array $messages, int $maxTokens = 800): string
     {
         if (! $this->enabled()) {
-            throw new RuntimeException('Falta ANTHROPIC_API_KEY en el archivo .env');
+            throw new RuntimeException('Falta HUERGA_AI_KEY (o ANTHROPIC_API_KEY) en el archivo .env');
+        }
+        $kind = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? 'message';
+
+        if ($this->viaGateway()) {
+            try {
+                return $this->viaPanel($system, $messages, $kind);
+            } catch (RuntimeException $e) {
+                // Si el panel está caído y aún queda la clave directa, no dejamos al alumno sin respuesta.
+                // (Un 429 es el límite del día: ahí no se salta por la puerta de atrás.)
+                if (! filled(config('vocab.anthropic.key')) || str_contains($e->getMessage(), ' 429')) {
+                    throw $e;
+                }
+                report($e);
+            }
         }
 
         $response = Http::withHeaders([
@@ -65,7 +84,7 @@ class ClaudeService
         }
 
         // Para el coste por alumno: qué función de este servicio llamó (converse, narration…).
-        AiUsage::claude(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? 'message', $response->json('usage'));
+        AiUsage::claude($kind, $response->json('usage'));
 
         $text = collect($response->json('content', []))
             ->where('type', 'text')
@@ -82,6 +101,63 @@ class ClaudeService
         }
 
         return $text;
+    }
+
+    /**
+     * Llamada por el gateway del panel (POST /api/ai/chat). El gateway usa un agente con instrucciones
+     * fijas, así que las instrucciones de esta tarea y la conversación viajan dentro del mensaje.
+     *
+     * @param  array<int, array{role: string, content: string}>  $messages
+     */
+    private function viaPanel(string $system, array $messages, string $kind): string
+    {
+        $max = (int) config('vocab.ai_gateway.max_chars', 8000);
+        $message = $this->flatten($system, $messages, $max);
+        if (mb_strlen($message) > $max) {
+            // Un lote grande (p. ej. 200 definiciones) no cabe: recortarlo rompería la tarea.
+            throw new RuntimeException('Mensaje demasiado largo para el gateway de IA');
+        }
+        $response = Http::withToken(config('vocab.ai_gateway.key'))
+            ->acceptJson()
+            ->timeout(60)
+            ->post(config('vocab.ai_gateway.url'), [
+                'agent' => config('vocab.ai_gateway.agent'),
+                'message' => $message,
+            ]);
+
+        if ($response->failed()) {
+            throw new RuntimeException('Error del gateway de IA: '.$response->status());
+        }
+        $text = (string) $response->json('reply', '');
+
+        // El gateway no devuelve tokens: se estiman (≈4 letras por token) para el coste por alumno.
+        AiUsage::claude($kind, ['input_tokens' => intdiv(strlen($message), 4), 'output_tokens' => intdiv(strlen($text), 4)]);
+
+        return $text;
+    }
+
+    /**
+     * Junta instrucciones + conversación en un solo texto. Si no cabe, se quitan
+     * los turnos más viejos (nunca el último).
+     *
+     * @param  array<int, array{role: string, content: string}>  $messages
+     */
+    public function flatten(string $system, array $messages, int $max): string
+    {
+        $head = "<instructions>\n".trim($system)."\n</instructions>\n\n";
+        if (count($messages) === 1) {
+            return $head.$messages[0]['content'];   // quien llama comprueba si cabe
+        }
+        $lines = array_map(
+            fn ($m) => ($m['role'] === 'assistant' ? 'You: ' : 'Student: ').trim(is_string($m['content']) ? $m['content'] : json_encode($m['content'])),
+            $messages,
+        );
+        $tail = "\n</conversation>\nReply as \"You\" to the last Student message, following the instructions. Write only the reply.";
+        while (count($lines) > 1 && mb_strlen($head.'<conversation>'.implode("\n", $lines).$tail) > $max) {
+            array_shift($lines);
+        }
+
+        return mb_substr($head."<conversation>\n".implode("\n", $lines).$tail, 0, $max);
     }
 
     /** 3 escenas AID (acción irracional detallada) para una palabra. */

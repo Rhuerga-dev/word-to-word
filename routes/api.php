@@ -89,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/session/complete', [\App\Http\Controllers\Api\SessionController::class, 'complete'])->middleware('throttle:10,1');
     Route::get('/speaking/scenarios', [SpeakingController::class, 'scenarios']);
     Route::get('/speaking/stats', [SpeakingController::class, 'stats']);
+    Route::get('/speaking/weekly', [SpeakingController::class, 'weekly']);
     Route::put('/speaking/goal', [SpeakingController::class, 'goal']);
     Route::post('/speaking/sessions', [SpeakingController::class, 'start'])->middleware('throttle:20,1');
     Route::post('/speaking/sessions/{session}/turns', [SpeakingController::class, 'turn'])->middleware('throttle:40,1');

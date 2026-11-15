@@ -47,8 +47,8 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     state = const AsyncData(null);
   }
 
-  Future<void> saveReminder({required bool enabled, required String time, required String timezone}) async {
-    state = AsyncData(await _repo.saveReminder(enabled: enabled, time: time, timezone: timezone));
+  Future<void> saveReminder({required bool enabled, required String time, required String timezone, bool? auto}) async {
+    state = AsyncData(await _repo.saveReminder(enabled: enabled, time: time, timezone: timezone, auto: auto));
   }
 
   Future<void> saveProfile({String? profession, String? goal}) async {

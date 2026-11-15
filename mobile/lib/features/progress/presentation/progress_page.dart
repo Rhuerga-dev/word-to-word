@@ -6,6 +6,7 @@ import '../../../core/widgets/async_view.dart';
 import '../data/progress_models.dart';
 import '../data/progress_repository.dart';
 import 'progress_providers.dart';
+import 'weekly_card.dart';
 import '../../../core/l10n/tr.dart';
 
 /// Progreso: números claros, liga de la semana, logros, sonidos y errores. Los ajustes van en la pestaña Ajustes.
@@ -34,11 +35,21 @@ class ProgressPage extends ConsumerWidget {
               children: [
                 _stat('${p.wordsLearned}', tr('palabras aprendidas')),
                 _stat('${p.speakingMinutes}', tr('minutos hablando')),
-                _stat('${p.streak}', tr('días seguidos')),
+                _stat('${p.streak}', tr('días seguidos'), extra: p.streakFreezes > 0 ? _shields(p.streakFreezes) : null),
                 _stat('${p.mistakesMastered}', tr('errores superados')),
               ],
             ),
+            if (p.streakProtected)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text('🛡️ ${tr('Tu racha está protegida: estudia hoy para no perderla')}',
+                    style: const TextStyle(color: W.streak, fontWeight: FontWeight.w700)),
+              ),
             for (final t in p.todo) Padding(padding: const EdgeInsets.only(top: 8), child: Text(t)),
+            if (b.weekly != null) ...[
+              _h('Tu semana hablando'),
+              WeeklyCard(b.weekly!),
+            ],
             _h(tr('Liga de la semana')),
             Card(
               child: Padding(
@@ -102,11 +113,20 @@ class ProgressPage extends ConsumerWidget {
 
   Widget _h(String t) => Padding(padding: const EdgeInsets.only(top: 22, bottom: 8), child: Text(tr(t), style: W.display(19)));
 
-  Widget _stat(String n, String label) => Container(
+  /// Protectores de racha junto al número: «🛡️ ×2» (emoji, no icono: el parche no puede traer iconos nuevos).
+  Widget _shields(int n) => Tooltip(
+        message: tr('Protectores de racha: cada uno salva un día sin estudiar'),
+        child: Text('🛡️ ×$n', style: const TextStyle(color: W.streak, fontWeight: FontWeight.w700, fontSize: 16)),
+      );
+
+  Widget _stat(String n, String label, {Widget? extra}) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: W.card, borderRadius: BorderRadius.circular(16), border: Border.all(color: W.line)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(n, style: W.display(26, color: W.accent)),
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Text(n, style: W.display(26, color: W.accent)),
+            if (extra != null) ...[const SizedBox(width: 8), extra],
+          ]),
           Text(label, style: const TextStyle(color: W.muted, fontSize: 13)),
         ]),
       );

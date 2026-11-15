@@ -33,3 +33,6 @@ Schedule::command('words:simplify --all --limit=100')->hourlyAt(30)->withoutOver
 
 // Copia diaria de la base de datos (se quedan las 14 últimas). Carpeta: BACKUP_PATH.
 Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping();
+
+// Métricas de uso para el panel (usuarios activos, retención): storage/app/metrics.json.
+Schedule::command('metrics:snapshot')->hourly()->withoutOverlapping();

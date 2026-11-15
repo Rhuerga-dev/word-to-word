@@ -62,17 +62,20 @@ class _ReminderCard extends ConsumerStatefulWidget {
 class _ReminderCardState extends ConsumerState<_ReminderCard> {
   String _msg = '';
 
-  Future<void> _save(bool on, String time) async {
-    final rem = ref.read(reminderServiceProvider);
+  /// [auto]: avisar a la hora habitual (null = dejar el que había).
+  Future<void> _save(bool on, String time, {bool? auto}) async {
+    final rem = ref.read(reminderServiceProvider), auth = ref.read(authControllerProvider.notifier);
     setState(() => _msg = '');
     if (on && !await rem.requestPermission()) {
       setState(() => _msg = tr('Activa las notificaciones de W2W en los ajustes del teléfono.'));
       return;
     }
     try {
-      await ref.read(authControllerProvider.notifier).saveReminder(enabled: on, time: time, timezone: await rem.timezoneName());
-      await rem.sync(enabled: on, time: time, studiedToday: widget.studiedToday);
-      _msg = on ? tr('Te avisaremos a las {0} si no has estudiado.', [time]) : '';
+      await auth.saveReminder(enabled: on, time: time, timezone: await rem.timezoneName(), auto: auto);
+      // El servidor responde con el perfil: si es automático trae la hora habitual, y el teléfono avisa a esa hora + 30 min.
+      final saved = ref.read(authControllerProvider).valueOrNull?.reminder ?? Reminder(enabled: on, time: time);
+      await rem.sync(enabled: on, time: saved.deviceTime, studiedToday: widget.studiedToday);
+      _msg = on && !saved.auto ? tr('Te avisaremos a las {0} si no has estudiado.', [time]) : '';
     } catch (e) {
       _msg = e.toString();
     }
@@ -96,10 +99,19 @@ class _ReminderCardState extends ConsumerState<_ReminderCard> {
       child: Column(children: [
         SwitchListTile(
           title: Text(tr('Avisarme si no he estudiado')),
-          subtitle: Text(r.enabled ? tr('A las {0}', [r.time]) : tr('Desactivado')),
+          subtitle: Text(!r.enabled ? tr('Desactivado') : (r.auto ? tr('Automático') : tr('A las {0}', [r.time]))),
           value: r.enabled,
           onChanged: (v) => _save(v, r.time),
         ),
+        if (r.enabled)
+          SwitchListTile(
+            title: Text(tr('Automático: a la hora en que sueles practicar')),
+            subtitle: r.auto
+                ? Text(r.usualTime != null ? tr('Te avisaremos hacia las {0}', [r.usualTime]) : tr('Usaremos las {0} hasta conocer tu hora habitual', [r.time]))
+                : null,
+            value: r.auto,
+            onChanged: (v) => _save(true, r.time, auto: v),
+          ),
         if (r.enabled)
           ListTile(leading: const Icon(Icons.schedule), title: Text(tr('Cambiar la hora')), trailing: const Icon(Icons.chevron_right), onTap: () => _pickTime(r)),
         if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: Text(_msg, style: const TextStyle(color: W.muted))),

@@ -11,12 +11,24 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Repetición espaciada: cada día X palabras nuevas + los repasos que tocan.
- * Una palabra bien recordada se aleja (1, 3, 7, 15, 30, 60, 120 días);
- * una olvidada vuelve mañana.
+ * Dos métodos (config vocab.srs):
+ * - fsrs (por defecto): cada palabra aprende cuánto la recuerdas tú (ver Fsrs).
+ * - classic: saltos fijos (1, 3, 7, 15, 30, 60, 120 días); una olvidada vuelve mañana.
+ * El "level" se sigue guardando en los dos, porque otras partes lo usan (dominadas, fichas sin español).
  */
 class SrsService
 {
     public const GRADES = ['again', 'hard', 'good', 'easy'];
+
+    private function usesFsrs(): bool
+    {
+        return config('vocab.srs') === 'fsrs';
+    }
+
+    private function fsrs(): Fsrs
+    {
+        return new Fsrs((float) config('vocab.fsrs.retention', 0.9), (int) config('vocab.fsrs.max_days', 365));
+    }
 
     public function today(User $user): CarbonImmutable
     {
@@ -112,6 +124,17 @@ class SrsService
     public function review(User $user, UserWord $uw, string $grade): UserWord
     {
         $today = $this->today($user);
+        if ($this->usesFsrs()) {
+            [$state, $days] = $this->fsrsNext($uw, $grade, $today);
+            $uw->stability = $state['stability'];
+            $uw->difficulty = $state['difficulty'];
+            $uw->level = $grade === 'again' ? 0 : $this->levelFor($state['stability']);
+            if ($grade === 'again') {
+                $uw->fails++;
+            }
+
+            return $this->saveReview($user, $uw, $today, $days);
+        }
         $max = count(config('vocab.intervals')) - 1;
 
         switch ($grade) {
@@ -132,8 +155,14 @@ class SrsService
                 $days = $this->interval($uw->level);
         }
 
+        return $this->saveReview($user, $uw, $today, $days);
+    }
+
+    private function saveReview(User $user, UserWord $uw, CarbonImmutable $today, int $days): UserWord
+    {
         $uw->reviews++;
         $uw->next_review = $today->addDays($days);
+        $uw->last_reviewed_on = $today;
         $uw->save();
 
         $this->bumpDay($user, $today, 'review_count');
@@ -142,9 +171,62 @@ class SrsService
         return $uw;
     }
 
+    /**
+     * Estado FSRS tras calificar. Las palabras de antes de FSRS (sin stability) empiezan
+     * con lo que ya sabíamos de ellas: su nivel y sus fallos.
+     *
+     * @return array{0: array{stability: float, difficulty: float}, 1: int}
+     */
+    private function fsrsNext(UserWord $uw, string $grade, CarbonImmutable $today): array
+    {
+        $fsrs = $this->fsrs();
+        if ($uw->stability === null && $uw->reviews === 0) {
+            $state = $fsrs->first($grade);
+        } else {
+            $s = $uw->stability ?? (float) $this->interval($uw->level);
+            $d = $uw->difficulty ?? min(10.0, 5.0 + 0.5 * $uw->fails);
+            $elapsed = $uw->last_reviewed_on
+                ? (float) abs($this->dateOnly($uw->last_reviewed_on)->diffInDays($today))
+                : $s; // sin fecha: suponemos que se repasó cuando tocaba
+            $state = $fsrs->next($s, $d, $elapsed, $grade);
+        }
+        $days = $grade === 'again' ? 1 : $fsrs->interval($state['stability']);
+
+        return [$state, $days];
+    }
+
+    /** Nivel clásico equivalente a una estabilidad (para "dominadas" y fichas sin español). */
+    private function levelFor(float $stability): int
+    {
+        $level = 0;
+        foreach (config('vocab.intervals') as $i => $days) {
+            if ($stability >= $days) {
+                $level = $i;
+            }
+        }
+
+        return $level;
+    }
+
+    private function dateOnly(mixed $date): CarbonImmutable
+    {
+        $str = $date instanceof \DateTimeInterface ? $date->format('Y-m-d') : substr((string) $date, 0, 10);
+
+        return CarbonImmutable::parse($str, config('vocab.timezone'));
+    }
+
     /** Cuántos días pasarían con cada botón (para mostrarlo en la ficha). */
     public function previews(UserWord $uw): array
     {
+        if ($this->usesFsrs()) {
+            $today = $uw->user ? $this->today($uw->user) : CarbonImmutable::today(config('vocab.timezone'));
+            $out = [];
+            foreach (self::GRADES as $g) {
+                $out[$g] = $this->fsrsNext($uw, $g, $today)[1];
+            }
+
+            return $out;
+        }
         $max = count(config('vocab.intervals')) - 1;
 
         return [
@@ -169,9 +251,6 @@ class SrsService
             ];
         }
 
-        $last = $this->lastStudyDay($user);
-        $streakAlive = $last && $last->greaterThanOrEqualTo($today->subDay());
-
         return [
             'today' => $today->toDateString(),
             'learned' => (clone $learned)->count(),
@@ -179,7 +258,10 @@ class SrsService
             'ear_automatic' => (clone $learned)->where('ear_level', '>=', \App\Services\EarService::AUTOMATIC_LEVEL)->count(),
             'mastered' => (clone $learned)->where('level', '>=', config('vocab.mastered_level'))->count(),
             'total_words' => Word::whereNotNull('translation')->count(),
-            'streak' => $streakAlive ? $user->streak : 0,
+            'streak' => $this->streak($user, $today),
+            // Protectores: cada uno salva un día sin estudiar. Se gana uno cada 7 días de racha (máx. 2).
+            'streak_freezes' => (int) $user->streak_freezes,
+            'streak_protected' => $this->missedDays($user, $today) > 0 && $this->streak($user, $today) > 0,
             'forecast' => $forecast,
             'weak_sounds' => DB::table('phoneme_errors')
                 ->where('user_id', $user->id)
@@ -223,13 +305,47 @@ class SrsService
         return CarbonImmutable::parse(substr($date, 0, 10), config('vocab.timezone'));
     }
 
+    /** Días sin estudiar entre el último día de estudio y hoy (0 si estudió hoy o ayer). */
+    private function missedDays(User $user, CarbonImmutable $today): int
+    {
+        $last = $this->lastStudyDay($user);
+        if (! $last) {
+            return 0;
+        }
+
+        return max(0, (int) round($last->diffInDays($today, false)) - 1);
+    }
+
+    /**
+     * Racha actual. Sigue viva si estudió hoy o ayer, o si los días que faltó
+     * los cubren sus protectores (se gastan al volver a estudiar).
+     */
+    public function streak(User $user, CarbonImmutable $today): int
+    {
+        if (! $this->lastStudyDay($user)) {
+            return 0;
+        }
+
+        return $this->missedDays($user, $today) <= (int) $user->streak_freezes ? (int) $user->streak : 0;
+    }
+
     public function markStudied(User $user, CarbonImmutable $today): void
     {
         $last = $this->lastStudyDay($user);
         if ($last && $last->isSameDay($today)) {
             return;
         }
-        $user->streak = ($last && $last->isSameDay($today->subDay())) ? $user->streak + 1 : 1;
+        $missed = $this->missedDays($user, $today);
+        if ($last && $missed <= (int) $user->streak_freezes) {
+            $user->streak_freezes = (int) $user->streak_freezes - $missed;
+            $user->streak = (int) $user->streak + 1;
+        } else {
+            $user->streak = 1;
+        }
+        $every = (int) config('vocab.streak_freeze_every', 7);
+        if ($user->streak % $every === 0 && $user->streak_freezes < (int) config('vocab.streak_freeze_max', 2)) {
+            $user->streak_freezes++;
+        }
         $user->last_study_day = $today;
         $user->save();
     }

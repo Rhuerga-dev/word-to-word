@@ -275,6 +275,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .lvl-chip{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
 .streak-chip{color:var(--warn)}
 .streak-chip svg{width:14px;height:14px}
+.streak-chip .shield{margin-left:4px;font-weight:700}
+.stat .pg-delta{display:block}
+.pg-delta{font-size:12px;font-weight:700;color:var(--muted)}
+.pg-delta.up{color:var(--good)}
+.pg-delta.down{color:var(--warn)}
 @media (max-width:560px){ .brand .sub,.daypill{display:none} }
 
 /* Botones */
@@ -814,6 +819,7 @@ body:not([data-nav="progress"]) .grid{max-width:none}
           <label class="inl" for="speakGoal">Minutos hablando por día <input type="number" id="speakGoal" min="1" max="60" value="5"></label>
           <label class="inl" for="freelancePack">Vocabulario para clientes (freelance) <input type="checkbox" id="freelancePack"></label>
           <label class="inl" for="remOn">Recordatorio diario <input type="checkbox" id="remOn"></label>
+          <label class="inl" for="remAuto">Automático: a la hora en que sueles practicar <input type="checkbox" id="remAuto"></label>
           <label class="inl" for="remTime">Hora del recordatorio <input type="time" id="remTime" value="19:00"></label>
           <p class="note" id="remMsg"></p>
           <button id="nextDay" type="button">Adelantar un día (para probar)</button>
@@ -861,6 +867,8 @@ body:not([data-nav="progress"]) .grid{max-width:none}
             <div class="stat"><b id="sMastered">0</b><span>dominadas</span></div>
             <div class="stat"><b id="sStreak">0</b><span>días seguidos</span></div>
           </div>
+          <p class="note" id="sFreeze" hidden></p>
+          <p class="warnbox" id="sProtected" hidden></p>
           <p class="note" id="sLeft"></p>
         </div>
         <div class="panel">
@@ -913,11 +921,11 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 </div>
 
 <script src="/app/i18n.js?v=5"></script>
-<script src="/app/app.js?v=18"></script>
+<script src="/app/app.js?v=19"></script>
 <script src="/app/handsfree.js?v=1"></script>
 <script src="/app/lab.js?v=1"></script>
 <script src="/app/speak.js?v=10"></script>
-<script src="/app/progress.js?v=4"></script>
+<script src="/app/progress.js?v=5"></script>
 <script src="/app/today.js?v=7"></script>
 <script src="/app/mictest.js?v=3"></script>
 <script src="/app/boot.js?v=1"></script>

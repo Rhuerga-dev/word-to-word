@@ -31,6 +31,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'last_reminded_on' => 'date',
             'freelance_pack' => 'boolean',
             'reminder_enabled' => 'boolean',
+            'reminder_auto' => 'boolean',
+            'streak_freezes' => 'integer',
         ];
     }
 
@@ -62,6 +64,9 @@ class User extends Authenticatable implements MustVerifyEmail
                 'enabled' => (bool) $this->reminder_enabled,
                 'time' => $this->reminder_time,
                 'timezone' => $this->timezone,
+                // Automático: llega a su hora habitual de práctica (usual_time = null si aún no hay datos).
+                'auto' => (bool) $this->reminder_auto,
+                'usual_time' => $this->reminder_auto ? app(\App\Services\ReminderService::class)->usualTime($this) : null,
             ],
             'spanish' => app(\App\Services\SpanishService::class)->summary($this),
         ];

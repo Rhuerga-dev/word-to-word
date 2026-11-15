@@ -69,6 +69,8 @@ class ProgressService
                 'mastered' => $srsStats['mastered'],
                 'total' => $srsStats['total_words'],
                 'streak' => $srsStats['streak'],
+                'streak_freezes' => $srsStats['streak_freezes'],
+                'streak_protected' => $srsStats['streak_protected'],
                 'due' => $dueWords,
                 'by_level' => array_map(fn ($l) => (int) ($byLevel[$l] ?? 0), range(0, $levels)),
             ],

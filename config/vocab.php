@@ -10,6 +10,15 @@ return [
     // Intervalos de repaso en días según el nivel de la palabra (0..6).
     'intervals' => [1, 3, 7, 15, 30, 60, 120],
 
+    // Método de repaso: fsrs (aprende de cada alumno) o classic (los saltos de arriba).
+    // Para volver al de antes: VOCAB_SRS=classic en .env.
+    'srs' => env('VOCAB_SRS', 'fsrs'),
+    'fsrs' => ['retention' => 0.9, 'max_days' => 365],
+
+    // Protectores de racha: uno nuevo cada N días seguidos, hasta un máximo.
+    'streak_freeze_every' => 7,
+    'streak_freeze_max' => 2,
+
     // Nivel a partir del cual una palabra cuenta como "dominada".
     'mastered_level' => 4,
 
@@ -91,6 +100,15 @@ return [
         'azure_stt_hour' => (float) env('PRICE_AZURE_STT_HOUR', 1.00),
         'azure_assess_hour' => (float) env('PRICE_AZURE_ASSESS_HOUR', 1.30),
         'azure_tts_million_chars' => (float) env('PRICE_AZURE_TTS_M', 15.00),
+    ],
+
+    // Gateway de IA del panel (regla de Huerga Labs). Si HUERGA_AI_KEY está puesta, todo pasa por ahí;
+    // si no, se llama directo a Anthropic como antes. El agente "w2w" del panel debe ser solo-Claude.
+    'ai_gateway' => [
+        'key' => env('HUERGA_AI_KEY'),
+        'url' => env('HUERGA_AI_URL', 'http://127.0.0.1:8000/api/ai/chat'),
+        'agent' => env('HUERGA_AI_AGENT', 'w2w'),
+        'max_chars' => 8000,   // el gateway no acepta mensajes más largos
     ],
 
     'anthropic' => [

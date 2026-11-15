@@ -10,7 +10,7 @@ final todayProvider = FutureProvider<TodayData>((ref) async {
   final today = await ref.watch(todayRepositoryProvider).fetch();
   final reminder = ref.read(authControllerProvider).valueOrNull?.reminder;
   if (reminder != null) {
-    ref.read(reminderServiceProvider).sync(enabled: reminder.enabled, time: reminder.time, studiedToday: today.studied);
+    ref.read(reminderServiceProvider).sync(enabled: reminder.enabled, time: reminder.deviceTime, studiedToday: today.studied);
   }
   return today;
 });

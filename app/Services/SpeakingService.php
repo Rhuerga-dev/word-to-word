@@ -165,6 +165,60 @@ class SpeakingService
         ];
     }
 
+    /**
+     * Informe semanal de fluidez: últimos 7 días contra los 7 anteriores.
+     * Cada cifra trae "now" (esta semana) y "before" (la anterior) para mostrar si mejora.
+     */
+    public function weekly(User $user): array
+    {
+        $today = $this->srs->today($user);
+        $from = $today->subDays(6);
+        $prevFrom = $today->subDays(13);
+        $sessions = SpeakingSession::where('user_id', $user->id)
+            ->whereDate('day', '>=', $prevFrom->toDateString())->whereDate('day', '<=', $today->toDateString())->get();
+        [$now, $before] = $sessions->partition(fn (SpeakingSession $s) => $s->day->toDateString() >= $from->toDateString());
+
+        $sum = function ($group) {
+            $ms = $group->sum('speech_ms');
+            $min = $ms / 60000;
+            $words = $group->sum('words');
+            $reactTurns = $group->sum('reaction_turns');
+
+            return [
+                'minutes' => round($min, 1),
+                'sessions' => $group->where('words', '>', 0)->count(),
+                'days' => $group->where('speech_ms', '>', 0)->pluck('day')->map->toDateString()->unique()->count(),
+                'words' => (int) $words,
+                // Palabras por minuto mientras hablas (más = más fluido).
+                'wpm' => $words >= 3 && $ms > 0 ? (int) round($words / $min) : null,
+                // Segundos en empezar a contestar (menos = piensas menos en español).
+                'reaction' => $reactTurns ? round($group->sum('reaction_ms') / $reactTurns / 1000, 1) : null,
+                'pauses_per_min' => $min >= 0.5 ? round($group->sum('long_pauses') / $min, 1) : null,
+            ];
+        };
+
+        $mistakes = fn (string $col, $a, $b) => SpeakingMistake::where('user_id', $user->id)
+            ->whereDate($col, '>=', $a->toDateString())->whereDate($col, '<=', $b->toDateString())->count();
+
+        return [
+            'from' => $from->toDateString(),
+            'to' => $today->toDateString(),
+            'now' => $sum($now) + [
+                'mistakes_new' => $mistakes('created_at', $from, $today),
+                'mistakes_mastered' => $mistakes('mastered_on', $from, $today),
+            ],
+            'before' => $sum($before) + [
+                'mistakes_new' => $mistakes('created_at', $prevFrom, $from->subDay()),
+                'mistakes_mastered' => $mistakes('mastered_on', $prevFrom, $from->subDay()),
+            ],
+            // Errores que superaste esta semana (los últimos 3), para celebrarlo.
+            'conquered' => SpeakingMistake::where('user_id', $user->id)
+                ->whereDate('mastered_on', '>=', $from->toDateString())
+                ->latest('mastered_on')->limit(3)->get(['said', 'correct'])
+                ->map(fn ($m) => ['said' => $m->said, 'correct' => $m->correct])->all(),
+        ];
+    }
+
     /** Resumen al terminar una conversación. */
     public function summary(SpeakingSession $session): array
     {

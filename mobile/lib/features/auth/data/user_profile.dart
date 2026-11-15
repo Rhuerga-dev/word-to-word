@@ -2,13 +2,38 @@ import '../../../core/utils/json.dart';
 
 /// El recordatorio diario (la misma hora que en la web).
 class Reminder {
-  const Reminder({required this.enabled, required this.time, this.timezone});
+  const Reminder({required this.enabled, required this.time, this.timezone, this.auto = false, this.usualTime});
   final bool enabled;
   final String time;
   final String? timezone;
 
-  factory Reminder.fromJson(Map<String, dynamic> j) =>
-      Reminder(enabled: asBool(j['enabled']), time: asStringOrNull(j['time']) ?? '19:00', timezone: asStringOrNull(j['timezone']));
+  /// Automático: avisa a la hora en que sueles practicar (la calcula el servidor).
+  final bool auto;
+
+  /// Tu hora habitual ("HH:MM") o null si aún no hay datos (entonces se usa [time]).
+  final String? usualTime;
+
+  /// Margen tras la hora habitual, igual que el servidor (ReminderService::GRACE_MINUTES).
+  static const graceMinutes = 30;
+
+  /// La hora a la que el teléfono programa el aviso: hora habitual + 30 min si es automático y se conoce; si no, [time].
+  String get deviceTime {
+    final u = usualTime;
+    if (!auto || u == null) return time;
+    final p = u.split(':');
+    final h = int.tryParse(p.first), m = p.length > 1 ? int.tryParse(p[1]) : 0;
+    if (h == null || m == null) return time;
+    final at = (h * 60 + m + graceMinutes) % 1440;
+    return '${(at ~/ 60).toString().padLeft(2, '0')}:${(at % 60).toString().padLeft(2, '0')}';
+  }
+
+  factory Reminder.fromJson(Map<String, dynamic> j) => Reminder(
+        enabled: asBool(j['enabled']),
+        time: asStringOrNull(j['time']) ?? '19:00',
+        timezone: asStringOrNull(j['timezone']),
+        auto: asBool(j['auto']),
+        usualTime: asStringOrNull(j['usual_time']),
+      );
 }
 
 /// La escalera de español (GET /spanish o profile.spanish): cuánto español te da la app.

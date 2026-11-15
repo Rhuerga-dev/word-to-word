@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use App\Models\UserWord;
 use App\Notifications\StudyReminder;
+use App\Services\ReminderService;
 use App\Services\SrsService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -53,7 +54,8 @@ class SendStudyReminders extends Command
     public function isDue(User $user, SrsService $srs, int $windowHours): bool
     {
         $now = $this->localNow($user);
-        [$h, $m] = array_map('intval', explode(':', $user->reminder_time ?: '19:00'));
+        // Automático: a su hora habitual (+30 min); si no, la hora que eligió.
+        [$h, $m] = array_map('intval', explode(':', app(ReminderService::class)->sendTime($user)));
         $at = $now->setTime($h, $m);
 
         if ($now->lessThan($at) || $now->greaterThan($at->addHours($windowHours))) {
@@ -77,10 +79,10 @@ class SendStudyReminders extends Command
             ->count();
         $newDone = (int) DB::table('study_days')->where('user_id', $user->id)
             ->whereDate('day', $today)->value('new_count');
-        $last = $user->last_study_day ? CarbonImmutable::parse($user->last_study_day) : null;
-        $streak = $last && $last->greaterThanOrEqualTo($today->subDay()) ? (int) $user->streak : 0;
+        $streak = $srs->streak($user, $today);
+        $word = app(ReminderService::class)->wordOfToday($user);
 
-        return new StudyReminder($reviews, max(0, $user->daily_new - $newDone), $streak);
+        return new StudyReminder($reviews, max(0, $user->daily_new - $newDone), $streak, $word);
     }
 
     private function localNow(User $user): CarbonImmutable
