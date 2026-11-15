@@ -20,7 +20,7 @@ _Última actualización: 2026-11-15_
 - (15/11) Recordatorio automático: hora habitual (mediana del primer XP, 21 días, mín. 3) + 30 min, y dice la palabra que toca.
 - (15/11) Informe semanal de fluidez: `GET /api/speaking/weekly`, tarjeta «Tu semana hablando» en web y app.
 - (15/11) `metrics:snapshot` cada hora → `storage/app/metrics.json`; el panel lo muestra en la tarjeta de W2W.
-- (15/11) IA por el gateway del panel si existe `HUERGA_AI_KEY` (si no, directo a Anthropic como antes; lotes > 8.000 letras van directo).
+- (15/11) IA por el **gateway del panel** (agente `w2w`, solo Claude; clave «Word to Word» con límite 2000/día). Probado en vivo: escenas AID y conversación de 3 turnos. Si el panel cae, usa la clave directa; si llega al límite (429), no. Lotes > 8.000 letras van directo.
 - Manos libres sin bucles: número de opción, nota hard/good/easy (también en español y con errores de oído) y sí/no; tras 3 fallos pide tocar la pantalla.
 - Profesión y meta del alumno: escenarios y temas según su trabajo (12 profesiones; las de developer solo para «tech»).
 - (13/11) Las traducciones que hace la IA sola (`i18n:translate`) ya no tocan `lang/en.json`: van a `storage/app/i18n/` (fuera de git), así no pausan la publicación. Para fijarlas en git: `php artisan i18n:promote` y commit.
@@ -36,7 +36,6 @@ _Última actualización: 2026-11-15_
 
 ## Pendiente (Reynaldo)
 - [ ] Mirar la app nativa en el iPhone Air (instalada el 15/11): entrar, Progreso, Ajustes y un recordatorio.
-- [ ] Gateway de IA: en el panel crear el agente `w2w` (solo Claude, sin modelo local, max_tokens ≥ 4000, instrucciones: «Sigue exactamente las instrucciones del mensaje y responde solo lo pedido») y una clave de app; poner `HUERGA_AI_KEY` en el .env de W2W.
 - [ ] Abrir la app Android 2 veces para que baje el parche 4 y mirar Progreso y Ajustes (no probado en teléfono real).
 - [ ] Confirmar que al iPhone le llegó el recordatorio de las 19:00 del 13/11 (el servidor lo envió sin error).
 - [ ] Decidir si borrar `_to_delete/` (2 copias viejas de index.html del 31/10, fuera de git).
@@ -44,7 +43,6 @@ _Última actualización: 2026-11-15_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
-- [ ] Cuando haya clave del gateway: probar una conversación real por el gateway (solo probado con tests).
 - [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
 - [ ] (opcional) Seguir partiendo `public/app/app.js` (~1100 líneas): niveles, conversación.
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
