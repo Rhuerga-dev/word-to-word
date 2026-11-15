@@ -3,16 +3,24 @@
 > Memoria del proyecto entre chats. **Léelo antes de empezar** y actualízalo al terminar.
 > Lo mantiene al día la bitácora nocturna y el cierre de cada sesión.
 
-_Última actualización: 2026-11-13_
+_Última actualización: 2026-11-15_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1 (elegir profesión), 2 (fuentes del tema) y 3 (pestaña Ajustes y cargando propio, 13/11) publicados.
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3 y **4 (15/11: protector de racha, informe semanal, recordatorio automático)** publicados.
+- Tests: servidor 182 ✓, app 54 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
+- Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: versión web (no hay app nativa).
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (15/11) Protector de racha: salva un día sin estudiar; 1 nuevo cada 7 días de racha (máx. 2). Migración del 15/11 aplicada (solo columnas nuevas; copia previa en `~/Backups/w2w/`).
+- (15/11) FSRS (`app/Services/Fsrs.php`): cada palabra guarda stability/difficulty; las viejas arrancan desde su nivel.
+- (15/11) Recordatorio automático: hora habitual (mediana del primer XP, 21 días, mín. 3) + 30 min, y dice la palabra que toca.
+- (15/11) Informe semanal de fluidez: `GET /api/speaking/weekly`, tarjeta «Tu semana hablando» en web y app.
+- (15/11) `metrics:snapshot` cada hora → `storage/app/metrics.json`; el panel lo muestra en la tarjeta de W2W.
+- (15/11) IA por el gateway del panel si existe `HUERGA_AI_KEY` (si no, directo a Anthropic como antes; lotes > 8.000 letras van directo).
 - Manos libres sin bucles: número de opción, nota hard/good/easy (también en español y con errores de oído) y sí/no; tras 3 fallos pide tocar la pantalla.
 - Profesión y meta del alumno: escenarios y temas según su trabajo (12 profesiones; las de developer solo para «tech»).
 - (13/11) Las traducciones que hace la IA sola (`i18n:translate`) ya no tocan `lang/en.json`: van a `storage/app/i18n/` (fuera de git), así no pausan la publicación. Para fijarlas en git: `php artisan i18n:promote` y commit.
@@ -27,16 +35,24 @@ _Última actualización: 2026-11-13_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **iPhone (app nativa)**: iniciar sesión con tu Apple ID en Xcode → Ajustes → Cuentas (equipo PTJG6N43MX). Sin eso no se puede firmar; luego Claude compila e instala en el iPhone Air (R3Y).
+- [ ] Gateway de IA: en el panel crear el agente `w2w` (solo Claude, sin modelo local, max_tokens ≥ 4000, instrucciones: «Sigue exactamente las instrucciones del mensaje y responde solo lo pedido») y una clave de app; poner `HUERGA_AI_KEY` en el .env de W2W.
+- [ ] Abrir la app Android 2 veces para que baje el parche 4 y mirar Progreso y Ajustes (no probado en teléfono real).
 - [ ] Confirmar que al iPhone le llegó el recordatorio de las 19:00 del 13/11 (el servidor lo envió sin error).
 - [ ] Decidir si borrar `_to_delete/` (2 copias viejas de index.html del 31/10, fuera de git).
 - [ ] Abrir la app Android 2 veces para que baje el parche 3 y mirar la pestaña Ajustes y el nuevo «cargando» (no probado en teléfono real).
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Cuando haya clave del gateway: probar una conversación real por el gateway (solo probado con tests).
+- [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
 - [ ] (opcional) Seguir partiendo `public/app/app.js` (~1100 líneas): niveles, conversación.
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (15/11) Prioridad: que la gente vuelva y medirlo antes que añadir funciones. MySQL cuando haya ~100 usuarios activos.
+- (15/11) FSRS activado para todos, con interruptor para volver al clásico. Gateway de IA sí (cuando exista la clave).
+- (15/11) iPhone: app nativa instalada con Xcode (además de la web).
 - Parches de Shorebird: solo iconos de Material que ya estaban en la versión de Play (la fuente de iconos va recortada). Un icono nuevo = versión nueva en Play, o elegir uno que ya se use.
 - Estilo Duolingo: sesión diaria guiada, camino por unidades, XP; enfoque en hablar con fluidez.
 - Abierto a otros usuarios, no solo para Reynaldo.
