@@ -8,14 +8,18 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../network/api_client.dart';
 import '../../core/l10n/tr.dart';
 
 /// Audio de la app: la voz natural (TTS del servidor) y el micrófono.
 ///
-/// En el iPhone se usa la categoría "play and record" permitiendo Bluetooth A2DP: con AirPods puestos, la voz sale
-/// por los AirPods en alta calidad y se graba con el micrófono del iPhone (sin pasar a "modo llamada").
+/// En el iPhone se usa la categoría "play and record". Con «Micrófono de los AirPods» (por defecto) se permite
+/// el Bluetooth de llamada (HFP): se graba con los AirPods aunque el iPhone esté en el bolsillo, y la voz suena
+/// con calidad de llamada. Apagado: voz en alta calidad (A2DP) y se graba con el micrófono del iPhone.
+/// Solo esta clase configura el audio de iOS: la librería de grabación no lo toca (antes lo cambiaba al grabar
+/// y el iPhone saltaba de modo entre hablar y escuchar).
 /// En Android igual: la grabación NO activa el Bluetooth de llamada (SCO). Si lo activara, los auriculares
 /// pasarían a modo llamada: baja el volumen y la calidad, y los AirPods quitan la cancelación de ruido.
 class AppAudio {
@@ -28,19 +32,57 @@ class AppAudio {
   bool _configured = false;
   Completer<void>? _stopRec;
 
+  static const _micKey = 'airpods_mic';
+  final _storage = const FlutterSecureStorage();
+  bool? _airPodsMic;
+
+  /// ¿Grabar con el micrófono de los AirPods? (solo iPhone; por defecto sí).
+  Future<bool> airPodsMic() async {
+    if (!Platform.isIOS) return false;
+    if (_airPodsMic == null) {
+      try {
+        _airPodsMic = (await _storage.read(key: _micKey)) != '0';
+      } catch (_) {
+        _airPodsMic = true;
+      }
+    }
+    return _airPodsMic!;
+  }
+
+  Future<void> setAirPodsMic(bool on) async {
+    _airPodsMic = on;
+    try {
+      await _storage.write(key: _micKey, value: on ? '1' : '0');
+    } catch (_) {}
+    _configured = false;
+    await _configure();
+  }
+
   Future<void> _configure() async {
     if (_configured) return;
     final session = await AudioSession.instance;
+    var options = AVAudioSessionCategoryOptions.allowBluetoothA2dp | AVAudioSessionCategoryOptions.defaultToSpeaker;
+    if (Platform.isIOS) {
+      // La app manda en la sesión de audio; la grabadora no la cambia al empezar a grabar.
+      try {
+        await _rec.ios?.manageAudioSession(false);
+      } catch (_) {}
+      if (await airPodsMic()) options = options | AVAudioSessionCategoryOptions.allowBluetooth;
+    }
     await session.configure(AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playAndRecord,
-      avAudioSessionCategoryOptions:
-          AVAudioSessionCategoryOptions.allowBluetoothA2dp | AVAudioSessionCategoryOptions.defaultToSpeaker,
+      avAudioSessionCategoryOptions: options,
       avAudioSessionMode: AVAudioSessionMode.defaultMode,
       androidAudioAttributes: const AndroidAudioAttributes(
         contentType: AndroidAudioContentType.speech,
         usage: AndroidAudioUsage.media,
       ),
     ));
+    if (Platform.isIOS) {
+      try {
+        await session.setActive(true);
+      } catch (_) {}
+    }
     _configured = true;
   }
 
@@ -175,6 +217,19 @@ class Recording {
   /// Hubo algo por encima del ruido aunque no llegara al umbral: puede ser tu voz, hablando bajo.
   bool get maybeVoice => !heard && peakDb > floorDb + 6 && peakDb > -55;
 }
+
+/// Interruptor «Micrófono de los AirPods» de Ajustes (solo iPhone).
+class AirPodsMicNotifier extends AsyncNotifier<bool> {
+  @override
+  Future<bool> build() => ref.read(audioProvider).airPodsMic();
+
+  Future<void> set(bool on) async {
+    state = AsyncData(on);
+    await ref.read(audioProvider).setAirPodsMic(on);
+  }
+}
+
+final airPodsMicProvider = AsyncNotifierProvider<AirPodsMicNotifier, bool>(AirPodsMicNotifier.new);
 
 final audioProvider = Provider<AppAudio>((ref) {
   final audio = AppAudio(ref.watch(apiProvider));

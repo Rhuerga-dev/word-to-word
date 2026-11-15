@@ -10,11 +10,12 @@ _Última actualización: 2026-11-15_
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3 y **4 (15/11: protector de racha, informe semanal, recordatorio automático)** publicados.
 - Tests: servidor 182 ✓, app 54 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
-- iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales).
+- iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (15/11) iPhone: interruptor «Micrófono de los AirPods» en Ajustes (encendido por defecto): graba por los AirPods (HFP). La app es la única que configura el audio de iOS (`record` con `manageAudioSession(false)`); antes la grabadora lo cambiaba al grabar. Android sin cambios.
 - (15/11) Protector de racha: salva un día sin estudiar; 1 nuevo cada 7 días de racha (máx. 2). Migración del 15/11 aplicada (solo columnas nuevas; copia previa en `~/Backups/w2w/`).
 - (15/11) FSRS (`app/Services/Fsrs.php`): cada palabra guarda stability/difficulty; las viejas arrancan desde su nivel.
 - (15/11) Recordatorio automático: hora habitual (mediana del primer XP, 21 días, mín. 3) + 30 min, y dice la palabra que toca.
@@ -35,7 +36,8 @@ _Última actualización: 2026-11-15_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
-- [ ] Mirar la app nativa en el iPhone Air (instalada el 15/11): entrar, Progreso, Ajustes y un recordatorio.
+- [ ] Probar en el iPhone Air con los AirPods puestos y el iPhone en el bolsillo (conversación y manos libres). No probado aún.
+- [ ] Mirar la app nativa en el iPhone Air (instalada el 15/11): Progreso, Ajustes y un recordatorio.
 - [ ] Abrir la app Android 2 veces para que baje el parche 4 y mirar Progreso y Ajustes (no probado en teléfono real).
 - [ ] Confirmar que al iPhone le llegó el recordatorio de las 19:00 del 13/11 (el servidor lo envió sin error).
 - [ ] Decidir si borrar `_to_delete/` (2 copias viejas de index.html del 31/10, fuera de git).

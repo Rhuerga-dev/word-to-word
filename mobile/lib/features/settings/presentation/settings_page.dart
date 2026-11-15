@@ -1,8 +1,11 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/tr.dart';
 import '../../../core/services/airpods_service.dart';
+import '../../../core/services/audio_service.dart';
 import '../../../core/services/reminder_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/user_profile.dart';
@@ -34,6 +37,10 @@ class SettingsPage extends ConsumerWidget {
       if (AirPodsService.supported) ...[
         _h(tr('AirPods')),
         const _AirPodsCard(),
+      ],
+      if (Platform.isIOS) ...[
+        _h(tr('AirPods')),
+        const _AirPodsMicCard(),
       ],
       const SizedBox(height: 28),
       Center(
@@ -292,6 +299,26 @@ class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
             ),
           ),
       ]),
+    );
+  }
+}
+
+/// iPhone: grabar con el micrófono de los AirPods (para practicar con el iPhone en el bolsillo).
+class _AirPodsMicCard extends ConsumerWidget {
+  const _AirPodsMicCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final on = ref.watch(airPodsMicProvider).valueOrNull ?? true;
+    return Card(
+      child: SwitchListTile(
+        title: Text(tr('Micrófono de los AirPods')),
+        subtitle: Text(on
+            ? tr('Te oye por los AirPods aunque el iPhone esté en el bolsillo. La voz de la app suena como una llamada.')
+            : tr('Te oye por el micrófono del iPhone. La voz de la app suena en alta calidad.')),
+        value: on,
+        onChanged: (v) => ref.read(airPodsMicProvider.notifier).set(v),
+      ),
     );
   }
 }
