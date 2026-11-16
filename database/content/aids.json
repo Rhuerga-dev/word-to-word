@@ -1,0 +1,2502 @@
+{
+ "scope": [
+  "\"Escoba\": escoba gigante barriendo hasta el borde del proyecto.",
+  "\"Es copa\": copa enorme que mide el alcance del proyecto.",
+  "\"Escopeta\": escopeta dispara y marca hasta dónde llega el proyecto."
+ ],
+ "estimate": [
+  "\"Es tímida\": calculadora tímida susurra el presupuesto escondida.",
+  "\"Esti-mate\": mate argentino hirviendo con números de presupuesto flotando.",
+  "\"Este meto\": meto billetes en un sobre calculando el precio."
+ ],
+ "budget": [
+  "\"Bache\": cliente tira su presupuesto dentro de un bache.",
+  "\"Bayeta\": bayeta exprimida suelta las monedas que el cliente puede pagar.",
+  "\"Va a yet\": cohete-cartera vuela con el presupuesto del cliente."
+ ],
+ "fixed price": [
+  "\"Fíjate, precio\": etiqueta de precio clavada con martillo, inamovible.",
+  "\"Fix price\": precio pegado con superglue al producto, nadie lo cambia.",
+  "\"Fixe\": pez fijo en hielo con su precio congelado."
+ ],
+ "hourly rate": [
+  "\"Aurelio, reit\": Aurelio ríe cobrando por cada tic del reloj.",
+  "\"Aula reina\": reina cobra una moneda por cada hora de clase.",
+  "\"Ojal y ratas\": ratas cobran tarifa por hora cosiendo ojales."
+ ],
+ "milestone": [
+  "\"Mil estón\": mil piedras gigantes marcan cada etapa con pago.",
+  "\"Mi los tonos\": piedra en el camino escupe dinero al llegar.",
+  "\"Mil es toma\": mil tomates en un hito de piedra pagando."
+ ],
+ "deliverable": [
+  "\"Deli verable\": repartidor de deli entrega un paquete brillante.",
+  "\"De libra\": libra de queso entregada como producto final.",
+  "\"Delirable\": cartero delirando entrega cajas que cantan."
+ ],
+ "timeline": [
+  "\"Tai mlain\": tailandés camina sobre una línea de calendario.",
+  "\"Tim lain\": Tim cuelga fechas en una cuerda de tender.",
+  "\"Taima línea\": línea de tiempo con relojes colgando como ropa."
+ ],
+ "requirements": [
+  "\"Recuerdamen\": cura recuerda la lista de requisitos en latín.",
+  "\"Requeté mentas\": mentas gigantes exigen requisitos con megáfono.",
+  "\"Reque arma\": arma de papel con requisitos escritos disparando."
+ ],
+ "proposal": [
+  "\"Pro posal\": pozo profesional escupe propuestas de matrimonio.",
+  "\"Propósal\": sal propone casarse con la pimienta.",
+  "\"Pro pósito\": mago saca una propuesta brillante de su sombrero."
+ ],
+ "feature": [
+  "\"Fichur\": ficha de dominó con botones y funciones nuevas.",
+  "\"Fi chura\": chura de feria con funciones, luces y alarmas.",
+  "\"Fita chur\": cinta métrica con mil características brillando."
+ ],
+ "phase": [
+  "\"Feis\": cara gigante cambiando de fase como la luna.",
+  "\"Fase\": luna en fases entra por etapas al proyecto.",
+  "\"Feíto\": monstruo feíto sube escalera, fase por fase."
+ ],
+ "feedback": [
+  "\"Fid bac\": fideos regresan hablando con su opinión del plato.",
+  "\"Fi dback\": eco devuelve comentarios gritando desde una cueva.",
+  "\"Fideo vaca\": vaca come fideos y da su opinión mugiendo."
+ ],
+ "revision": [
+  "\"Re visión\": ojo gigante con lupa revisa cada cambio.",
+  "\"Revisión\": mecánico revisa el código con una llave inglesa.",
+  "\"Rebis yon\": rebeca de lana pide cambios a gritos."
+ ],
+ "invoice": [
+  "\"In voz\": factura gigante cantada con voz de ópera.",
+  "\"Invo ice\": factura congelada en un cubo de hielo.",
+  "\"Envoys\": enviados reales entregan facturas en bandeja de plata."
+ ],
+ "deposit": [
+  "\"De pozito\": dinero cae en un pocito antes de empezar.",
+  "\"Depósito\": depósito de agua lleno de billetes de anticipo.",
+  "\"Deposita\": paloma deposita monedas en la mano del programador."
+ ],
+ "contract": [
+  "\"Con tract\": tractor firma un contrato con su pala.",
+  "\"Contra acto\": actores firman contrato sobre el escenario.",
+  "\"Contrata\": rata con corbata firma contrato con pluma."
+ ],
+ "deploy": [
+  "\"De ploy\": pollo lanza la app al servidor en paracaídas.",
+  "\"Desplomo\": app se desploma suavemente sobre el servidor en línea.",
+  "\"Diploma\": diploma desplegado como bandera sobre el servidor."
+ ],
+ "launch": [
+  "\"Lonche\": lonchera disparada como cohete en el lanzamiento.",
+  "\"Lancha\": lancha lanzada al mar con fuegos artificiales.",
+  "\"Lanza\": lanza gigante lanzada inaugura la app."
+ ],
+ "bug": [
+  "\"Bag\": bolsa llena de cucarachas rompe el programa.",
+  "\"Bache\": coche de código cae en un bache, error.",
+  "\"Bago\": vago bicho dormido en el código causa errores."
+ ],
+ "screenshot": [
+  "\"Escrin chot\": escribiente fotografía la pantalla con un chupito.",
+  "\"Es crin\": crin de caballo fotografiada saliendo de la pantalla.",
+  "\"Es grin chut\": duende verde dispara foto a la pantalla."
+ ],
+ "maintenance": [
+  "\"Mente nanzas\": mente con naranjas aceitando una máquina vieja.",
+  "\"Mantén ens\": mantienes engrasado el robot cada domingo.",
+  "\"Mein tenencia\": mecánico sostiene una tenaza arreglando el servidor."
+ ],
+ "support": [
+  "\"Sopor\": soporte gigante sostiene a un programador dormido.",
+  "\"Sapo port\": sapo sostiene el puerto con sus patas.",
+  "\"Su porte\": portero amable carga tus problemas en hombros."
+ ],
+ "delay": [
+  "\"Di lei\": Lei llega tarde con un reloj derretido.",
+  "\"Del eh\": caracol saluda “eh” llegando muy retrasado.",
+  "\"De ley\": juez multa al tren por su retraso."
+ ],
+ "priority": [
+  "\"Prioridad\": sirena roja corona lo primero de la lista.",
+  "\"Pray oriti\": monje reza para que lo urgente vaya primero.",
+  "\"Prior\": prior del convento salta la fila primero."
+ ],
+ "urgent": [
+  "\"Ur yent\": ambulancia con sirena aullando “¡urgente!”.",
+  "\"Urge ente\": ente fantasma urge a todos con un pito.",
+  "\"Herjen\": hierro rojo ardiendo, hay que moverlo ya."
+ ],
+ "available": [
+  "\"Avei la bol\": ave con bolso dice “estoy libre”.",
+  "\"Ave lavable\": ave lavable disponible en la vitrina de la tienda.",
+  "\"A vale\": letrero verde “¡vale, disponible!” encima del taxi."
+ ],
+ "schedule a call": [
+  "\"Esquejul\": esqueje de planta anota la llamada en agenda.",
+  "\"Es kedule\": calendario con teléfono pegado en cada día.",
+  "\"Esqueleto, col\": esqueleto agenda llamada con una col."
+ ],
+ "check-in": [
+  "\"Chequín\": cheque pequeño se reúne cinco minutos con el jefe.",
+  "\"Chiquín\": chiquito toca la puerta: “¿cómo vamos?”.",
+  "\"Check\": paloma marca un visto en la reunión rápida."
+ ],
+ "follow up": [
+  "\"Fa lo ap\": perro sigue y vuelve a ladrar cada día.",
+  "\"Falo a\": falucho barco persigue el correo pendiente.",
+  "\"Folio up\": folio salta otra vez preguntando “¿y qué pasó?”."
+ ],
+ "get back to you": [
+  "\"Gué bac\": vaca guarda tu pregunta para responder mañana.",
+  "\"Ge bak tu yu\": bumerán con tu respuesta regresa más tarde.",
+  "\"Que vacas tú\": vacas prometen responder después de pastar."
+ ],
+ "on the same page": [
+  "\"On de seim peich\": dos personas leyendo la misma página abrazadas.",
+  "\"Ande sin peich\": músicos tocando en sintonía en una sola partitura.",
+  "\"Son de pache\": todos bailan el mismo son, coordinados."
+ ],
+ "at no extra cost": [
+  "\"At no extra\": camarero regala postre sin cobrar extra.",
+  "\"Ate, no extra\": ates de guayaba gratis con el combo.",
+  "\"Nos extra coste\": costal vacío sin precio adicional."
+ ],
+ "after delivery": [
+  "\"Afta deliveri\": repartidor descansa después de entregar el paquete.",
+  "\"Al fter\": tras entregar la pizza, el cliente baila.",
+  "\"Atar delivery\": atan el paquete entregado ya en tu puerta."
+ ],
+ "as soon as possible": [
+  "\"Asún\": asunto urgente cohete sale lo antes posible.",
+  "\"As sun\": as de cartas corre al sol rapidísimo.",
+  "\"Asunasapó\": sapo saltando rapidísimo a toda prisa."
+ ],
+ "let me know": [
+  "\"Le mi no\": le susurro “avísame” a un mimo.",
+  "\"Lemi nou\": limón con teléfono avisa cuando esté listo.",
+  "\"Lemino\": lémur levanta mano para avisarte."
+ ],
+ "sounds good": [
+  "\"Saunds gud\": sauna suena bien, todos aplauden.",
+  "\"Sanz bueno\": Sanz canta “me parece bien” con guitarra.",
+  "\"Sonsgu\": sonido de gong aprueba con pulgar arriba."
+ ],
+ "works for me": [
+  "\"Guorks for mi\": horca de jardín dice “me viene bien”.",
+  "\"Uorks\": orcas asienten felices con el horario.",
+  "\"Work for mi\": calendario sonríe y acepta la cita."
+ ],
+ "take your time": [
+  "\"Tequiur taim\": tequila lento, tómate tu tiempo bebiendo.",
+  "\"Teki yor\": tortuga con reloj dice “sin prisa”.",
+  "\"Te quiero, taim\": te quiero, tómate tu tiempo, dice abuela."
+ ],
+ "up and running": [
+  "\"Ap and raning\": app corriendo en caminadora, ya funciona.",
+  "\"A pan rani\": pan con piernas corre feliz, funcionando.",
+  "\"Apanranin\": rana arranca motor, todo funcionando."
+ ],
+ "first version": [
+  "\"Ferst vershon\": primer borrador sale del horno, aún tibio.",
+  "\"Fresca versión\": versión recién nacida en cuna, la primera.",
+  "\"Ferst\": fresa número uno estrena su versión."
+ ],
+ "time": [
+  "\"Taima\": abuela Taima congela el tiempo con un reloj gigante.",
+  "\"Tai\": maestro de tai chi detiene las agujas del reloj.",
+  "\"Tame\": tamal con reloj suena cada vez que lo muerdes."
+ ],
+ "people": [
+  "\"Pipol\": lluvia de pipas cae sobre una multitud de personas.",
+  "\"Pipo\": payaso Pipo aplastado por mil personas en el metro.",
+  "\"Pi pul\": pulpo reparte paraguas a toda la gente."
+ ],
+ "way": [
+  "\"Güey\": güey mexicano señala el camino con un taco.",
+  "\"Huey\": huevo rueda marcando el camino correcto.",
+  "\"Gué\": gaviota dibuja en el cielo la manera de volar."
+ ],
+ "day": [
+  "\"Dei\": dedo gigante enciende el sol cada día.",
+  "\"Dey\": deidad abre cortinas y empieza el día.",
+  "\"Dé\": letra D sonriente sale como el sol del día."
+ ],
+ "thing": [
+  "\"Zing\": una cosa misteriosa hace ¡zing! dentro de una caja.",
+  "\"Tin\": cosa rara de lata tintinea en el cajón.",
+  "\"Ting\": timbre extraño, nadie sabe qué cosa es."
+ ],
+ "life": [
+  "\"Laif\": lápiz mágico dibuja una flor que cobra vida.",
+  "\"Lai\": laicos bailan celebrando la vida en la plaza.",
+  "\"Lay\": papas Lay's brotan como semillas llenas de vida."
+ ],
+ "world": [
+  "\"Guorld\": gorila abraza el mundo entero como pelota.",
+  "\"Huel\": huele todo el mundo a pan caliente.",
+  "\"Gord\": gordo se sienta sobre el globo terráqueo."
+ ],
+ "work": [
+  "\"Guork\": orco con casco trabajando en una obra.",
+  "\"Orca\": orca con corbata trabaja en una oficina.",
+  "\"Uorc\": huerco sudando con una pala en el trabajo."
+ ],
+ "know": [
+  "\"Nou\": nuez gigante con gafas sabe todas las respuestas.",
+  "\"Ño\": ñoño sabelotodo levanta la mano primero.",
+  "\"Noé\": Noé conoce a cada animal del arca."
+ ],
+ "think": [
+  "\"Zinc\": cabeza de zinc echa humo de tanto pensar.",
+  "\"Tinc\": tinta brota de la frente al pensar.",
+  "\"Fink\": pinzón con mano en la barbilla pensando."
+ ],
+ "take": [
+  "\"Teik\": taco gigante tomado con pinzas y llevado.",
+  "\"Té\": tomas el té y te llevas la tetera.",
+  "\"Tequi\": tequila tomado de un trago por un cactus."
+ ],
+ "want": [
+  "\"Guant\": guante gigante quiere agarrarlo todo.",
+  "\"Juan\": Juan llora porque quiere ese helado.",
+  "\"Guanto\": guantera repleta de cosas que quiero."
+ ],
+ "give": [
+  "\"Guiv\": guiño de abuela y te da un caramelo.",
+  "\"Gif\": gif animado te da regalos sin parar.",
+  "\"Guía\": guía turística da globos a todos."
+ ],
+ "find": [
+  "\"Faind\": fan encuentra un tesoro debajo de la cama.",
+  "\"Fin\": al fin encuentro las llaves en la nevera.",
+  "\"Faisán\": faisán encuentra un anillo en la hierba."
+ ],
+ "tell": [
+  "\"Tel\": teléfono cuenta chismes a gritos.",
+  "\"Tela\": tela con boca cuenta cuentos de hadas.",
+  "\"Tele\": tele vieja te dice secretos al oído."
+ ],
+ "ask": [
+  "\"Asc\": ascensor parlante pregunta “¿a qué piso?”.",
+  "\"Asco\": cara de asco preguntando qué es esto.",
+  "\"As\": as de corazones pide un favor de rodillas."
+ ],
+ "feel": [
+  "\"Fil\": filete siente cosquillas en el plato.",
+  "\"Fiel\": perro fiel siente tu tristeza y llora.",
+  "\"Fila\": fila de pingüinos siente frío."
+ ],
+ "try": [
+  "\"Trai\": tren intenta subir una montaña de azúcar.",
+  "\"Trae\": trae intenta volar con alas de papel.",
+  "\"Trigo\": trigo intenta crecer sobre asfalto."
+ ],
+ "leave": [
+  "\"Lif\": lima se va dejando la puerta abierta.",
+  "\"Lío\": lío se va dejando la casa destrozada.",
+  "\"Liv\": libélula se marcha dejando una nota."
+ ],
+ "need": [
+  "\"Nid\": nido vacío necesita pajaritos urgentemente.",
+  "\"Ni\": ni una gota, necesito agua en el desierto.",
+  "\"Nidia\": Nidia necesita un abrazo enorme."
+ ],
+ "become": [
+  "\"Bicam\": bicampeón se convierte en sapo al ganar.",
+  "\"Vi cama\": vi la cama volverse barco de vela.",
+  "\"Bi com\": bicho se vuelve mariposa en la cómoda."
+ ],
+ "seem": [
+  "\"Sim\": tarjeta SIM parece una galleta, alguien la muerde.",
+  "\"Simio\": simio con corbata parece banquero.",
+  "\"Sin\": sin gafas, el abuelo parece fantasma."
+ ],
+ "keep": [
+  "\"Kip\": kiwi guarda monedas en su bolsillo peludo.",
+  "\"Quipu\": quipu inca guarda secretos en sus nudos.",
+  "\"Kepi\": pirata con kepí se queda con el cofre."
+ ],
+ "begin": [
+  "\"Biguín\": pingüino dispara pistola: ¡empieza la carrera!",
+  "\"Begoña\": Begoña empieza a bailar antes que nadie.",
+  "\"Vigín\": vigilante empieza la ronda tocando silbato."
+ ],
+ "help": [
+  "\"Jelp\": jalea pega una taza rota para ayudar.",
+  "\"Help\": Beatles en bote piden ayuda cantando.",
+  "\"Gelp\": gelatina salvavidas rescata a un náufrago."
+ ],
+ "show": [
+  "\"Chou\": showman muestra un conejo saliendo del sombrero.",
+  "\"Chu chu\": tren chu chu presenta un programa de televisión.",
+  "\"Chollo\": vendedor muestra un chollo en vitrina con luces."
+ ],
+ "hear": [
+  "\"Jir\": jirafa oye con orejas gigantes de elefante.",
+  "\"Jía\": tía con trompetilla oye llover.",
+  "\"Hiro\": héroe con orejas de conejo escucha todo."
+ ],
+ "play": [
+  "\"Plei\": plato juega al fútbol en la cocina.",
+  "\"Playa\": en la playa todos juegan y tocan tambores.",
+  "\"Pleito\": pleito resuelto jugando al ajedrez."
+ ],
+ "run": [
+  "\"Ran\": rana con zapatillas corre una maratón.",
+  "\"Ron\": botella de ron dirige la orquesta corriendo.",
+  "\"Rancho\": ranchero corre detrás de sus vacas."
+ ],
+ "move": [
+  "\"Muv\": mueble se muda solo de casa.",
+  "\"Mu\": vaca muge empujando el sofá.",
+  "\"Muve\": maleta con patas se mueve sola."
+ ],
+ "believe": [
+  "\"Biliv\": bilis verde cree en fantasmas.",
+  "\"Bili\": niño Bili cree en dragones bajo la cama.",
+  "\"Vi libro\": libro sagrado flota y todos creen."
+ ],
+ "bring": [
+  "\"Bring\": brinco y te traigo el pastel saltando.",
+  "\"Brindis\": tío trae copas para el brindis.",
+  "\"Brincos\": canguro trae la compra a brincos."
+ ],
+ "happen": [
+  "\"Japen\": japonés mira pasar un ovni.",
+  "\"Jabón\": jabón resbala y ocurre un accidente.",
+  "\"Hapen\": hipopótamo aparece y algo pasa."
+ ],
+ "write": [
+  "\"Rait\": rata escribe poemas con pluma.",
+  "\"Raid\": spray Raid escribe en la pared.",
+  "\"Rayo\": rayo escribe tu nombre en el cielo."
+ ],
+ "provide": [
+  "\"Probaid\": proveedor llega con camiones de pan.",
+  "\"Provida\": Provida reparte bebidas gratis.",
+  "\"Pro vid\": vid gigante da uvas a todos."
+ ],
+ "sit": [
+  "\"Sit\": sitio vacío, el rey se sienta.",
+  "\"Si\": sí, me siento en un trono de queso.",
+  "\"Cita\": en la cita, ambos se sientan en un banco."
+ ],
+ "stand": [
+  "\"Estand\": stand de feria con gente de pie.",
+  "\"Estante\": estante soporta un elefante sin caerse.",
+  "\"Están\": están de pie todo el día, como estatuas."
+ ],
+ "lose": [
+  "\"Lus\": luz se pierde en el bosque oscuro.",
+  "\"Lucía\": Lucía pierde su zapato en la playa.",
+  "\"Lusa\": loca lusa pierde las llaves en la sopa."
+ ],
+ "pay": [
+  "\"Pei\": pez paga con escamas de oro.",
+  "\"Pay\": pay de manzana usado para pagar la cuenta.",
+  "\"Peine\": peine pagado con monedas de chocolate."
+ ],
+ "meet": [
+  "\"Mit\": mito: conocí un unicornio en la esquina.",
+  "\"Mitin\": todos se reúnen en un mitin de gatos.",
+  "\"Mi\": mimos se reúnen en la plaza en silencio."
+ ],
+ "include": [
+  "\"Incluí\": incluí un pollo vivo en la maleta.",
+  "\"Cluc\": cluc, gallina incluida en el pedido.",
+  "\"In clú\": club incluye a un pingüino como socio."
+ ],
+ "continue": [
+  "\"Continúo\": tren continúa sin frenos por el mar.",
+  "\"Contiene\": contenedor rueda y sigue sin parar.",
+  "\"Kontinu\": continente sigue navegando como barco."
+ ],
+ "learn": [
+  "\"Lern\": lirio aprende a leer con gafas.",
+  "\"Lerdo\": lerdo aprende rapidísimo con un embudo.",
+  "\"Lerna\": hidra de Lerna aprende inglés."
+ ],
+ "change": [
+  "\"Cheinch\": chancho cambia de ropa en un probador.",
+  "\"Chancla\": chancla cambia de color al pisarla.",
+  "\"Chen\": chino cambia monedas en la esquina."
+ ],
+ "lead": [
+  "\"Lid\": líder guía la lid con bandera roja.",
+  "\"Lirón\": lirón dirige una orquesta de ratones.",
+  "\"Lidia\": Lidia guía a los patos en fila."
+ ],
+ "understand": [
+  "\"Ander\": Andrés entiende todo con bombilla encendida.",
+  "\"Andén\": en el andén por fin lo entiendo.",
+  "\"Ander estand\": stand gigante explica y todos entienden."
+ ],
+ "watch": [
+  "\"Guach\": guacamole mira su reloj impaciente.",
+  "\"Guacho\": gaucho mira el reloj de bolsillo.",
+  "\"Uach\": guacamaya mira la tele con gafas."
+ ],
+ "follow": [
+  "\"Falo\": faro sigue a los barcos con su luz.",
+  "\"Folo\": fólder te sigue por la oficina.",
+  "\"Falú\": patos siguen a Falú en fila."
+ ],
+ "stop": [
+  "\"Estop\": estopa detiene el agua del tubo.",
+  "\"Stop\": señal de pare frena a un elefante.",
+  "\"Estó\": estómago para la comida con la mano."
+ ],
+ "create": [
+  "\"Crieit\": creyente crea un mundo de barro.",
+  "\"Crí\": grillo crea una sinfonía.",
+  "\"Crea\": chef crea un pastel gigante."
+ ],
+ "speak": [
+  "\"Espik\": espiga habla sin parar en el campo.",
+  "\"Espía\": espía habla por radio escondido.",
+  "\"Espich\": discurso que habla y habla sin fin."
+ ],
+ "read": [
+  "\"Rid\": ridículo lee un libro al revés.",
+  "\"Río\": río lee cuentos a las piedras.",
+  "\"Red\": red de pesca atrapa libros para leer."
+ ],
+ "spend": [
+  "\"Espend\": máquina expendedora se traga tu dinero.",
+  "\"Spa\": paso todo el día en el spa.",
+  "\"Espendo\": espantapájaros gasta billetes en semillas."
+ ],
+ "grow": [
+  "\"Grou\": grúa crece hasta las nubes.",
+  "\"Grosor\": árbol en la sala crece y rompe el techo.",
+  "\"Gruñ\": gruñón crece como un gigante."
+ ],
+ "open": [
+  "\"Oupen\": oso abre la puerta de un zarpazo.",
+  "\"Open\": boca gigante se abre como cueva.",
+  "\"Opera\": cantante de ópera abre la caja fuerte."
+ ],
+ "walk": [
+  "\"Guok\": guaca camina por la calle con bastón.",
+  "\"Walkman\": walkman camina solo por la acera.",
+  "\"Guaco\": guacamaya camina en tacones."
+ ],
+ "win": [
+  "\"Guin\": guindilla gana la carrera de picantes.",
+  "\"Güin\": güiro gana medalla de oro.",
+  "\"Win\": ganador con trofeo grita ¡win!"
+ ],
+ "offer": [
+  "\"Ofer\": vendedor grita ofertas desde un barco.",
+  "\"Ofrenda\": ofrenda ofrecida a un dios gato.",
+  "\"Oferta\": oferta gigante en vitrina de neón."
+ ],
+ "remember": [
+  "\"Rimember\": rimas pegadas en la frente para recordar.",
+  "\"Re miembro\": recuerdo cada miembro del club en una foto.",
+  "\"Remendar\": abuela remienda y recuerda su juventud."
+ ],
+ "love": [
+  "\"Lof\": lobo enamorado aúlla corazones.",
+  "\"Lav\": lava ardiente con forma de corazón.",
+  "\"Lov\": lombriz enamorada con flores."
+ ],
+ "consider": [
+  "\"Considar\": cónsul piensa con una lupa gigante.",
+  "\"Con sidra\": con sidra en mano, considero la oferta.",
+  "\"Cansider\": canguro considera saltar, pensativo."
+ ],
+ "appear": [
+  "\"Apir\": a pie aparece un fantasma en el pasillo.",
+  "\"Apio\": apio aparece flotando en mi sopa.",
+  "\"Aper\": aperitivo aparece de la nada en la mesa."
+ ],
+ "buy": [
+  "\"Bai\": bailo comprando zapatos en el mercado.",
+  "\"Bahía\": en la bahía compro un barco.",
+  "\"Bye\": compro todo y digo bye."
+ ],
+ "wait": [
+  "\"Gueit\": güey espera en una cola eterna.",
+  "\"Weight\": pesas mientras esperas el autobús.",
+  "\"Geisha\": geisha espera tomando té."
+ ],
+ "serve": [
+  "\"Serv\": ciervo sirve café a clientes.",
+  "\"Cerve\": cerveza se sirve sola en el vaso.",
+  "\"Servilleta\": servilleta con brazos sirve la mesa."
+ ],
+ "send": [
+  "\"Send\": senda llena de cartas enviadas.",
+  "\"Señor\": señor envía palomas mensajeras.",
+  "\"Sándwich\": sándwich enviado por correo con alas."
+ ],
+ "expect": [
+  "\"Espect\": espectador espera la función en primera fila.",
+  "\"Expecto\": mago espera que salga su conejo.",
+  "\"Espectro\": espectro supone que vendrás a medianoche."
+ ],
+ "build": [
+  "\"Bild\": edificio Bilbao construido con ladrillos de queso.",
+  "\"Bil\": billete con casco construye una casa.",
+  "\"Bildo\": albañil construye torre de bloques."
+ ],
+ "stay": [
+  "\"Estei\": estatua se queda quieta bajo la lluvia.",
+  "\"Este\": este perro se queda en el sofá.",
+  "\"Estaca\": estaca clavada no se mueve."
+ ],
+ "fall": [
+  "\"Fol\": folla seca cae en otoño sobre tu cabeza.",
+  "\"Falla\": falla gigante cae del techo.",
+  "\"Falo\": faro cae como hoja de otoño."
+ ],
+ "reach": [
+  "\"Rich\": rico estira el brazo hasta la luna.",
+  "\"Riche\": niño Richie alcanza la galleta en el estante.",
+  "\"Ríchar\": Ricardo llega a la cima en globo."
+ ],
+ "decide": [
+  "\"Disaid\": dice “sí” y decide casarse.",
+  "\"Dado\": dados gigantes deciden tu destino.",
+  "\"Dice\": dice a la moneda que decida."
+ ],
+ "explain": [
+  "\"Explein\": explanada donde profesor explica a vacas.",
+  "\"Plano\": arquitecto explica con un plano gigante.",
+  "\"Esplén\": espléndido profesor explica con títeres."
+ ],
+ "agree": [
+  "\"Agri\": limón agrio asiente: estamos de acuerdo.",
+  "\"Grillo\": grillos asienten en coro, de acuerdo.",
+  "\"Agricultor\": agricultor y vaca se dan la mano."
+ ],
+ "borrow": [
+  "\"Barrou\": barro prestado para hacer un muñeco.",
+  "\"Burro\": burro pide prestado un sombrero.",
+  "\"Borrar\": pido prestada una goma de borrar."
+ ],
+ "lend": [
+  "\"Lend\": lenteja prestada a la vecina.",
+  "\"Lente\": te presto mis lentes rotos.",
+  "\"Lendo\": lindo perro presta su hueso."
+ ],
+ "owe": [
+  "\"Ou\": oso debe dinero al banco de miel.",
+  "\"Ow\": ¡ou! le debo cien a la abuela.",
+  "\"Oveja\": oveja debe lana a su vecina."
+ ],
+ "cheap": [
+  "\"Chip\": chip de computadora rebajado a un centavo.",
+  "\"Chipá\": chipá baratito en carrito.",
+  "\"Chipi\": pollito chipi chipi muy barato."
+ ],
+ "expensive": [
+  "\"Ex pen sif\": pensión de lujo carísima con oro.",
+  "\"Expensas\": expensas cobradas en lingotes de oro.",
+  "\"Expen\": expendedora cobra un diamante por chicle."
+ ],
+ "wheel": [
+  "\"Güil\": güira rodando por la calle como rueda de coche.",
+  "\"Huila\": abuela Huila conduce agarrando una rueda de bicicleta.",
+  "\"Guille\": Guille gira un volante gigante de chocolate."
+ ],
+ "enough": [
+  "\"Inaf\": niña grita “¡ina, basta!” con la boca llena de tarta.",
+  "\"Ináfe\": taza de café desbordada, ya es suficiente.",
+  "\"Enaf\": enano lleno de sopa levanta la mano: suficiente."
+ ],
+ "although": [
+  "\"Oldou\": oso dorado sonríe aunque le duelen las muelas.",
+  "\"Al dou\": al dúo le aplauden aunque cantan fatal.",
+  "\"Oldo\": oído gigante escucha aunque tiene tapones."
+ ],
+ "however": [
+  "\"Jauéver\": jaula abierta; sin embargo, el loro no sale.",
+  "\"Jauéva\": huevo dorado; sin embargo, sale un pollito feo.",
+  "\"Jau\": perro dice ¡jau!, sin embargo es un gato."
+ ],
+ "actually": [
+  "\"Akchuali\": ¡achú! el monstruo en realidad era tu abuela.",
+  "\"Actual\": actor se quita la máscara: en realidad es un pato.",
+  "\"Ac chuli\": chulo galán en realidad es un muñeco."
+ ],
+ "already": [
+  "\"Olredi\": olla ya lista hirviendo antes de llegar.",
+  "\"Al red\": red ya repleta de peces al amanecer.",
+  "\"Olré\": ¡olé! el torero ya llegó montado en toro."
+ ],
+ "still": [
+  "\"Estil\": estilo de la abuela todavía de moda en París.",
+  "\"Estela\": estela de avión todavía en el cielo días después.",
+  "\"Estilete\": estilete aún clavado en el pastel de bodas."
+ ],
+ "yet": [
+  "\"Iet\": yeti todavía no llega a la fiesta, silla vacía.",
+  "\"Yet\": jet privado aún no despega, piloto dormido.",
+  "\"Yeti\": yeti en el coche pregunta “¿ya llegamos?”."
+ ],
+ "almost": [
+  "\"Olmost\": olmo casi toca la luna con sus ramas.",
+  "\"Al mosto\": casi me bebo el mosto del barril entero.",
+  "\"Almost\": almohada casi cae de la cama, colgando."
+ ],
+ "early": [
+  "\"Erli\": gallo despierta a Erli a las cinco, temprano.",
+  "\"Erla\": perla abre la ostra temprano antes del sol.",
+  "\"Earl\": conde inglés tomando té de madrugada."
+ ],
+ "late": [
+  "\"Leit\": leche llega tarde con un reloj derretido.",
+  "\"Leita\": lenta cabrita Leita llega tarde a la boda.",
+  "\"Lei\": ley con toga castiga a los que llegan tarde."
+ ],
+ "soon": [
+  "\"Sun\": sol asomándose: pronto será de día.",
+  "\"Suna\": sonaja suena: pronto llega el bebé.",
+  "\"Su\": sushi pronto llega volando a tu mesa."
+ ],
+ "often": [
+  "\"Ofen\": horno abierto a menudo, siempre oliendo a pan.",
+  "\"Ofta\": oficina donde el gato bosteza a menudo.",
+  "\"Ófen\": oftalmólogo te visita a menudo con lupa."
+ ],
+ "important": [
+  "\"Importan\": importador carga una corona importantísima en camión.",
+  "\"Impor\": imperio entero aplaude al cartel importante.",
+  "\"Im portero\": portero con medallas, muy importante."
+ ],
+ "different": [
+  "\"Diferent\": diferente: cebra con rayas de colores.",
+  "\"Diferen\": diferencial de coche con forma de flor.",
+  "\"Dife\": difunto bailando, totalmente diferente."
+ ],
+ "easy": [
+  "\"Ísi\": isla donde todo es fácil, hamaca y coco.",
+  "\"Izi\": izar la bandera con un dedo, facilísimo.",
+  "\"Ici\": iguana resuelve el examen fácil bostezando."
+ ],
+ "hard": [
+  "\"Jard\": jardín de piedras duras, pala se rompe.",
+  "\"Jarra\": jarra de hierro dura, imposible de romper.",
+  "\"Harto\": harto de intentar abrir un coco difícil."
+ ],
+ "able": [
+  "\"Eibol\": árbol capaz de levantar un coche.",
+  "\"Eiber\": hormiga capaz de cargar un piano.",
+  "\"Ebo\": ébano capaz de nadar."
+ ],
+ "free": [
+  "\"Fri\": frijol libre volando fuera de la cárcel.",
+  "\"Frío\": helados gratis caen del cielo frío.",
+  "\"Frida\": Frida pinta pájaros libres, gratis para todos."
+ ],
+ "sure": [
+  "\"Shur\": chur, churro seguro con casco y cinturón.",
+  "\"Chuer\": chulo afirma seguro con el pulgar.",
+  "\"Shure\": micrófono asegura: “¡seguro!”."
+ ],
+ "ready": [
+  "\"Redi\": red lista para atrapar al pez.",
+  "\"Redy\": Reddy el robot dice “¡listo!” con pulgar.",
+  "\"Rédi\": redil listo con ovejas formadas."
+ ],
+ "busy": [
+  "\"Bisi\": bici cargada con mil recados, ocupadísima.",
+  "\"Bzzz\": abeja zumba sin parar, muy ocupada.",
+  "\"Bisagra\": bisagra ocupada abriendo puertas sin descanso."
+ ],
+ "tired": [
+  "\"Taird\": tarta cansada se derrite en el sofá.",
+  "\"Taired\": tigre agotado bosteza tumbado.",
+  "\"Tair\": tairo, el sapo cansado ronca."
+ ],
+ "afraid": [
+  "\"Afreid\": fresa asustada tiembla en el plato.",
+  "\"A fray\": fraile asustado huye de un ratón.",
+  "\"Afré\": África entera tiembla de miedo."
+ ],
+ "angry": [
+  "\"Angri\": hongo rojo enojado echa humo por el sombrero.",
+  "\"Ancla\": ancla furiosa golpea el barco.",
+  "\"Anguila\": anguila enojada da calambres a todos."
+ ],
+ "proud": [
+  "\"Praud\": prado orgulloso luce sus flores.",
+  "\"Prau\": pavo real orgulloso posa con corona.",
+  "\"Proud\": proa del barco sacando pecho, orgullosa."
+ ],
+ "useful": [
+  "\"Iusful\": yuca útil sirve de martillo.",
+  "\"Usful\": usa la fula: navaja útil para todo.",
+  "\"Iús\": yuyo útil cura cualquier herida."
+ ],
+ "safe": [
+  "\"Seif\": caja fuerte: allí estás seguro.",
+  "\"Sefi\": sefardí guarda oro sin peligro.",
+  "\"Seife\": seis cascos protegen al niño."
+ ],
+ "weather": [
+  "\"Güeder\": güero mide el clima con un termómetro.",
+  "\"Huéder\": huevo frito en la acera por el calor.",
+  "\"Weda\": wedding bajo lluvia y tormenta."
+ ],
+ "knowledge": [
+  "\"Nóleich\": no leche: libros llenos de sabiduría en el vaso.",
+  "\"Nole\": Nolé, sabio con biblioteca en la cabeza.",
+  "\"Nalech\": nalgas sobre libros absorbiendo conocimiento."
+ ],
+ "money": [
+  "\"Mani\": maní que suelta billetes al pelarlo.",
+  "\"Moni\": mono lanza monedas desde el árbol.",
+  "\"Moné\": Monet pinta con billetes de dólar."
+ ],
+ "business": [
+  "\"Bisnes\": bisnieto vende limonada en su negocio.",
+  "\"Bizne\": bisonte con corbata cierra un negocio.",
+  "\"Bis nes\": bis de Nestlé negocia chocolates."
+ ],
+ "customer": [
+  "\"Costumer\": costurera mide al cliente con cinta métrica gigante.",
+  "\"Castamer\": castor con billetera entra a la tienda como cliente.",
+  "\"Costumbre\": cliente entra cada día con un loro al hombro."
+ ],
+ "price": [
+  "\"Prais\": pradera entera con etiquetas de precio en cada flor.",
+  "\"Preis\": precio pegado en la frente de un toro.",
+  "\"Prisa\": precio sube con prisa como cohete en el cartel."
+ ],
+ "bill": [
+  "\"Bil\": camarero entrega la cuenta en un billete gigante.",
+  "\"Bill Gates\": Bill Gates paga la factura con un disquete.",
+  "\"Bilis\": la cuenta tan larga que te da bilis verde."
+ ],
+ "receipt": [
+  "\"Risit\": risita al leer un recibo de diez metros.",
+  "\"Recita\": niño recita en voz alta el recibo del súper.",
+  "\"Rizos\": rizos de papel recibo cuelgan del pelo."
+ ],
+ "meeting": [
+  "\"Mitin\": gatos con corbatas en un mitin, reunión seria.",
+  "\"Mi tina\": reunión de ejecutivos dentro de mi tina.",
+  "\"Mitón\": guantes mitones sentados alrededor de la mesa de reuniones."
+ ],
+ "appointment": [
+  "\"A punto\": dentista a punto con taladro; tu cita empieza.",
+  "\"Apuntamen\": apuntas la cita en tu brazo con rotulador.",
+  "\"Apoyo\": cita con médico apoyado en muletas gigantes."
+ ],
+ "schedule": [
+  "\"Esquedul\": esqueleto lee su horario con lupa.",
+  "\"Escuela\": pizarrón gigante con el horario escolar en llamas.",
+  "\"Esqueje\": planta con agenda llena de citas en sus hojas."
+ ],
+ "deadline": [
+  "\"Dedlain\": dedo sobre una línea roja: ¡se acabó el plazo!",
+  "\"Ded\": calavera con calendario marca la fecha límite.",
+  "\"Dedal\": dedal gigante aplasta el calendario el último día."
+ ],
+ "goal": [
+  "\"Goul\": balón entra en la meta, portero vuela.",
+  "\"Gol\": futbolista grita gol en la línea de meta.",
+  "\"Gula\": glotón corre hacia la meta: un pastel."
+ ],
+ "mistake": [
+  "\"Misteik\": míster tropieza con un taco: error.",
+  "\"Mis tecas\": mis tecla equivocadas, la pantalla grita error.",
+  "\"Mistica\": mística se equivoca y convoca un pato."
+ ],
+ "advice": [
+  "\"Advais\": abad da consejos desde un púlpito.",
+  "\"Ad vais\": hada susurra consejos al oído.",
+  "\"Advaiser\": abuelo con dedo arriba aconsejando a un loro."
+ ],
+ "neighbor": [
+  "\"Neibor\": vecino aparece entre la neblina pidiendo azúcar.",
+  "\"Neibe\": nieve del vecino cae solo en tu patio.",
+  "\"Nabo\": vecino te lanza nabos por la cerca."
+ ],
+ "building": [
+  "\"Bildin\": billetes apilados forman un edificio enorme.",
+  "\"Bil\": billar gigante con forma de edificio.",
+  "\"Bilding\": edificio con campana ding-dong en la azotea."
+ ],
+ "street": [
+  "\"Estrit\": estrella fugaz cae en medio de la calle.",
+  "\"Estribo\": caballo con estribos galopa por la calle.",
+  "\"Estrecho\": calle tan estrecha que un gato se atasca."
+ ],
+ "traffic": [
+  "\"Tráfico\": patos causan tráfico en la autopista.",
+  "\"Trafic\": tráiler de flores atascado en tráfico.",
+  "\"Trágico\": atasco trágico de bicicletas pitando."
+ ],
+ "screen": [
+  "\"Escrin\": escribano atrapado dentro de la pantalla.",
+  "\"Es crin\": crin de caballo sale de la pantalla.",
+  "\"Escrito\": escrito gigante brilla en la pantalla."
+ ],
+ "sign": [
+  "\"Sain\": santo firma un letrero con pluma de oro.",
+  "\"Saina\": sainete anunciado en letrero luminoso.",
+  "\"Sainete\": payaso firma tu brazo como letrero."
+ ],
+ "truck": [
+  "\"Trak\": ¡trac! camión choca con un árbol de sandías.",
+  "\"Troca\": troca roja llena de gallinas cantando.",
+  "\"Truco\": mago saca un camión de su sombrero."
+ ],
+ "rent": [
+  "\"Renta\": caracol paga alquiler por su concha.",
+  "\"Reno\": reno alquila su trineo en verano.",
+  "\"Rente\": casero cobra alquiler a ras del suelo."
+ ],
+ "loan": [
+  "\"Lona\": banco presta una lona llena de monedas.",
+  "\"Loncha\": loncha de jamón prestada al vecino.",
+  "\"Lound\": loro presta un billete con chicle pegado."
+ ],
+ "tax": [
+  "\"Taxi\": taxi cobra impuesto en cada semáforo.",
+  "\"Tacs\": tachuelas en la silla del que no paga impuestos.",
+  "\"Tacos\": tacos con etiqueta de impuesto picante."
+ ],
+ "shelf": [
+  "\"Chelf\": chef pone ollas en un estante altísimo.",
+  "\"Selfie\": selfie colgado en el estante.",
+  "\"Chelfo\": elfo sentado en el estante de libros."
+ ],
+ "drawer": [
+  "\"Dróer\": dragón duerme dentro del cajón.",
+  "\"Droga\": droguería guarda dulces en la gaveta.",
+  "\"Drama\": drama: calcetines peleando en el cajón."
+ ],
+ "key": [
+  "\"Ki\": kiwi abre la puerta con su llave.",
+  "\"Quijote\": Quijote lucha con una llave gigante.",
+  "\"Qui\": quiosco vende llaves de oro."
+ ],
+ "through": [
+  "\"Zru\": zorro salta a través de un aro de fuego.",
+  "\"Tru\": trucha cruza a través de la red.",
+  "\"Trueno\": trueno pasa a través de la ventana."
+ ],
+ "thought": [
+  "\"Zot\": zote con nube de pensamiento sobre la cabeza.",
+  "\"Tot\": tótem pensativo con ojos cerrados.",
+  "\"Sot\": sotana de cura llena de pensamientos."
+ ],
+ "though": [
+  "\"Dou\": dodo vuela, aunque no debería.",
+  "\"Zou\": zoológico cerrado; sin embargo, entran jirafas.",
+  "\"Do\": nota do suena, aunque el piano está roto."
+ ],
+ "throw": [
+  "\"Zrou\": zorro tira piñas al aire.",
+  "\"Trono\": rey tira su trono por la ventana.",
+  "\"Trompo\": niño lanza un trompo gigante."
+ ],
+ "tough": [
+  "\"Taf\": toffee durísimo rompe un diente.",
+  "\"Tofu\": tofu duro como ladrillo.",
+  "\"Tufo\": tufo difícil de quitar, la ropa grita."
+ ],
+ "weigh": [
+  "\"Güey\": güey pesa una sandía en la balanza.",
+  "\"Gueisha\": geisha sube a la báscula con abanico.",
+  "\"Wey\": báscula pesa un elefante en puntillas."
+ ],
+ "wear": [
+  "\"Güer\": güero lleva puesto un sombrero ridículo.",
+  "\"Huerta\": huerta lleva puesto un abrigo de piel.",
+  "\"Wer\": werewolf se pone calcetines de lana."
+ ],
+ "achieve": [
+  "\"Achiv\": ¡achís! y logro la medalla de oro.",
+  "\"Archivo\": archivo logra llegar a la cima con trofeo.",
+  "\"Achicoria\": achicoria logra subir al podio."
+ ],
+ "improve": [
+  "\"Impruv\": imprenta mejora su letra con gafas.",
+  "\"Imprudente\": imprudente mejora su conducta tras un golpe.",
+  "\"Improvisa\": improvisador mejora el plan con lija."
+ ],
+ "avoid": [
+  "\"Avoid\": avioneta esquiva una nube con cara.",
+  "\"Abuela\": abuela salta el charco y lo evita.",
+  "\"Avena\": oveja evita al lobo escondida en la avena."
+ ],
+ "enjoy": [
+  "\"Enyoi\": en joya brillante disfruto un baño de sol.",
+  "\"Enjambre\": enjambre disfruta un río de miel.",
+  "\"Enchoi\": enchilada disfrutada con las dos manos."
+ ],
+ "realize": [
+  "\"Rializ\": rial, bombilla encendida: se da cuenta de todo.",
+  "\"Real\": rey se mira y se da cuenta que es rana.",
+  "\"Rialaiz\": rialto ve su reflejo: ¡se da cuenta!"
+ ],
+ "suggest": [
+  "\"Sayest\": sayal de monje sugiere silencio con dedo.",
+  "\"Sugestión\": hipnotizador sugiere ideas con un péndulo.",
+  "\"Sujeta\": sujetapapeles sugiere una idea brillante."
+ ],
+ "require": [
+  "\"Ricuair\": ricura de pastel requiere cien velas.",
+  "\"Recua\": recua de burros requiere toneladas de agua.",
+  "\"Requesón\": requesón requiere nevera, llora derretido."
+ ],
+ "allow": [
+  "\"Alau\": guardia gritando ¡alaú! permite pasar a todos.",
+  "\"Alá\": barrera se abre y permite pasar.",
+  "\"Ala\": ala gigante permite volar a un cerdo."
+ ],
+ "afford": [
+  "\"A Ford\": puedo pagar un Ford con monedas de chocolate.",
+  "\"Afortuna\": fortuna en la mano, puedo pagarlo todo.",
+  "\"Aforo\": aforo pagado con monedas de chocolate."
+ ],
+ "rather": [
+  "\"Rader\": rata prefiere queso que pan.",
+  "\"Radar\": radar prefiere aviones pequeños, más bien gorriones.",
+  "\"Ráfaga\": ráfaga prefiere soplar, más bien, hacia el mar."
+ ],
+ "whether": [
+  "\"Güeder\": güero deshoja margarita: ¿llueve o no?",
+  "\"Huevo\": huevo duda si freírse o hervirse.",
+  "\"Wedding\": novia duda en la boda: ¿sí o no?"
+ ],
+ "anyway": [
+  "\"Eniuei\": en Iowa llueve, de todos modos bailo.",
+  "\"Enigüey\": enano sigue caminando de todos modos.",
+  "\"Enigma\": enigma sin resolver, de todos modos sigo."
+ ],
+ "instead": [
+  "\"Insted\": insecto en la taza en vez de té.",
+  "\"Instituto\": instituto sirve tacos en vez de clase.",
+  "\"Instalo\": instalo un pato en vez de reloj."
+ ],
+ "unless": [
+  "\"Anles\": anillo no, a menos que sea de oro.",
+  "\"Ánade\": ánade no vuela a menos que llueva.",
+  "\"Antes\": no entras, a menos que pagues antes."
+ ],
+ "monday": [
+  "\"Mandi\": mandil de cocina colgado en la luna cada lunes.",
+  "\"Mondongo\": mondongo servido en la luna el lunes.",
+  "\"Man dei\": hombre en la luna apaga su despertador del lunes."
+ ],
+ "tuesday": [
+  "\"Tius\": tío marciano llega en platillo cada martes.",
+  "\"Tus\": tus martillos golpean a Marte el martes.",
+  "\"Chusdei\": chusma de marcianos invade la oficina el martes."
+ ],
+ "wednesday": [
+  "\"Guensdei\": güero en patines corre al mercado el miércoles.",
+  "\"Güens\": mercader vende miel en el mercado del miércoles.",
+  "\"Guen\": guante plateado brilla solo los miércoles."
+ ],
+ "thursday": [
+  "\"Zersdei\": zorro lanza rayos de Júpiter el jueves.",
+  "\"Tersdei\": Thor golpea su martillo cada jueves.",
+  "\"Zurdo\": juez zurdo dicta sentencia los jueves."
+ ],
+ "friday": [
+  "\"Fraidei\": fraile baila en la fiesta del viernes.",
+  "\"Frai\": freidora frita papas en la fiesta del viernes.",
+  "\"Fraidi\": frijoles bailan conga: ¡ya es viernes!"
+ ],
+ "saturday": [
+  "\"Saterdei\": Saturno con anillos hace fiesta el sábado.",
+  "\"Sartén\": sartén voladora llega a Saturno el sábado.",
+  "\"Sábana\": el sábado duermo enredado en sábanas."
+ ],
+ "sunday": [
+  "\"Sandei\": sandía tomando sol en la hamaca el domingo.",
+  "\"San dei\": santo descansa el domingo en hamaca.",
+  "\"Sun\": sol dominguero con gafas en la playa."
+ ],
+ "january": [
+  "\"Yaniueri\": Yanina abre la puerta de enero llena de nieve.",
+  "\"Yani\": muñeco de nieve con calendario de enero.",
+  "\"Jano\": dios Jano, de dos caras, abre enero."
+ ],
+ "february": [
+  "\"Febiueri\": fiebre de amor en febrero, termómetro con corazones.",
+  "\"Febre\": cupido con fiebre dispara flechas en febrero.",
+  "\"Febrero\": cartero lleva cartas de San Valentín bajo la nieve."
+ ],
+ "march": [
+  "\"Marcha\": soldados marchan en marzo pisando flores.",
+  "\"Marciano\": marciano marchando en el desfile de marzo.",
+  "\"Mar\": mar en marzo lleno de soldados nadando."
+ ],
+ "april": [
+  "\"Eipril\": ¡ay! lluvia de abril moja a todos.",
+  "\"Abril\": abrelatas abre las flores de abril.",
+  "\"Aprilia\": moto Aprilia rueda bajo la lluvia de abril."
+ ],
+ "may": [
+  "\"Mei\": mayonesa gigante florece en mayo.",
+  "\"Mayo\": mayordomo reparte flores en mayo.",
+  "\"Mai\": maíz crece en mayo hasta el cielo."
+ ],
+ "june": [
+  "\"Yun\": yunque derretido por el sol de junio.",
+  "\"Yuna\": la luna de junio nada en la piscina.",
+  "\"Chun\": helado chun-chun se derrite en junio."
+ ],
+ "july": [
+  "\"Yulai\": yuyo crece en julio bajo un sol ardiente.",
+  "\"Chulai\": chulo de julio se broncea en la playa.",
+  "\"Yula\": hula hula en julio, todos bailan en la arena."
+ ],
+ "august": [
+  "\"Ogost\": ogro sudando a mares en agosto.",
+  "\"Agosto\": gusano tumbado en la arena caliente de agosto.",
+  "\"A gusto\": a gusto en la piscina en pleno agosto."
+ ],
+ "september": [
+  "\"Septembar\": siete barcos de mochilas zarpan en septiembre.",
+  "\"Séptimo\": séptimo mes, la escuela abre sus puertas.",
+  "\"Septeto\": septeto de lápices vuelve a clases en septiembre."
+ ],
+ "october": [
+  "\"Október\": Oktoberfest con jarras de cerveza en octubre.",
+  "\"Octo\": pulpo de ocho brazos disfrazado de calabaza en octubre.",
+  "\"Octavio\": Octavio talla calabazas en octubre."
+ ],
+ "november": [
+  "\"Nouvember\": nueve hojas secas caen en noviembre.",
+  "\"Novio\": novio se casa en noviembre bajo la lluvia.",
+  "\"Novela\": novela de hojas secas se lee en noviembre."
+ ],
+ "december": [
+  "\"Disémber\": diez árboles de Navidad encendidos en diciembre.",
+  "\"Diciembre\": Papá Noel decide bajar por la chimenea en diciembre.",
+  "\"Desember\": desembarca un trineo cargado de regalos en diciembre."
+ ],
+ "two": [
+  "\"Tu\": tú y tu gemelo idéntico, dos copias saludando.",
+  "\"Tutú\": dos bailarinas con tutú girando juntas.",
+  "\"Tuna\": dos atunes besándose en una lata."
+ ],
+ "three": [
+  "\"Zri\": zorro con tres colas mueve cada una.",
+  "\"Tri\": triciclo de tres ruedas lleva tres monos.",
+  "\"Trío\": trío de gatos canta sobre tres tejados."
+ ],
+ "four": [
+  "\"For\": foca hace equilibrio con cuatro pelotas.",
+  "\"Foro\": foro con cuatro sillas y cuatro patos.",
+  "\"Forro\": abrigo con forro de cuatro bolsillos gigantes."
+ ],
+ "five": [
+  "\"Faiv\": faisán levanta una mano con cinco dedos.",
+  "\"Faja\": faja con cinco botones a punto de reventar.",
+  "\"Fai\": fajo de cinco billetes saluda como mano."
+ ],
+ "six": [
+  "\"Six\": insecto con seis patas baila tap.",
+  "\"Sixto\": papa Sixto lleva seis coronas apiladas.",
+  "\"Sics\": seis cigarras cantan en un cubo."
+ ],
+ "seven": [
+  "\"Seven\": siete enanos atrapados en un ventilador.",
+  "\"Sebo\": vela de sebo con siete mechas.",
+  "\"Sevilla\": siete sevillanas bailan con abanicos."
+ ],
+ "eight": [
+  "\"Eit\": pulpo de ocho brazos saluda a todos.",
+  "\"Eita\": eita, ocho huevos en un ocho de patines.",
+  "\"Ey\": ¡ey! ocho patos en forma de ocho."
+ ],
+ "nine": [
+  "\"Nain\": nene sostiene nueve globos rojos.",
+  "\"Naipe\": naipe nueve de oros brillando.",
+  "\"Nana\": abuela canta nana a nueve bebés."
+ ],
+ "ten": [
+  "\"Ten\": tenedor con diez dientes gigantes.",
+  "\"Tenis\": tenista golpea diez pelotas a la vez.",
+  "\"Tienda\": tienda de campaña con diez bomberos."
+ ],
+ "eleven": [
+  "\"Ileven\": once futbolistas levantan un elefante.",
+  "\"Elefante\": elefante con once colas jugando fútbol.",
+  "\"Levan\": levadura sube en once panes."
+ ],
+ "twelve": [
+  "\"Tuelv\": tuerca gigante con doce dientes.",
+  "\"Vuelvo\": vuelvo con una docena de huevos.",
+  "\"Tuelve\": doce campanadas en la tuerca del reloj."
+ ],
+ "thirteen": [
+  "\"Zertin\": trece brujas en una sartén.",
+  "\"Tertulia\": tertulia de trece gatos negros.",
+  "\"Tertín\": trece ratones en un tintero."
+ ],
+ "fourteen": [
+  "\"Fortín\": fortín de arena con catorce cañones.",
+  "\"Fortuna\": fortuna de catorce monedas en un cofre.",
+  "\"Fortachón\": fortachón levanta catorce sandías."
+ ],
+ "fifteen": [
+  "\"Fiftin\": fiesta de quince años con tiara.",
+  "\"Fifí\": perrito Fifí con quince lazos rosas.",
+  "\"Fifti\": quinceañera baila con quince chambelanes."
+ ],
+ "sixteen": [
+  "\"Sixtin\": capilla Sixtina pintada con dieciséis ángeles.",
+  "\"Sixto\": Sixto sopla dieciséis velas.",
+  "\"Sicstín\": dieciséis cigarras en un tintín de copas."
+ ],
+ "seventeen": [
+  "\"Seventín\": siete enanos y diez duendes, diecisiete.",
+  "\"Seven tin\": diecisiete latas apiladas como torre.",
+  "\"Seventí\": diecisiete velas en ventana."
+ ],
+ "eighteen": [
+  "\"Eitín\": dieciocho velas y una cédula de adulto.",
+  "\"Eh, tío\": ¡eh, tío! ya tienes dieciocho: llaves del coche.",
+  "\"Aceitín\": dieciocho gotitas de aceite bailan en la sartén."
+ ],
+ "nineteen": [
+  "\"Naintín\": niño con diecinueve tintes de pelo.",
+  "\"Nain tin\": nueve más diez latas de atún.",
+  "\"Naintí\": diecinueve naipes vuelan en abanico."
+ ],
+ "twenty": [
+  "\"Tuenti\": veinte amigos apretujados en un teléfono antiguo.",
+  "\"Tu venti\": tu ventilador tiene veinte aspas zumbando.",
+  "\"Tuerta\": pirata tuerta cuenta veinte monedas con un ojo."
+ ],
+ "thirty": [
+  "\"Zerti\": cerdito con treinta manchas cuenta sus puntos.",
+  "\"Tertulia\": treinta abuelas en tertulia tomando café.",
+  "\"Certi\": certificado con treinta sellos rojos."
+ ],
+ "forty": [
+  "\"Forti\": fuerte medieval con cuarenta torres.",
+  "\"Fortísimo\": cuarenta pianos tocan fortísimo a la vez.",
+  "\"Forro\": forro de abrigo con cuarenta bolsillos."
+ ],
+ "fifty": [
+  "\"Fifti\": tarta partida fifty-fifty, mitad de cien velas.",
+  "\"Fifí\": perrita Fifí con cincuenta collares de perlas.",
+  "\"Fi fiesta\": cincuenta invitados en fiesta dorada."
+ ],
+ "sixty": [
+  "\"Sixti\": reloj con sesenta minutos que bailan.",
+  "\"Sixtina\": capilla Sixtina con sesenta ángeles gordos.",
+  "\"Sistema\": abuelo de sesenta con sistema de bastón cohete."
+ ],
+ "seventy": [
+  "\"Seventi\": setenta enanos dentro de un ventilador.",
+  "\"Ventana\": setenta velas encendidas en una ventana.",
+  "\"Siete\": siete por diez gatos en un sofá."
+ ],
+ "eighty": [
+  "\"Eiti\": ochenta pulpos en un tren de juguete.",
+  "\"Eitor\": Héctor cumple ochenta y sopla con trompeta.",
+  "\"Ei, ti\": ¡ey, tú! ochenta pelotas caen del cielo."
+ ],
+ "ninety": [
+  "\"Nainti\": noventa naipes vuelan en abanico.",
+  "\"Nena\": nena de noventa años patinando.",
+  "\"Naintí\": noventa enanitos en un taxi."
+ ],
+ "hundred": [
+  "\"Jandred\": jarra con cien canicas rojas.",
+  "\"Jándal\": hándal, cien sandalias en fila.",
+  "\"Jardín\": jardín con cien flores contadas."
+ ],
+ "thousand": [
+  "\"Zausand\": zorro con mil arenas en un reloj.",
+  "\"Tausan\": tauro con mil cuernos.",
+  "\"Sausan\": salsa de mil islas en una piscina."
+ ],
+ "million": [
+  "\"Milion\": melón con un millón de semillas.",
+  "\"Mil yon\": mil yoyós multiplicados por mil.",
+  "\"Milionario\": millonario nada en monedas de oro."
+ ],
+ "billion": [
+  "\"Bilion\": billetes en montaña de mil millones.",
+  "\"Bilión\": bilis verde de mil millones de ranas.",
+  "\"Bilionario\": bisonte rico con mil millones de pastos."
+ ],
+ "trillion": [
+  "\"Trilion\": trilladora tritura un billón de granos.",
+  "\"Trillo\": trillo de un billón de pajas doradas.",
+  "\"Trilón\": tren de un billón de vagones infinitos."
+ ],
+ "quadrillion": [
+  "\"Cuadrilion\": cuadrilla de mil billones de hormigas obreras.",
+  "\"Cuadrilátero\": ring con mil billones de luchadores.",
+  "\"Cuadro\": cuadro con cuatrillón de puntos pintados."
+ ],
+ "quintillion": [
+  "\"Quintilión\": quinta finca con quintillón de gallinas.",
+  "\"Quintal\": quintal de arroz con granos incontables.",
+  "\"Quinto\": quinto cielo con quintillones de estrellas."
+ ],
+ "the": [
+  "\"Da\": dedo señala la manzana: el objeto exacto.",
+  "\"De\": letra D con sombrero indica el elegido.",
+  "\"Di\": dí cuál: el, la, los y las."
+ ],
+ "be": [
+  "\"Bi\": abeja ¡bzzz! dice “soy” frente al espejo.",
+  "\"Bebé\": bebé gigante está sentado y es feliz.",
+  "\"Bisonte\": bisonte es rey y está en su trono."
+ ],
+ "and": [
+  "\"And\": andamio une un pato y un gato.",
+  "\"Anda\": anda con un pan y un queso.",
+  "\"Án\": ánade lleva a uno y otro pollito."
+ ],
+ "of": [
+  "\"Of\": ¡uf! la camisa de papá pesa mucho.",
+  "\"Ov\": huevo de gallina, propiedad de ella.",
+  "\"Oveja\": lana de oveja en suéter de abuela."
+ ],
+ "to": [
+  "\"Tu\": tú vas a la playa en tobogán.",
+  "\"Tú\": flecha gigante apunta para ti.",
+  "\"Tubo\": tubo lanza pelotas a la portería."
+ ],
+ "a": [
+  "\"Ei\": ¡ey! un pato solitario con sombrero.",
+  "\"A\": una manzana sola en la mesa vacía.",
+  "\"Ah\": ah, un fantasma pequeñito aparece."
+ ],
+ "in": [
+  "\"In\": indio dentro de una botella.",
+  "\"Ink\": tinta dentro de un tintero.",
+  "\"Insecto\": insecto atrapado dentro del ámbar."
+ ],
+ "have": [
+  "\"Jav\": jabalí tiene un tesoro en la boca.",
+  "\"Jaba\": jaba llena de cosas que tengo.",
+  "\"Haba\": haba gigante tiene dos frijoles dentro."
+ ],
+ "it": [
+  "\"It\": ito, lo agarro: es la cosa.",
+  "\"Ítem\": ítem flotante: ello brilla solo.",
+  "\"Hito\": hito en el camino, lo miras."
+ ],
+ "you": [
+  "\"Iu\": ¡yuju! te saluda desde el tren.",
+  "\"Yu\": yuca gigante te señala a ti.",
+  "\"Yogur\": yogur te apunta con cuchara."
+ ],
+ "he": [
+  "\"Ji\": él, solito, se ríe ji ji en la esquina.",
+  "\"Jirafa\": jirafa con bigote señala: “él fue”.",
+  "\"Jinete\": él, jinete solitario, cabalga un burro."
+ ],
+ "for": [
+  "\"For\": foca entrega un pescado para ti.",
+  "\"Forro\": forro mágico hecho para tu libro.",
+  "\"Foro\": foro entero aplaude por ti."
+ ],
+ "they": [
+  "\"Dei\": ellos, cinco dedos, saludan desde la mano.",
+  "\"Dey\": rey señala a ellos, la multitud.",
+  "\"Deidades\": ellas, diosas, bailan en grupo."
+ ],
+ "not": [
+  "\"Not\": nota roja del profesor: ¡no!",
+  "\"Nata\": nata derramada, gato dice no con cabeza.",
+  "\"Nudo\": nudo en la lengua, solo sale “no”."
+ ],
+ "that": [
+  "\"Dat\": dátil señala eso de allá con el dedo.",
+  "\"Dado\": dado gigante rueda: ese número es tuyo.",
+  "\"Data\": pantalla muestra eso que dije en letras rojas."
+ ],
+ "we": [
+  "\"Güi\": nosotros, cinco güiros, tocamos en grupo.",
+  "\"Ui\": ¡uy! nosotros caímos juntos al agua.",
+  "\"Wii\": nosotros todos jugamos a la Wii abrazados."
+ ],
+ "on": [
+  "\"On\": hongo sobre la mesa, encima de un plato.",
+  "\"Onda\": onda de surf sobre la cabeza.",
+  "\"Ono\": oso sobre un trono."
+ ],
+ "with": [
+  "\"Güiz\": güisqui siempre con hielo, nunca solo.",
+  "\"Wiz\": mago siempre con su gato en el hombro.",
+  "\"Huiz\": abuelo con su perro en la bicicleta."
+ ],
+ "this": [
+  "\"Dis\": este disco, aquí en mi mano, brilla.",
+  "\"Disfraz\": este disfraz que llevo puesto huele a queso.",
+  "\"Diz\": diez dedos señalan esto, aquí cerquita."
+ ],
+ "i": [
+  "\"Ai\": ¡ay! yo me pellizco frente al espejo.",
+  "\"Ají\": yo me como un ají y echo fuego.",
+  "\"Ay\": yo grito ¡ay! al pisar un lego."
+ ],
+ "do": [
+  "\"Du\": duende hace galletas a martillazos.",
+  "\"Dúo\": dúo de robots hace pizza volando.",
+  "\"Dodo\": dodo hace los deberes con el pico."
+ ],
+ "as": [
+  "\"As\": as de picas vestido como un rey.",
+  "\"Asno\": asno disfrazado como caballo de carreras.",
+  "\"Asa\": tetera canta por el asa mientras hierve."
+ ],
+ "at": [
+  "\"At\": atún sentado en la parada del bus.",
+  "\"Ato\": ato el perro a la puerta de casa.",
+  "\"Ata\": ata un globo en la esquina."
+ ],
+ "she": [
+  "\"Chi\": chihuahua con tiara: ella es la reina.",
+  "\"Shhh\": ella susurra ¡shhh! con labios rojos.",
+  "\"Chica\": ella, chica gigante, levanta un autobús."
+ ],
+ "but": [
+  "\"Bat\": bate precioso, pero hecho de queso.",
+  "\"Batido\": batido delicioso, pero con un pez dentro.",
+  "\"Bata\": bata elegante, pero llena de agujeros."
+ ],
+ "from": [
+  "\"From\": queso fromage llega desde Francia en globo.",
+  "\"Frontera\": camión de plátanos llega desde la frontera.",
+  "\"Fresa\": fresa saluda desde su campo lejano."
+ ],
+ "by": [
+  "\"Bai\": bailo junto al río con un cocodrilo.",
+  "\"Bahía\": barco pasa por la bahía tocando bocina.",
+  "\"Bye\": te dice bye junto a la puerta."
+ ],
+ "will": [
+  "\"Güil\": abuelo Güil firma su testamento con plumero.",
+  "\"Will\": Will Smith ve el futuro en bola de cristal.",
+  "\"Huil\": huevo con voluntad de hierro empuja una montaña."
+ ],
+ "or": [
+  "\"Or\": pirata duda: ¿cofre de oro o de plata?",
+  "\"Orca\": ¿orca o delfín? ambos saltan a la vez.",
+  "\"Oreja\": payaso elige: ¿oreja o nariz?"
+ ],
+ "say": [
+  "\"Sei\": seis bocas dicen “hola” a coro.",
+  "\"Sé\": loro dice “sé decir hola” sin parar.",
+  "\"Sayo\": monje con sayo dice amén por megáfono."
+ ],
+ "go": [
+  "\"Gou\": gorrión va volando al parque.",
+  "\"Go-kart\": go-kart va rapidísimo al colegio.",
+  "\"Gol\": balón va directo a la portería."
+ ],
+ "so": [
+  "\"Sou\": sopa hirviendo, así que soplas.",
+  "\"Soso\": discurso tan soso que el gato se duerme.",
+  "\"So\": ¡so! el caballo frena, entonces baja el jinete."
+ ],
+ "all": [
+  "\"Ol\": olla gigante donde caben todos los vecinos.",
+  "\"Ola\": ola se lleva todo de la playa.",
+  "\"Olé\": ¡olé! gritan todos en la plaza."
+ ],
+ "if": [
+  "\"If\": ¿y si el hipopótamo vuela?",
+  "\"Hipo\": si tienes hipo, te asusto con un sapo.",
+  "\"Ifigenia\": Ifigenia duda: ¿y si abro la caja?"
+ ],
+ "one": [
+  "\"Guan\": guante con un solo dedo.",
+  "\"Juan\": Juan, uno solo, en un estadio vacío.",
+  "\"Uan\": un único huevo brillando en el nido."
+ ],
+ "would": [
+  "\"Gud\": gusano querría ser mariposa, soñando.",
+  "\"Wood\": madera soñando: me gustaría ser árbol.",
+  "\"Güd\": güero diría que sí, si pudiera."
+ ],
+ "about": [
+  "\"Abaut\": abad habla sobre ovnis alrededor de la mesa.",
+  "\"A bote\": todos alrededor de un bote charlando sobre peces.",
+  "\"Abeto\": niños cantan alrededor de un abeto."
+ ],
+ "can": [
+  "\"Can\": can, perro que puede abrir latas.",
+  "\"Kan\": Gengis Kan puede levantar una lata gigante.",
+  "\"Cana\": abuela con cana puede saltar la cuerda."
+ ],
+ "which": [
+  "\"Güich\": güichi duda: ¿cuál de los dos pasteles?",
+  "\"Witch\": bruja señala cuál poción beber.",
+  "\"Huich\": huichol escoge cuál collar ponerse."
+ ],
+ "there": [
+  "\"Der\": derrumbe allá a lo lejos.",
+  "\"Dera\": madera flotando allá en el río.",
+  "\"Dear\": ciervo allí en el horizonte saluda."
+ ],
+ "more": [
+  "\"Mor\": mora gigante pide más y más azúcar.",
+  "\"Moro\": moro sirve más té sin parar.",
+  "\"Morsa\": morsa pide más pescado aplaudiendo."
+ ],
+ "get": [
+  "\"Guet\": gueto lleno de premios que consigues.",
+  "\"Get\": geta de cerdo obtiene una corona.",
+  "\"Gue\": guepardo consigue llegar primero."
+ ],
+ "who": [
+  "\"Ju\": búho pregunta ¡ju ju! ¿quién anda ahí?",
+  "\"Judas\": detective señala a Judas: ¿quién fue?",
+  "\"Jugo\": vaso de jugo vacío: ¿quién se lo bebió?"
+ ],
+ "like": [
+  "\"Laik\": pulgar gigante dice “me gusta” a una pizza.",
+  "\"Laika\": a la perra Laika le gusta flotar en el espacio.",
+  "\"Lycra\": abuelo en lycra, parecido a un superhéroe."
+ ],
+ "when": [
+  "\"Güen\": reloj con cara impaciente grita: ¿cuándo?",
+  "\"Wendy\": Wendy mira el reloj: ¿cuándo llega Peter Pan?",
+  "\"Huevín\": huevín pregunta desde el nido: ¿cuándo nazco?"
+ ],
+ "make": [
+  "\"Meik\": mecánico fabrica un robot de tostadas.",
+  "\"Mike\": Mike prepara pizza lanzando la masa al techo.",
+  "\"Maqueta\": maqueta gigante fabricada con espaguetis."
+ ],
+ "see": [
+  "\"Si\": ojo gigante grita ¡sí, veo! con prismáticos.",
+  "\"Silla\": silla con ojos ve toda la habitación.",
+  "\"Sí\": bombilla en la cabeza: ¡sí, ya entiendo!"
+ ],
+ "what": [
+  "\"Guat\": guatemalteco confundido grita ¿qué?",
+  "\"Guata\": almohada de guata pregunta ¿qué pasó?",
+  "\"Guau\": perro ladra: ¿qué es eso?"
+ ],
+ "up": [
+  "\"Ap\": app sube en cohete hacia arriba.",
+  "\"Hop\": ¡hop! canguro salta hasta el techo.",
+  "\"Apio\": apio crece hacia arriba hasta las nubes."
+ ],
+ "some": [
+  "\"Sam\": tío Sam reparte algunas monedas.",
+  "\"Samba\": algunos pollos bailan samba, otros no.",
+  "\"Sombrero\": sombrero con algo de arroz dentro."
+ ],
+ "other": [
+  "\"Ader\": Adán ve otro Adán idéntico en el espejo.",
+  "\"Hada\": hada saca otro conejo, y otro más.",
+  "\"Odre\": odre de vino llama al otro odre."
+ ],
+ "out": [
+  "\"Aut\": auto sale disparado afuera del garaje.",
+  "\"Out\": árbitro grita ¡out! y la pelota sale fuera.",
+  "\"Auu\": lobo aúlla afuera de la casa en la nieve."
+ ],
+ "good": [
+  "\"Gud\": gusano bueno con aureola de santo.",
+  "\"Gudi\": galleta buena gana medalla de oro.",
+  "\"Gudo\": gordo bueno reparte pan a todos."
+ ],
+ "year": [
+  "\"Yir\": yerno sopla vela de un año.",
+  "\"Iar\": burro rebuzna ¡ia! comiendo las uvas de año nuevo.",
+  "\"Yira\": la tierra yira alrededor del sol: un año."
+ ],
+ "no": [
+  "\"Nou\": nuez gigante dice no con la cabeza.",
+  "\"Noé\": Noé dice ¡no! al unicornio: ninguno sube.",
+  "\"Nono\": abuelo nono mueve el dedo: no, no."
+ ],
+ "well": [
+  "\"Güel\": güelita teje y dice: “pues bien”.",
+  "\"Huele\": huele bien el pastel de la abuela.",
+  "\"Uel\": pozo bien profundo hace eco ¡uel!"
+ ],
+ "because": [
+  "\"Bicós\": bicho con queso explica porque tiene hambre.",
+  "\"Bicos\": besitos, porque te quiero mucho.",
+  "\"Bicoz\": bicho se pone botas porque llueve."
+ ],
+ "very": [
+  "\"Veri\": verruga muy, muy grande en la nariz.",
+  "\"Verde\": rana muy, muy verde brillando.",
+  "\"Beri\": berenjena muy gorda aplasta un coche."
+ ],
+ "just": [
+  "\"Yast\": yate justo cabe en la bañera.",
+  "\"Yus\": jugo solo para mí, en vaso único.",
+  "\"Chas\": ¡chas! acabo de llegar en un instante."
+ ],
+ "come": [
+  "\"Cam\": cama viene corriendo hacia ti.",
+  "\"Cometa\": cometa llega desde el cielo a tu jardín.",
+  "\"Camarero\": camarero viene volando con la sopa."
+ ],
+ "could": [
+  "\"Kudo\": karateca podría romper diez tablas.",
+  "\"Cuadro\": cuadro antiguo podía hablar antes.",
+  "\"Cuídate\": abuela podría regañarte si no te cuidas."
+ ],
+ "use": [
+  "\"Ius\": ¡yus! uso una cuchara como remo.",
+  "\"Yuca\": yuca usada como bate de béisbol.",
+  "\"Yus\": uso un cepillo de dientes para peinar al gato."
+ ],
+ "than": [
+  "\"Dan\": Dan es más alto que una jirafa.",
+  "\"Danza\": danza más rápida que un rayo.",
+  "\"Zan\": zanahoria más larga que un tren."
+ ],
+ "now": [
+  "\"Nau\": nave despega ahora mismo.",
+  "\"Nao\": nao zarpa ya, sin esperar a nadie.",
+  "\"Ñau\": gato maúlla: comida ahora."
+ ],
+ "then": [
+  "\"Den\": se cae un diente, luego llega el ratón.",
+  "\"Dentista\": dentista enciende taladro, entonces gritas.",
+  "\"Zen\": monje zen medita, luego flota."
+ ],
+ "also": [
+  "\"Olso\": oso también baila ballet en tutú.",
+  "\"Alzo\": alzo la mano también, junto a todos.",
+  "\"Olsou\": olla también lleva sombrero."
+ ],
+ "into": [
+  "\"Intu\": salto dentro del agua de un chapuzón.",
+  "\"Intú\": tren entra dentro del túnel.",
+  "\"Indio\": indio entra dentro de una tienda."
+ ],
+ "only": [
+  "\"Ounli\": ola única en todo el mar.",
+  "\"Onli\": solo un gato conectado en línea.",
+  "\"Oli\": oliva sola en un plato enorme."
+ ],
+ "look": [
+  "\"Luk\": Luke Skywalker mira con prismáticos.",
+  "\"Luca\": Luca busca su sombrero bajo la cama.",
+  "\"Lucero\": lucero parece mirarte desde el cielo."
+ ],
+ "first": [
+  "\"Ferst\": fresa llega primera a la meta.",
+  "\"Fiesta\": el primero en llegar a la fiesta.",
+  "\"Ferrari\": Ferrari rojo en primer lugar."
+ ],
+ "new": [
+  "\"Niu\": niño estrena zapatos nuevos brillantes.",
+  "\"Ñu\": ñu con traje nuevo de boda.",
+  "\"Nieve\": nieve nueva cubre el coche."
+ ],
+ "over": [
+  "\"Ouver\": ovni flota encima de la casa.",
+  "\"Oveja\": oveja encima del techo de la iglesia.",
+  "\"Obra\": obra terminada, telón cae."
+ ],
+ "any": [
+  "\"Eni\": enano revisa sus bolsillos: ¿algún caramelo?",
+  "\"Henny\": gallina Henny no pone ningún huevo.",
+  "\"Enigma\": esfinge pregunta: ¿alguna respuesta?"
+ ],
+ "after": [
+  "\"Afta\": afta en la boca después del caramelo.",
+  "\"After\": after party: después de la fiesta, zapatos volando.",
+  "\"Aftershave\": aftershave arde después de afeitarse."
+ ],
+ "where": [
+  "\"Güer\": güero perdido pregunta: ¿dónde estoy?",
+  "\"Huera\": huerta con mapa: ¿dónde está la zanahoria?",
+  "\"Uer\": pirata con mapa: ¿dónde enterré el oro?"
+ ],
+ "most": [
+  "\"Most\": mostaza cubre la mayoría del perrito.",
+  "\"Mosto\": la mayoría bebe mosto en la fiesta.",
+  "\"Mostro\": mostro: el monstruo más grande de todos."
+ ],
+ "should": [
+  "\"Chud\": chulo debería devolver la bicicleta.",
+  "\"Shut\": duende señala: deberías cerrar la puerta.",
+  "\"Chut\": ¡chut! deberías chutar el balón ya."
+ ],
+ "much": [
+  "\"Mach\": avión supersónico lleva muchísimos pasajeros apretados.",
+  "\"Macho\": macho cabrío come mucho, mucho pasto.",
+  "\"Match\": caja con muchísimos fósforos encendidos a la vez."
+ ],
+ "right": [
+  "\"Rait\": rata gira a la derecha con intermitente.",
+  "\"Raid\": spray Raid apunta a la derecha: ¡correcto!",
+  "\"Rayo\": rayo cae justo a la derecha del árbol."
+ ],
+ "how": [
+  "\"Jau\": perro pregunta ¡jau! ¿cómo se abre la nevera?",
+  "\"Jaula\": loro en jaula pregunta: ¿cómo salgo?",
+  "\"Hao\": panda Hao pregunta cómo usar palillos."
+ ],
+ "back": [
+  "\"Bak\": bacalao pegado a la espalda del pescador.",
+  "\"Vaca\": vaca camina hacia atrás como cangrejo.",
+  "\"Baca\": maleta sobre la baca del coche vuelve sola a casa."
+ ],
+ "mean": [
+  "\"Min\": mina de diccionarios: ¿qué significa esto?",
+  "\"Mini\": duende mini y mezquino no comparte su moneda.",
+  "\"Mímica\": mimo hace mímica: ¿qué quiere decir?"
+ ],
+ "even": [
+  "\"Iven\": Iván incluso baila en la nieve.",
+  "\"Ivén\": ni siquiera el perro come esa sopa.",
+  "\"Evento\": evento par: dos novios y dos pasteles."
+ ],
+ "here": [
+  "\"Jir\": jirafa asoma aquí, en tu sala.",
+  "\"Jía\": tía grita ¡aquí estoy! desde el armario.",
+  "\"Hierro\": imán de hierro aquí, pegado a tu nariz."
+ ],
+ "many": [
+  "\"Meni\": menú con muchísimos platos rompe la mesa.",
+  "\"Meñique\": muchos meñiques saludando en fila.",
+  "\"Mani\": muchos manís llueven del cielo."
+ ],
+ "such": [
+  "\"Sach\": saco tan enorme que no cabe en la ciudad.",
+  "\"Sachet\": sobre de ketchup tan grande como un sofá.",
+  "\"Sucha\": ¡semejante cucaracha! tan grande como un perro."
+ ],
+ "last": [
+  "\"Last\": lastre: el último saco cae del globo.",
+  "\"Lasaña\": lasaña dura una semana entera en la nevera.",
+  "\"Lata\": última lata en el estante, todos corren."
+ ],
+ "child": [
+  "\"Chaild\": chal de abuela envuelve a un niño.",
+  "\"Chayote\": niño disfrazado de chayote en la escuela.",
+  "\"Chile\": niño come chile y echa fuego."
+ ],
+ "really": [
+  "\"Rili\": rizo realmente rizado como resorte.",
+  "\"Real\": rey se pellizca: ¿es real, de verdad?",
+  "\"Rieles\": rieles de verdad atraviesan tu cocina."
+ ],
+ "call": [
+  "\"Col\": col con teléfono llama a la lechuga.",
+  "\"Cola\": cola de gente llamando a gritos.",
+  "\"Coral\": coral marino llama por una caracola."
+ ],
+ "before": [
+  "\"Bifor\": bife servido antes de la sopa.",
+  "\"Bici\": bicicleta llega antes que el tren.",
+  "\"Bisonte\": bisonte llega antes al foro."
+ ],
+ "company": [
+  "\"Campani\": campana gigante suena en la empresa a las ocho.",
+  "\"Compañía\": compañía de payasos con corbata.",
+  "\"Campaña\": empresa en campaña lanza globos."
+ ],
+ "down": [
+  "\"Daun\": dado cae rodando escaleras abajo.",
+  "\"Don\": Don Quijote cae abajo del caballo.",
+  "\"Dama\": dama baja al sótano en tobogán."
+ ],
+ "man": [
+  "\"Man\": hombre con manos gigantes saluda.",
+  "\"Mango\": hombre vestido de mango en la calle.",
+  "\"Mantis\": mantis con bigote de hombre."
+ ],
+ "place": [
+  "\"Pleis\": playa: el lugar perfecto para una vaca.",
+  "\"Plaza\": plaza llena de sitios vacíos.",
+  "\"Pleito\": pleito por un sitio en el banco."
+ ],
+ "long": [
+  "\"Long\": longaniza larguísima cruza la calle.",
+  "\"Lona\": lona larga cubre un kilómetro.",
+  "\"León\": león con cola larguísima."
+ ],
+ "between": [
+  "\"Bituin\": betún entre dos zapatos.",
+  "\"Bitwin\": gemelos con un pato entre ellos.",
+  "\"Bit\": bizcocho entre dos tortugas."
+ ],
+ "too": [
+  "\"Tu\": tú también saltas al agua.",
+  "\"Tutú\": tutú demasiado grande cubre la casa.",
+  "\"Tubo\": tubo demasiado largo cruza la ciudad."
+ ],
+ "problem": [
+  "\"Problem\": problema: elefante en la bañera.",
+  "\"Probeta\": probeta explota, gran problema.",
+  "\"Pro\": profe con problema en la pizarra."
+ ],
+ "same": [
+  "\"Seim\": siameses iguales comen lo mismo.",
+  "\"Semillas\": semillas idénticas en fila.",
+  "\"Seimi\": semáforo con tres luces iguales."
+ ],
+ "lot": [
+  "\"Lot\": lotería da un montón de billetes.",
+  "\"Loto\": flor de loto con montón de pétalos.",
+  "\"Lote\": lote gigante de zapatos."
+ ],
+ "great": [
+  "\"Greit\": grillo gigante toca violín, ¡genial!",
+  "\"Greta\": Greta enorme como montaña levanta el pulgar.",
+  "\"Grito\": grito de ¡excelente! sacude el estadio."
+ ],
+ "number": [
+  "\"Namber\": nombre en la camiseta se convierte en números.",
+  "\"Ñame\": ñame con un número pintado en la panza.",
+  "\"Nambu\": bambú con cifras talladas en cada nudo."
+ ],
+ "both": [
+  "\"Bouz\": botas: ambos pies metidos en una sola bota.",
+  "\"Bostezo\": los dos gemelos bostezan a la vez.",
+  "\"Bote\": los dos en el mismo bote remando."
+ ],
+ "own": [
+  "\"Oun\": tu propio ovni aparcado en el garaje.",
+  "\"Ona\": Ona tiene su propia isla con su nombre.",
+  "\"Ouner\": dueño abraza su propia casa con cariño."
+ ],
+ "part": [
+  "\"Part\": puzzle gigante pierde una pieza.",
+  "\"Parte\": tarta partida en mil partes.",
+  "\"Parche\": pantalón con parche: pieza que faltaba."
+ ],
+ "point": [
+  "\"Point\": punta de lápiz gigante hace un punto.",
+  "\"Puño\": puñetazo directo al punto de la diana.",
+  "\"Pointer\": perro pointer señala el punto exacto."
+ ],
+ "little": [
+  "\"Lirol\": lirio diminuto dentro de una taza.",
+  "\"Litera\": litera pequeñita para hormigas.",
+  "\"Lito\": poquito de sal sobre un granito de arroz."
+ ],
+ "start": [
+  "\"Estart\": estrella de cine da la salida con pistola.",
+  "\"Start\": botón start empieza la partida.",
+  "\"Estar\": a sus puestos, empieza la carrera."
+ ],
+ "talk": [
+  "\"Tok\": TikTok charla sin parar en tu bolsillo.",
+  "\"Toc\": toc toc, la puerta habla contigo.",
+  "\"Toca\": tocadiscos charla con la abuela."
+ ],
+ "something": [
+  "\"Samzing\": samba de algo misterioso bajo la sábana.",
+  "\"Sam\": Sam encuentra algo brillante en la caja.",
+  "\"Samsung\": algo raro sale del móvil Samsung."
+ ],
+ "put": [
+  "\"Put\": pato pone un huevo en la sopa.",
+  "\"Pudín\": pudín colocado encima de tu silla.",
+  "\"Putt\": golfista coloca la pelota en el hoyo."
+ ],
+ "another": [
+  "\"Anader\": ánade trae otro ánade, y otro más.",
+  "\"Ana\": Ana da otro beso, y otro.",
+  "\"A nada\": nado, y aparece otra ola."
+ ],
+ "interest": [
+  "\"Interes\": niño mira con lupa un caracol, muy interesado.",
+  "\"Interés\": banco cobra intereses con una pala.",
+  "\"Intrés\": afición de tres patos: coleccionar sellos."
+ ],
+ "country": [
+  "\"Contri\": contrabajo con bandera de su país.",
+  "\"Cantri\": cantina típica del país con mariachis.",
+  "\"Country\": vaquero country abraza su país en un mapa."
+ ],
+ "old": [
+  "\"Ould\": olla vieja con barba blanca.",
+  "\"Oldie\": disco viejo rayado con bastón.",
+  "\"Hola\": abuelo viejísimo dice hola con bastón."
+ ],
+ "each": [
+  "\"Ich\": cada uno estornuda ¡ich! a su turno.",
+  "\"Ichi\": cada ninja con su espada.",
+  "\"Hich\": cada pez con su pecera propia."
+ ],
+ "school": [
+  "\"Escul\": escultura enseña matemáticas en la escuela.",
+  "\"Esqueleto\": esqueleto con mochila va al colegio.",
+  "\"Skull\": calavera sentada en un pupitre."
+ ],
+ "high": [
+  "\"Jai\": jaiba en lo alto de un poste.",
+  "\"Hay\": hay un gato en lo alto del árbol.",
+  "\"Jaimito\": Jaimito trepa a lo alto del rascacielos."
+ ],
+ "off": [
+  "\"Of\": ¡uf! apago la luz y se duerme.",
+  "\"Oficina\": oficina apagada, todos libres.",
+  "\"Off\": botón off apaga la ciudad entera."
+ ],
+ "next": [
+  "\"Nekst\": nene siguiente en la fila del tobogán.",
+  "\"Nexo\": nexo une al siguiente vagón.",
+  "\"Nextel\": teléfono anuncia: ¡siguiente cliente!"
+ ],
+ "end": [
+  "\"End\": enda, la cinta llega al fin.",
+  "\"Enano\": enano con cartel “FIN” cierra el cuento.",
+  "\"Endo\": endulzo el final de la película."
+ ],
+ "live": [
+  "\"Liv\": libélula vive dentro de una casa de muñecas.",
+  "\"Lif\": lima viviendo en una nevera.",
+  "\"Libia\": vive en Libia con camellos."
+ ],
+ "why": [
+  "\"Guay\": loro guay pregunta “¿por qué?” sin parar.",
+  "\"Huayno\": señor baila huayno en la mesa: ¿por qué?",
+  "\"Waifai\": wifi caído, todos gritan ¿por qué?"
+ ],
+ "while": [
+  "\"Guail\": guayaba crece mientras duermes en la hamaca.",
+  "\"Guau\": perro ladra mientras te bañas.",
+  "\"Güaila\": abuela canta mientras cocina con cuchara gigante."
+ ],
+ "week": [
+  "\"Güik\": güiro suena siete veces: una semana.",
+  "\"Wiki\": Wikipedia muestra siete días en su portada.",
+  "\"Huic\": huichol pinta siete soles: una semana."
+ ],
+ "might": [
+  "\"Mait\": maître podría servirte un zapato.",
+  "\"Maite\": Maite podría ganar la lotería mañana.",
+  "\"Maíz\": maíz podría convertirse en palomitas."
+ ],
+ "must": [
+  "\"Mast\": mástil: tienes que subir hasta arriba.",
+  "\"Masticar\": tienes que masticar treinta veces.",
+  "\"Mostaza\": debes ponerle mostaza al perrito."
+ ],
+ "home": [
+  "\"Joum\": jamón cuelga junto a la chimenea del hogar.",
+  "\"Homero\": Homero sale de su casa en pantuflas.",
+  "\"Humo\": humo de la chimenea del hogar dibuja un corazón."
+ ],
+ "never": [
+  "\"Never\": nevera que nunca se abre, candado gigante.",
+  "\"Nevar\": nunca nieva en el desierto, camello triste.",
+  "\"Nevera\": pingüino nunca sale de la nevera."
+ ],
+ "course": [
+  "\"Cors\": corsario cambia de rumbo con timón gigante.",
+  "\"Corsé\": curso de costura de corsés.",
+  "\"Cuscús\": cuscús servido como plato principal."
+ ],
+ "house": [
+  "\"Jaus\": jaula gigante usada como casa.",
+  "\"Jauja\": casa en Jauja hecha de chocolate.",
+  "\"Haus\": hongo enorme convertido en casa con puerta."
+ ],
+ "report": [
+  "\"Riport\": reportero con micrófono gigante.",
+  "\"Repollo\": repollo lee el informe del tiempo.",
+  "\"Ripor\": rifle de papeles: informe por todas partes."
+ ],
+ "group": [
+  "\"Grup\": grupo de grullas en formación.",
+  "\"Grupa\": grupo de caballos con las grupas juntas.",
+  "\"Grupi\": groupie sigue al grupo de música."
+ ],
+ "case": [
+  "\"Keis\": queso dentro de un estuche de violín.",
+  "\"Keys\": detective resuelve el caso con llaves.",
+  "\"Caseta\": caseta de perro usada como maletín."
+ ],
+ "woman": [
+  "\"Güman\": güira mujer fuerte levanta un coche.",
+  "\"Humana\": mujer humana entre robots.",
+  "\"Gumana\": gusana con aretes es una mujer."
+ ],
+ "around": [
+  "\"Araund\": araña da vueltas alrededor del pastel.",
+  "\"Aro\": aro gira alrededor del planeta.",
+  "\"A ronda\": ronda de niños alrededor de un árbol."
+ ],
+ "book": [
+  "\"Buk\": buque hecho de libros apilados.",
+  "\"Búho\": búho lee un libro con gafas.",
+  "\"Bucanero\": bucanero reserva mesa con un libro."
+ ],
+ "family": [
+  "\"Famili\": familia de famosos en un sofá.",
+  "\"Fémur\": familia de esqueletos posa en foto.",
+  "\"Fama\": familia de fantasmas en foto."
+ ],
+ "let": [
+  "\"Let\": letrero deja pasar a un pato.",
+  "\"Letra\": letra deja que el lápiz baile.",
+  "\"Leche\": leche deja entrar al cereal."
+ ],
+ "again": [
+  "\"Aguen\": agüita cae otra vez en tu cabeza.",
+  "\"Aguanta\": aguanta, se cae otra vez la torre.",
+  "\"Agüero\": mal agüero se repite de nuevo."
+ ],
+ "kind": [
+  "\"Kaind\": caimán amable regala flores.",
+  "\"Caín\": Caín amable comparte manzanas.",
+  "\"Kinder\": kinder de tipos raros de dinosaurios."
+ ],
+ "system": [
+  "\"Sistem\": sistema de tubos en tu cabeza.",
+  "\"Sisters\": hermanas dirigen el sistema de luces.",
+  "\"Cisterna\": cisterna con sistema de engranajes."
+ ],
+ "every": [
+  "\"Evri\": Everest escalado todos los días por un gato.",
+  "\"Ebrio\": ebrio canta cada noche a la luna.",
+  "\"Ébano\": cada tecla de ébano toca sola."
+ ],
+ "question": [
+  "\"Cuéstion\": cuesta empinada llena de signos de pregunta.",
+  "\"Cuestión\": cuestión gigante escrita en un pizarrón.",
+  "\"Cuesta\": vendedora pregunta: ¿cuánto cuesta?"
+ ],
+ "during": [
+  "\"Diurin\": diurno sol brilla durante toda la boda.",
+  "\"Durin\": enano Durin canta durante la cena.",
+  "\"Dior\": desfile de Dior durante una tormenta."
+ ],
+ "always": [
+  "\"Olgueis\": olas siempre llegan a la playa, nunca faltan.",
+  "\"Olga\": Olga siempre se sienta en el mismo banco.",
+  "\"Alguien\": alguien siempre toca la puerta a medianoche."
+ ],
+ "big": [
+  "\"Big\": bigote gigante del abuelo barre la calle.",
+  "\"Viga\": viga enorme como un tren en tu sala.",
+  "\"Bigfoot\": pie grande deja huellas enormes en la nieve."
+ ],
+ "set": [
+  "\"Set\": seta colocada con cuidado sobre la mesa.",
+  "\"Seda\": conjunto de pijama de seda brillante.",
+  "\"Sed\": sediento pone cien vasos en la mesa."
+ ],
+ "small": [
+  "\"Esmol\": esmalte de uñas diminuto para una hormiga.",
+  "\"Esmoquin\": esmoquin pequeñito para un ratón.",
+  "\"Es mol\": molécula pequeñísima con gafas saluda."
+ ],
+ "study": [
+  "\"Estadi\": estadio lleno de estudiantes leyendo.",
+  "\"Estatua\": estatua estudia de noche con lámpara.",
+  "\"Estudio\": búho estudia en su estudio de pintor."
+ ],
+ "since": [
+  "\"Sins\": sin sol desde ayer, todos con linterna.",
+  "\"Sinsonte\": sinsonte canta desde hace cien años.",
+  "\"Cinco\": desde las cinco espero bajo la lluvia."
+ ],
+ "under": [
+  "\"Ander\": Andrés duerme debajo de la cama.",
+  "\"Andén\": debajo del andén viven topos.",
+  "\"Ondas\": ondas de tiburones debajo del barco."
+ ],
+ "turn": [
+  "\"Tern\": ternera gira como peonza.",
+  "\"Turno\": pollo espera su turno con un número.",
+  "\"Tuerca\": tuerca gigante da vueltas y vueltas."
+ ],
+ "few": [
+  "\"Fiu\": ¡fiu! quedan pocos pelos en la cabeza.",
+  "\"Fiuuu\": pocos pájaros en el cable silban.",
+  "\"Feo\": pocos feos llegan al concurso."
+ ],
+ "hand": [
+  "\"Jand\": Han Solo entrega su mano metálica.",
+  "\"Jandro\": Alejandro con manos de gigante.",
+  "\"Sandalia\": mano metida dentro de una sandalia."
+ ],
+ "state": [
+  "\"Esteit\": estatua declara el estado de emergencia.",
+  "\"Estado\": mapa de un estado con forma de pastel.",
+  "\"Este\": este rey declara: ¡tengo hambre!"
+ ],
+ "fact": [
+  "\"Fact\": factura con un hecho escrito en rojo.",
+  "\"Facto\": detective comprueba un hecho con lupa.",
+  "\"Fax\": fax escupe datos sin parar."
+ ],
+ "area": [
+  "\"Eria\": era de trigo, zona cercada con vacas.",
+  "\"Arena\": zona de playa marcada con conos.",
+  "\"Hiena\": hiena patrulla su área."
+ ],
+ "name": [
+  "\"Neim\": neumático con tu nombre grabado.",
+  "\"Ñame\": ñame con etiqueta de nombre.",
+  "\"Neymar\": Neymar grita su nombre al marcar."
+ ],
+ "friend": [
+  "\"Frend\": freno de bici; amigo te salva.",
+  "\"Frente\": amigos chocan frente con frente.",
+  "\"Frenillo\": amigo con frenillos sonríe."
+ ],
+ "month": [
+  "\"Manz\": manzana por cada mes del calendario.",
+  "\"Mansión\": mansión de doce cuartos, uno por mes.",
+  "\"Monje\": monje tacha cada mes en la pared."
+ ],
+ "large": [
+  "\"Larch\": pan larguísimo y enorme como barco.",
+  "\"Largo\": jirafa larga y enorme sale del coche.",
+  "\"Lardo\": cerdo grande y ancho como un estadio."
+ ],
+ "without": [
+  "\"Güizaut\": güisqui sin hielo, vaso triste.",
+  "\"Guisado\": guisado sin sal, abuela llora.",
+  "\"Uizaut\": pez sin agua salta en la arena."
+ ],
+ "information": [
+  "\"Informeishon\": impresora escupe un informe sin fin.",
+  "\"Informática\": computadora vomita datos de colores.",
+  "\"Informe\": informante susurra información en tu oreja."
+ ],
+ "order": [
+  "\"Order\": orden: soldados en fila perfecta.",
+  "\"Orden\": camarero toma el pedido con un cuaderno.",
+  "\"Ordeñar\": ordeñar vacas en orden."
+ ],
+ "government": [
+  "\"Gaviota\": gaviotas con corbata forman el gobierno en un palacio.",
+  "\"Gobernante\": pato gobernante dicta leyes desde un trono.",
+  "\"Gavera\": gavera de hielo convertida en parlamento congelado."
+ ],
+ "issue": [
+  "\"Ishu\": ¡ishú! el estornudo emite billetes por la nariz.",
+  "\"Isla\": isla con un gran problema: un volcán enojado.",
+  "\"Isuzu\": camión Isuzu con un problema: ruedas cuadradas."
+ ],
+ "market": [
+  "\"Marquet\": marqués con peluca vende fruta en el mercado.",
+  "\"Marca\": mercado lleno de marcas gritando precios.",
+  "\"Market\": supermercado con carritos voladores."
+ ],
+ "hold": [
+  "\"Jold\": jolgorio: celebran una fiesta sosteniendo velas.",
+  "\"Hola\": estatua dice hola sosteniendo el cielo.",
+  "\"Hoyo\": sostengo una cuerda sobre un hoyo profundo."
+ ],
+ "service": [
+  "\"Sérvis\": cerveza servida por un camarero robot.",
+  "\"Servicio\": servicio de habitación trae pizza volando.",
+  "\"Servilleta\": servilleta con pajarita atiende la mesa."
+ ],
+ "against": [
+  "\"Eguenst\": agüita choca contra la pared.",
+  "\"Agente\": agente lucha contra ladrones de pasteles.",
+  "\"Aguanto\": aguanto contra el viento abrazado a un poste."
+ ],
+ "second": [
+  "\"Sécond\": secador cuenta cada segundo en voz alta.",
+  "\"Segundón\": caracol llega segundo en la carrera.",
+  "\"Seco\": reloj seco marca un segundo con chasquido."
+ ],
+ "yes": [
+  "\"Yes\": yeso escrito con un gran SÍ.",
+  "\"Ies\": futbolista grita ¡yes! con los brazos arriba.",
+  "\"Yesca\": yesca se enciende y asiente: sí."
+ ],
+ "increase": [
+  "\"Increis\": increíble globo aumenta hasta tapar el sol.",
+  "\"Inkris\": inquilino ve aumentar la renta en el cartel.",
+  "\"Crescendo\": música aumenta de volumen, rompe ventanas."
+ ],
+ "job": [
+  "\"Yob\": joven trabaja con overol y casco.",
+  "\"Job\": Job trabaja con paciencia infinita.",
+  "\"Joroba\": joroba de tanto trabajo cargando ladrillos."
+ ],
+ "plan": [
+  "\"Plan\": pirata estudia un plano de tesoro.",
+  "\"Planta\": planta planea la conquista del jardín.",
+  "\"Plancha\": plancha con un plan secreto en la cocina."
+ ],
+ "result": [
+  "\"Risalt\": resaltador marca el resultado del examen.",
+  "\"Resulta\": resulta que ganó la tortuga.",
+  "\"Rizalt\": rizos: resultado de la peluquería loca."
+ ],
+ "away": [
+  "\"Auei\": gato huye lejos, a otra ciudad.",
+  "\"Agua\": agua lleva el barco de papel lejos.",
+  "\"Auuu\": aullido de lobo, muy lejos."
+ ],
+ "example": [
+  "\"Exampol\": examen con un ejemplo en la pizarra.",
+  "\"Exam\": profesor da ejemplos con muñecos.",
+  "\"Ejemplar\": perro ejemplar sirve de ejemplo a los gatos."
+ ],
+ "young": [
+  "\"Yong\": joven yogui en patinete.",
+  "\"Yang\": yin-yang joven bailando hip hop.",
+  "\"Yunque\": joven levanta un yunque como pluma."
+ ],
+ "close": [
+  "\"Clous\": clóset se cierra solo de golpe.",
+  "\"Clown\": payaso cierra la puerta en tu cara.",
+  "\"Clavo\": clavo cierra la tapa del cofre."
+ ],
+ "program": [
+  "\"Program\": programador con pijama de código.",
+  "\"Pro gramo\": gramo de programa en la tele.",
+  "\"Programa\": programa de tele con un loro presentador."
+ ],
+ "thank": [
+  "\"Zenk\": zanco agradece con reverencia.",
+  "\"Tanque\": tanque da las gracias con flores.",
+  "\"Zanka\": Zanka agradece con abrazo."
+ ],
+ "far": [
+  "\"Far\": faro solitario brilla lejísimos en el horizonte.",
+  "\"Farol\": farol tan lejos que parece una estrella.",
+  "\"Fardo\": fardo de paja rueda lejos, muy lejos."
+ ],
+ "today": [
+  "\"Tudei\": todo el calendario grita: ¡hoy, hoy, hoy!",
+  "\"Tú día\": hoy es tu día: corona de cumpleaños.",
+  "\"Todito\": todito el pastel se come hoy mismo."
+ ],
+ "hour": [
+  "\"Auer\": lobo aúlla cada hora en el reloj.",
+  "\"Aura\": aura brillante dura exactamente una hora.",
+  "\"Ahora\": reloj gigante grita: ¡ahora es la hora!"
+ ],
+ "student": [
+  "\"Estiudent\": estudiante carga un diente gigante en la mochila.",
+  "\"Estío\": estudiante estudia en la playa en pleno verano.",
+  "\"Estufa\": estudiante lee sentado sobre una estufa."
+ ],
+ "face": [
+  "\"Feis\": payaso feísimo se pinta la cara.",
+  "\"Fresa\": fresa gigante con cara sonriente.",
+  "\"Fase\": la luna llena muestra su cara redonda."
+ ],
+ "hope": [
+  "\"Joup\": joropo bailado con esperanza bajo la lluvia.",
+  "\"Jopo\": jopo de pelo se levanta con esperanza.",
+  "\"Hoyo\": flor de esperanza brota en un hoyo."
+ ],
+ "idea": [
+  "\"Aidía\": ¡ay, qué día! bombilla explota de ideas.",
+  "\"Aída\": Aída canta una idea genial en ópera.",
+  "\"Aire\": idea flota en el aire como globo."
+ ],
+ "cost": [
+  "\"Cost\": costal de oro: cuesta un dineral.",
+  "\"Costa\": costa entera vendida por un euro.",
+  "\"Costilla\": costilla cuesta un ojo de la cara."
+ ],
+ "less": [
+  "\"Les\": a ellos les sirven menos sopa.",
+  "\"Lees\": lees menos libros; se los come el perro.",
+  "\"Lesión\": con un pie vendado corres menos."
+ ],
+ "room": [
+  "\"Rum\": ron derramado inunda la habitación.",
+  "\"Rumba\": rumba en un cuarto sin espacio.",
+  "\"Rumiante\": vaca rumiante durmiendo en tu cuarto."
+ ],
+ "until": [
+  "\"Antil\": nado hasta las Antillas con flotador.",
+  "\"Antílope\": antílope corre hasta el horizonte.",
+  "\"Anti\": anticucho asándose hasta medianoche."
+ ],
+ "reason": [
+  "\"Risen\": risa sin ninguna razón en un funeral.",
+  "\"Rizón\": rizo explica su razón con un discurso.",
+  "\"Rison\": risón: el motivo de la fiesta es un gato."
+ ],
+ "form": [
+  "\"Form\": formulario gigante devora a un señor.",
+  "\"Forma\": molde da forma de pato a la gelatina.",
+  "\"Formol\": formulario flotando en un frasco de formol."
+ ],
+ "head": [
+  "\"Jed\": jedi con la cabeza enorme.",
+  "\"Jet\": jet aterriza sobre tu cabeza.",
+  "\"Jefe\": jefe con cabeza de sandía."
+ ],
+ "car": [
+  "\"Car\": coche hecho de caramelo derritiéndose.",
+  "\"Carro\": carro con ruedas de queso.",
+  "\"Carbón\": coche que funciona quemando carbón."
+ ],
+ "level": [
+  "\"Level\": levadura sube de nivel y rompe el techo.",
+  "\"Lebrel\": lebrel sube piso por piso en ascensor.",
+  "\"Libélula\": libélula mide el nivel con burbuja."
+ ],
+ "person": [
+  "\"Pérson\": persona hecha de persianas.",
+  "\"Persa\": gato persa se cree una persona.",
+  "\"Personaje\": persona disfrazada de personaje de dibujos."
+ ],
+ "experience": [
+  "\"Expiriens\": explorador cuenta su experiencia con cicatrices.",
+  "\"Expira\": yogur expira: experiencia amarga.",
+  "\"Espíritu\": espíritu sabio comparte su experiencia."
+ ],
+ "once": [
+  "\"Guans\": guante saluda una sola vez y desaparece.",
+  "\"Ganso\": ganso grazna una sola vez al año.",
+  "\"Juan\": Juan baila una vez en la vida, todos graban."
+ ],
+ "member": [
+  "\"Membrillo\": membrillo con carnet, socio del club de frutas.",
+  "\"Mimbre\": silla de mimbre es miembro del club.",
+  "\"Memo\": memo del club: nuevo socio, un pingüino."
+ ],
+ "bad": [
+  "\"Bad\": bata manchada de barro, malísima.",
+  "\"Bate\": bate rompe una ventana, qué mala idea.",
+  "\"Vado\": coche malo se hunde en un vado."
+ ],
+ "city": [
+  "\"Siti\": silla gigante en medio de la ciudad.",
+  "\"Citi\": ciudad con rascacielos de cítricos.",
+  "\"Sitio\": sitio lleno de edificios y semáforos."
+ ],
+ "night": [
+  "\"Nait\": naipe negro tapa la luna de noche.",
+  "\"Naiti\": nata brilla en la oscuridad de la noche.",
+  "\"Night\": búho con pijama en la noche."
+ ],
+ "line": [
+  "\"Lain\": línea de hormigas hace cola en la panadería.",
+  "\"Laina\": lana tendida en línea recta por la calle.",
+  "\"Lino\": fila de sábanas de lino colgadas."
+ ],
+ "present": [
+  "\"Présent\": pretzel envuelto como regalo con lazo.",
+  "\"Presente\": presentador saca un regalo del sombrero.",
+  "\"Prensa\": prensa aplasta un regalo de cumpleaños."
+ ],
+ "side": [
+  "\"Said\": saeta clavada en el costado del toro.",
+  "\"Saida\": Saida se sienta al lado del cocodrilo.",
+  "\"Seda\": seda cuelga a un lado de la cama."
+ ],
+ "quite": [
+  "\"Cuait\": cuate bastante gordo atascado en la puerta.",
+  "\"Quietud\": quietud total, bastante silencio en la biblioteca.",
+  "\"Cuaderno\": cuaderno bastante lleno de garabatos."
+ ],
+ "term": [
+  "\"Term\": termo con plazo de vencimiento.",
+  "\"Termina\": semestre termina con campanazo.",
+  "\"Ternera\": ternera explica un término difícil."
+ ],
+ "least": [
+  "\"List\": lista de compras con al menos un huevo.",
+  "\"Listo\": listo, por lo menos un pan llegó a casa.",
+  "\"Liza\": Liza come por lo menos un pastel al día."
+ ],
+ "age": [
+  "\"Eich\": letra hache cumple cien años con pastel.",
+  "\"Eish\": anciano dice ¡eish! sintiendo su edad en la espalda.",
+  "\"Ejes\": ejes del coche oxidados por la edad."
+ ],
+ "low": [
+  "\"Lou\": loro vuela bajito, casi tocando el suelo.",
+  "\"Lodo\": charco de lodo bajo y escaso.",
+  "\"Lobo\": lobo agachado camina bajito."
+ ],
+ "within": [
+  "\"Guizin\": guiso listo en menos de un minuto.",
+  "\"Whisky\": barquito dentro de una botella de whisky.",
+  "\"Huevín\": huevo dentro de otro huevo dentro de otro."
+ ],
+ "process": [
+  "\"Prouses\": procesión de robots procesando papeles.",
+  "\"Proceso\": máquina procesa salchichas en cadena.",
+  "\"Prosa\": molino convierte prosa en harina, paso a paso."
+ ],
+ "public": [
+  "\"Páblic\": Pablo canta en la plaza ante el público.",
+  "\"Pablito\": Pablito habla ante un público de gallinas.",
+  "\"Pub\": pub repleto de público aplaudiendo."
+ ],
+ "train": [
+  "\"Trein\": tren con pesas entrena para la maratón.",
+  "\"Treinta\": treinta vagones hacen abdominales.",
+  "\"Trineo\": trineo entrena con renos en el gimnasio."
+ ],
+ "possible": [
+  "\"Pásibol\": pasa la bola: ¡es posible el gol!",
+  "\"Posible\": cerdo con alas: todo es posible.",
+  "\"Pozo\": del pozo es posible que salga un tesoro."
+ ],
+ "view": [
+  "\"Viu\": viuda mira la vista desde la torre.",
+  "\"Vio\": loro vio el mar desde la montaña.",
+  "\"Vidrio\": vista panorámica a través de un vidrio gigante."
+ ],
+ "together": [
+  "\"Tuguéder\": tu gato y tu perro juntos de la mano.",
+  "\"Tú güera\": tú y la güera bailan juntas.",
+  "\"Tugurio\": todos juntos apretados en un tugurio."
+ ],
+ "parent": [
+  "\"Pérent\": padre y madre empujan un cochecito gigante.",
+  "\"Pariente\": pariente presenta a sus padres en la boda.",
+  "\"Perenne\": árbol perenne cuida a sus hijos."
+ ],
+ "party": [
+  "\"Parti\": parto el pastel en la fiesta con espada.",
+  "\"Partido\": partido político hace fiesta con globos.",
+  "\"Pardi\": pájaro pardillo baila en la fiesta."
+ ],
+ "local": [
+  "\"Lóucal\": local de barrio lleno de vecinos.",
+  "\"Loco\": loco del lugar saluda a todos los vecinos.",
+  "\"Lacal\": taquería local con abuelos cocinando."
+ ],
+ "control": [
+  "\"Contról\": control remoto controla a un gato.",
+  "\"Contralor\": contralor dirige patos con un mando.",
+  "\"Contrabajo\": contrabajo controla a toda la orquesta."
+ ],
+ "concern": [
+  "\"Consern\": concierto donde el público se muerde las uñas.",
+  "\"Concierne\": rey preocupado: este asunto le concierne.",
+  "\"Concha\": concha preocupada se cierra de miedo."
+ ],
+ "product": [
+  "\"Prodact\": producto con lazo brillante en vitrina.",
+  "\"Pro ducto\": producto sale disparado de un ducto.",
+  "\"Pródigo\": hijo pródigo vende productos en la plaza."
+ ],
+ "story": [
+  "\"Estori\": estornudo cuenta una historia de dragones.",
+  "\"Estoril\": abuela en Estoril cuenta cuentos a peces.",
+  "\"Historia\": libro gigante cuenta un cuento en voz alta."
+ ],
+ "whole": [
+  "\"Joul\": jaula entera llena de canarios.",
+  "\"Hola\": el pueblo entero dice hola al unísono.",
+  "\"Jól\": pastel entero en un solo bocado."
+ ],
+ "rate": [
+  "\"Reit\": rey cobra una tarifa por cada sonrisa.",
+  "\"Rata\": rata cobra peaje a cada gato que pasa.",
+  "\"Retén\": policía de retén marca el ritmo con silbato."
+ ],
+ "care": [
+  "\"Quer\": querido gato envuelto en algodones con cuidado.",
+  "\"Kea\": loro kea cuida un huevo con mantita.",
+  "\"Quiero\": te quiero, dice la enfermera cuidando un oso."
+ ],
+ "effect": [
+  "\"Efecto\": balón con efecto curva alrededor de un edificio.",
+  "\"Ifec\": varita mágica produce efecto de humo rosa.",
+  "\"Efectivo\": lluvia de billetes produce efecto en todos."
+ ],
+ "sort": [
+  "\"Sort\": sortijas ordenadas por tamaño en fila.",
+  "\"Sorteo\": sorteo de todo tipo de premios raros.",
+  "\"Sordo\": sordo ordena calcetines por colores."
+ ],
+ "ever": [
+  "\"Ever\": Everest: ¿alguna vez subiste en patines?",
+  "\"Evita\": ¿alguna vez viste a Evita bailar tango?",
+  "\"Hebra\": hebra de oro: ¿alguna vez viste una?"
+ ],
+ "anything": [
+  "\"Enizing\": enigma: la caja puede contener cualquier cosa.",
+  "\"Eni\": enano mete cualquier cosa en su saco.",
+  "\"Anís\": botella de anís con cualquier cosa dentro, hasta un zapato."
+ ],
+ "cause": [
+  "\"Cos\": coz de burro causa un accidente de tráfico.",
+  "\"Cosa\": cosa extraña causa un apagón en la ciudad.",
+  "\"Caos\": gato causa el caos en la cocina."
+ ],
+ "deal": [
+  "\"Dil\": dilema resuelto con un apretón de manos.",
+  "\"Dial\": pirata negocia por el dial de la radio.",
+  "\"Diluvio\": trato cerrado bajo el diluvio con paraguas."
+ ],
+ "water": [
+  "\"Guater\": guatemalteco riega el jardín con una manguera gigante.",
+  "\"Wáter\": wáter lleno de agua de colores.",
+  "\"Guata\": almohada de guata empapada de agua."
+ ],
+ "base": [
+  "\"Beis\": jugador de béisbol se sienta en la base.",
+  "\"Bes\": beso en la base de la torre Eiffel.",
+  "\"Vaso\": vaso sirve de base a una estatua."
+ ],
+ "probably": [
+  "\"Probabli\": probablemente llueva ranas mañana.",
+  "\"Probador\": probador probablemente lleno de gatos.",
+  "\"Probado\": probablemente el gato probó la sopa."
+ ],
+ "past": [
+  "\"Past\": pasta del pasado expuesta en un museo.",
+  "\"Pasto\": pasto viejo y amarillo del pasado.",
+  "\"Pastel\": pastel antiguo con telarañas."
+ ],
+ "power": [
+  "\"Pauer\": pavo con superpoder levanta un coche.",
+  "\"Pavor\": pavor: rayo de electricidad ilumina la casa.",
+  "\"Powerade\": bebida azul llena de energía eléctrica."
+ ],
+ "test": [
+  "\"Test\": testigo hace un examen en el juicio.",
+  "\"Testa\": cabeza gigante con un examen pegado en la frente.",
+  "\"Testarudo\": testarudo prueba la sopa hirviendo."
+ ],
+ "visit": [
+  "\"Visit\": bisonte visita a la abuela con flores.",
+  "\"Visita\": visita de marcianos tomando té.",
+  "\"Visir\": visir llega de visita al palacio en camello."
+ ],
+ "center": [
+  "\"Senter\": sentado justo en el centro de la diana.",
+  "\"Centella\": centella cae en el centro de la plaza.",
+  "\"Sendero\": sendero lleva al centro del laberinto."
+ ],
+ "nothing": [
+  "\"Nádin\": Nadine abre la caja: no hay nada dentro.",
+  "\"Nacho\": plato de nachos vacío, no queda nada.",
+  "\"Nasín\": nariz enorme que no huele nada."
+ ],
+ "return": [
+  "\"Ritern\": ritmo regresa como bumerán.",
+  "\"Retorno\": pato hace retorno a su laguna.",
+  "\"Ritornelo\": canción ritornelo vuelve y vuelve."
+ ],
+ "mother": [
+  "\"Máder\": madera tallada con forma de mamá.",
+  "\"Madre\": madre pulpo abraza a ocho hijos.",
+  "\"Madeja\": mamá teje una madeja gigante."
+ ],
+ "matter": [
+  "\"Mater\": mate de calabaza: lo que importa es compartir.",
+  "\"Materia\": materia gris se escapa del cerebro.",
+  "\"Matero\": matero discute asuntos serios en reunión."
+ ],
+ "mind": [
+  "\"Maind\": mano gigante dentro de la mente de un robot.",
+  "\"Mina\": mina de oro dentro de tu mente.",
+  "\"Maíz\": cerebro de maíz piensa en palomitas."
+ ]
+}

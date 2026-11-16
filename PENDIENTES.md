@@ -7,14 +7,16 @@ _Última actualización: 2026-11-15_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) y **13** (mini-taller de la palabra que fallas), todos del 15/11.
-- Tests: servidor 195 ✓, app 79 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11.
+- Tests: servidor 201 ✓, app 80 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (16/11) **Contenido preparado sin IA** (escrito por Claude Code, no por el API): las 2.952 palabras ya tienen definición, definición fácil y frase larga (`database/content/words/*.json`, cargado con `php artisan words:content`, que solo rellena huecos y aplica las reglas de calidad). Banco de shadowing de 216 textos (6 niveles × 12 temas × 3, `database/content/shadowing.json`) y 3 escenas AID para las 500 palabras más comunes (`database/content/aids.json`): se usan primero y la IA solo si falta. Los trabajos `words:define`/`words:simplify` quedan sin nada que hacer salvo con palabras nuevas. Copia previa: `~/Backups/w2w/database-2026-11-16-antes-contenido.sqlite`.
+- (16/11) **Manos libres**: tocar el círculo de la barra mientras escucha termina al instante; en errores, silencio 1,1 s y los consejos de Azure se piden a la vez que la nota. Parche 14.
 - (15/11) **Mini-taller de la palabra que fallas** (app: errores para repasar y Oído-repetir, también manos libres): tras el 1.er intento fallido, si una palabra tiene nota Azure < 60 **y** no se entendió, se practica sola (2 intentos, nota ≥ 70), luego en su trozo de frase y se vuelve a la frase. Solo la peor palabra, una vez por frase; nunca se atasca. Interruptor en Ajustes → Pronunciación. `core/utils/word_drill.dart`, `core/widgets/word_drill_view.dart`. Parche 13, iPhone reinstalado. La web no lo tiene.
 - (15/11) **Errores para repasar**: tocar el micro mientras graba termina al instante (sin esperar el silencio) y la espera de silencio bajó de 1,4 s a 1,1 s (app y web). Parche 12, iPhone reinstalado, `speak.js` v13, caché v45.
 - (15/11) **Errores para repasar** muestran desde el principio «Dilo así:» + la frase correcta con botón de escuchar (antes solo salía al fallar); manos libres la lee despacio. App (parche 11, iPhone reinstalado) y web (`speak.js` v12, caché v44).
@@ -60,12 +62,14 @@ _Última actualización: 2026-11-15_
 
 ## Pendiente (código)
 - Mini-taller de palabra en la web (`speak.js`): solo está en la app.
-- Contenido preparado en vez de IA (definiciones, significados fáciles, banco de shadowing, mnemotecnia): plan aprobado el 15/11, en curso.
+- Palabras nuevas que se añadan: escribir su contenido con Claude Code y `words:content` (si no, las rellena el API de noche como antes).
 - [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
 - [ ] (opcional) Seguir partiendo `public/app/app.js` (~1100 líneas): niveles, conversación.
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (15/11) No usar Claude Code como IA en vivo para los alumnos (términos de uso, lentitud, seguridad). Sí para preparar contenido de antemano.
+- (15/11) Mini-taller de palabra: al terminar la frase, nunca a mitad; en conversación/narración, no se interrumpe.
 - (15/11) Registro por invitación: códigos de varios usos con límite, creados por Reynaldo desde el panel.
 - (15/11) La escalera de español tiene en cuenta cómo entiende el alumno al oír, no solo la prueba de nivel.
 - (15/11) Prioridad: que la gente vuelva y medirlo antes que añadir funciones. MySQL cuando haya ~100 usuarios activos.
