@@ -87,8 +87,9 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
     if (state.recording || state.busy) return;
     state = state.copyWith(recording: true, msg: '');
     try {
-      final rec = await audio.record(maxMs: 15000, silenceMs: 1400);
-      state = state.copyWith(recording: false);
+      final rec = await audio.record(maxMs: 15000, silenceMs: 1100);
+      // Ya terminó de grabar: el loader sale enseguida (antes de preparar el envío).
+      state = state.copyWith(recording: false, checking: rec.heard || rec.maybeVoice);
       if (!rec.heard && !rec.maybeVoice) {
         state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
       } else if (await _check(rec.wav)) {
@@ -98,6 +99,11 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
       state = state.copyWith(msg: '$e');
     }
     state = state.copyWith(recording: false);
+  }
+
+  /// «Ya terminé»: tocar el micro mientras graba corta sin esperar el silencio.
+  void finish() {
+    if (state.recording) ref.read(audioProvider).stopRecording();
   }
 
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {

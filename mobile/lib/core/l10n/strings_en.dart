@@ -118,6 +118,7 @@ const stringsEn = <String, String>{
   "Repaso: ¿qué significa?": "Review: what does it mean?",
   "Repetir como un nativo": "Repeat like a native",
   "Revisando lo que dijiste…": "Checking what you said…",
+  "Te escucho… toca al terminar": "Listening… tap when you finish",
   "Evaluando tu pronunciación…": "Checking your pronunciation…",
   "Preparando cómo decirlo mejor…": "Getting tips to say it better…",
   "Salir": "Log out",

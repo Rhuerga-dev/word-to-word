@@ -7,14 +7,15 @@ _Última actualización: 2026-11-15_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) y **11** (errores: «Dilo así:» con la frase correcta desde el principio), todos del 15/11.
-- Tests: servidor 193 ✓, app 69 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) y **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s), todos del 15/11.
+- Tests: servidor 195 ✓, app 70 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (15/11) **Errores para repasar**: tocar el micro mientras graba termina al instante (sin esperar el silencio) y la espera de silencio bajó de 1,4 s a 1,1 s (app y web). Parche 12, iPhone reinstalado, `speak.js` v13, caché v45.
 - (15/11) **Errores para repasar** muestran desde el principio «Dilo así:» + la frase correcta con botón de escuchar (antes solo salía al fallar); manos libres la lee despacio. App (parche 11, iPhone reinstalado) y web (`speak.js` v12, caché v44).
 - (15/11) **Métricas de aprendizaje (Capa 2) para el panel**: `metrics:snapshot` añade el bloque `learning` sin tocar uso/retención: aciertos de Oído/Vocabulario/Hablar (7 días), las 5 palabras más falladas, racha media y protectores. La demo no cuenta. +2 tests (195 ✓). Commit `6f90c08`. El panel ya lo muestra en la tarjeta de W2W.
 - (15/11) **Errores para repasar**: mientras el servidor evalúa la frase, loader de W2W en el centro con «Evaluando tu pronunciación…» y luego «Preparando cómo decirlo mejor…» (mic bloqueado). En la app (parche 10, también reinstalada en el iPhone) y en la web (`speak.js` v11, caché v43).

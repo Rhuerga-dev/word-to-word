@@ -241,7 +241,7 @@ async function spReviewSay() {
   try {
     let body;
     if (cfg.pronunciation) {
-      const wav = await recordWav(15000, null, 1.4);
+      const wav = await recordWav(15000, null, 1.1);
       rv.listening = false; renderSpeak();
       if (!wav.heard) { rv.result = { silent: true }; return; }
       body = new FormData(); body.append("audio", wav, "voz.wav");

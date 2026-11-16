@@ -29,9 +29,9 @@ class MistakeExercise extends ConsumerWidget {
           : Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                MicButton(recording: s.recording, onPressed: s.recording || s.busy ? null : ref.read(provider.notifier).attempt),
+                MicButton(recording: s.recording, onPressed: s.busy ? null : (s.recording ? ref.read(provider.notifier).finish : ref.read(provider.notifier).attempt)),
                 const SizedBox(height: 10),
-                Text(r == null ? tr('Dilo bien en voz alta') : tr('Otra vez'), style: const TextStyle(color: W.muted)),
+                Text(s.recording ? tr('Te escucho… toca al terminar') : (r == null ? tr('Dilo bien en voz alta') : tr('Otra vez')), style: const TextStyle(color: W.muted)),
               ]),
             ),
       children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:word_to_word/core/widgets/mic_button.dart';
 import 'package:word_to_word/features/session/data/word_card.dart';
 import 'package:word_to_word/features/session/presentation/exercises/mistake_controller.dart';
 import 'package:word_to_word/features/session/presentation/exercises/mistake_exercise.dart';
@@ -49,5 +50,12 @@ void main() {
     expect(find.text('I have 30 years'), findsOneWidget);      // lo que dijiste mal
     expect(find.text('Dilo así:'), findsOneWidget);
     expect(find.text('I am 30 years old'), findsOneWidget);    // lo que hay que repetir
+  });
+
+  testWidgets('mientras graba, el micro sigue activo para terminar sin esperar el silencio', (tester) async {
+    await _pump(tester, const MistakeState(recording: true));
+    expect(find.text('Te escucho… toca al terminar'), findsOneWidget);
+    final ink = tester.widget<InkWell>(find.descendant(of: find.byType(MicButton), matching: find.byType(InkWell)));
+    expect(ink.onTap, isNotNull);
   });
 }
