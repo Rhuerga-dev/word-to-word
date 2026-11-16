@@ -64,6 +64,56 @@ class MetricsSnapshot extends Command
             'retention_d1' => $this->retention($daysByUser, $today, 1),
             'retention_d7' => $this->retention($daysByUser, $today, 7),
             'daily' => $daily,
+            // Capa 2 (¿aprenden?): aciertos por habilidad, dónde se atascan y racha. Separado para no tocar lo de arriba.
+            'learning' => $this->learning($demoIds, $today),
+        ];
+    }
+
+    /**
+     * Señales de aprendizaje (sin datos personales): aciertos de Oído/Vocabulario/Hablar,
+     * las palabras que más se fallan y cómo va la racha. Los de la demo no cuentan.
+     *
+     * @param  \Illuminate\Support\Collection<int, int>  $demoIds
+     */
+    private function learning($demoIds, CarbonImmutable $today): array
+    {
+        $from = $today->subDays(6)->toDateString();   // últimos 7 días (incluye hoy)
+        $pct = fn (int $ok, int $total): ?int => $total > 0 ? (int) round($ok / $total * 100) : null;
+
+        // Oído: aciertos al reconocer de oído (7 días) y cuántas veces pidió repetir.
+        $ear = DB::table('listening_days')->whereNotIn('user_id', $demoIds)->where('day', '>=', $from)
+            ->selectRaw('COALESCE(SUM(ear_ok),0) ok, COALESCE(SUM(ear_fail),0) fail, COALESCE(SUM(repeats),0) repeats')->first();
+        $earTotal = (int) $ear->ok + (int) $ear->fail;
+
+        // Vocabulario: aciertos de repaso (contador acumulado de cada palabra).
+        $vocab = DB::table('user_words')->whereNotIn('user_id', $demoIds)
+            ->selectRaw('COALESCE(SUM(reviews),0) reviews, COALESCE(SUM(fails),0) fails')->first();
+
+        // Hablar: limpieza al hablar (7 días) = palabras dichas sin error / palabras dichas.
+        $spokenWords = (int) DB::table('speaking_sessions')->whereNotIn('user_id', $demoIds)->where('day', '>=', $from)->sum('words');
+        $mistakes = (int) DB::table('speaking_mistakes')->whereNotIn('user_id', $demoIds)
+            ->where('created_at', '>=', $today->subDays(6)->startOfDay())->count();
+
+        // Dónde se atascan: las 5 palabras que más se fallan (entre todos).
+        $stuck = DB::table('user_words')->whereNotIn('user_words.user_id', $demoIds)
+            ->join('words', 'words.id', '=', 'user_words.word_id')
+            ->where('user_words.fails', '>', 0)
+            ->groupBy('words.word')
+            ->orderByRaw('SUM(user_words.fails) DESC')
+            ->limit(5)->get(['words.word', DB::raw('SUM(user_words.fails) as fails')])
+            ->map(fn ($r) => ['word' => $r->word, 'fails' => (int) $r->fails])->all();
+
+        // Racha: media de los que llevan racha, y cuántos tienen protector disponible.
+        $base = DB::table('users')->whereNotIn('id', $demoIds);
+        $avgStreak = (float) (clone $base)->where('streak', '>', 0)->avg('streak');
+
+        return [
+            'ear_accuracy' => ['percent' => $pct((int) $ear->ok, $earTotal), 'of' => $earTotal, 'repeats' => (int) $ear->repeats],
+            'vocab_accuracy' => ['percent' => $pct((int) $vocab->reviews - (int) $vocab->fails, (int) $vocab->reviews), 'of' => (int) $vocab->reviews],
+            'speaking_clean' => ['percent' => $pct(max(0, $spokenWords - $mistakes), $spokenWords), 'words' => $spokenWords, 'mistakes' => $mistakes],
+            'top_failed_words' => $stuck,
+            'avg_streak' => round($avgStreak, 1),
+            'users_with_freeze' => (int) (clone $base)->where('streak_freezes', '>', 0)->count(),
         ];
     }
 
