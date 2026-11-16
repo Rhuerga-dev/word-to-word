@@ -63,9 +63,12 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
   /// Envía lo que dijiste; devuelve false si no se entendió nada.
   Future<bool> _check(Uint8List wav) async {
     state = state.copyWith(checking: true, msg: '');
+    final repo = ref.read(sessionRepositoryProvider);
+    // Los consejos se piden A LA VEZ que la nota (no después): si falla, ya están casi listos.
+    final tips = repo.pronTips(mistake.correct, wav).timeout(const Duration(seconds: 10)).then<List<WeakWord>?>((w) => w, onError: (_) => null);
     final MistakeReview r;
     try {
-      r = await ref.read(sessionRepositoryProvider).reviewMistake(mistake.id, wav);
+      r = await repo.reviewMistake(mistake.id, wav);
     } finally {
       state = state.copyWith(checking: false);
     }
@@ -74,19 +77,16 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
       return false;
     }
     state = state.copyWith(review: r, tries: state.tries + 1, xp: state.xp + r.xpGained, msg: '');
-    if (!r.passed) await _loadTips(r.heard, wav);
+    if (!r.passed) await _loadTips(r.heard, tips);
     return true;
   }
 
   /// No salió: qué sonidos fallaron y cómo decirlos (sin detalle, por la ortografía de lo que faltó).
-  Future<void> _loadTips(String heard, Uint8List wav) async {
+  Future<void> _loadTips(String heard, Future<List<WeakWord>?> pending) async {
     final target = mistake.correct;
     final missed = [for (final (w, ok) in matchWords(target, heard).tokens) if (!ok) w];
     state = state.copyWith(loadingTips: true);
-    var weak = <WeakWord>[];
-    try {
-      weak = await ref.read(sessionRepositoryProvider).pronTips(target, wav).timeout(const Duration(seconds: 10));
-    } catch (_) {}
+    final weak = await pending ?? const <WeakWord>[];
     final pairs = weak.isEmpty ? [for (final w in missed) (w, const <String>[])] : [for (final w in weak) (w.word, w.phonemes)];
     // Queda otro intento: antes, practicar aparte la palabra que peor salió (si de verdad no se entendió).
     final drill = !state.finished && !state.drillDone && wordDrillOn(ref) ? pickDrill(weak, target, heard) : null;
@@ -125,7 +125,7 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
     await hf.say('You said: ${mistake.said}. Say it the right way:');
     await hf.say(mistake.correct, slow: true);
     while (!state.finished) {
-      final h = await hf.listen(maxMs: 15000, silenceMs: 1400, transcribe: false);
+      final h = await hf.listen(maxMs: 15000, silenceMs: 1100, transcribe: false);
       if (h.silent) {
         await hf.say("I didn't hear you. Try again.");
         continue;

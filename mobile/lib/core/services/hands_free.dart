@@ -185,6 +185,11 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   }
 
   /// Escucha hasta tu pausa. Con [transcribe] también lo pasa a texto y busca órdenes de voz.
+  /// «Ya terminé»: tocar la barra mientras escucha corta la grabación sin esperar el silencio.
+  void finishListening() {
+    if (state.phase == HfPhase.listening) _audio.stopRecording();
+  }
+
   Future<Heard> listen({int maxMs = 6000, int silenceMs = 1200, bool transcribe = true, void Function()? onVoice}) async {
     _check();
     state = state.copyWith(phase: HfPhase.listening, heard: '');

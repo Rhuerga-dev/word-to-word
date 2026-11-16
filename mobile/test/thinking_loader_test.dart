@@ -9,9 +9,13 @@ import 'package:word_to_word/core/widgets/hands_free_bar.dart';
 class _FixedHandsFree extends HandsFreeController {
   _FixedHandsFree(this.phase);
   final HfPhase phase;
+  var finished = 0;
 
   @override
   HandsFreeState build() => HandsFreeState(on: true, phase: phase);
+
+  @override
+  void finishListening() => finished++;
 }
 
 Future<void> _pump(WidgetTester tester, HfPhase phase) async {
@@ -36,5 +40,16 @@ void main() {
     await _pump(tester, HfPhase.listening);
     expect(find.byKey(const ValueKey('w2w-loader')), findsNothing);
     expect(find.byIcon(Icons.mic), findsOneWidget);
+  });
+
+  testWidgets('mientras escucha, tocar el círculo termina sin esperar el silencio', (tester) async {
+    final hf = _FixedHandsFree(HfPhase.listening);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [handsFreeProvider.overrideWith(() => hf), headphonesProvider.overrideWith((ref) => Stream.value('AirPods'))],
+      child: const MaterialApp(home: Scaffold(bottomNavigationBar: HandsFreeBar())),
+    ));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.tap(find.byKey(const ValueKey('hf-finish')));
+    expect(hf.finished, 1);
   });
 }

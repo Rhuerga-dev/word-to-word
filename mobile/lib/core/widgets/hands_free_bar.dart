@@ -32,7 +32,10 @@ class HandsFreeBar extends ConsumerWidget {
         top: false,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
-            AnimatedContainer(
+            GestureDetector(
+              key: const ValueKey('hf-finish'),
+              onTap: listening ? () => ref.read(handsFreeProvider.notifier).finishListening() : null,
+              child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               width: 52,
               height: 52,
@@ -45,6 +48,7 @@ class HandsFreeBar extends ConsumerWidget {
               child: s.phase == HfPhase.thinking
                   ? const Center(child: W2WLoader.small(color: Colors.white))
                   : Icon(icon, color: listening ? W.navy : Colors.white),
+            ),
             ),
             const SizedBox(width: 14),
             Expanded(
