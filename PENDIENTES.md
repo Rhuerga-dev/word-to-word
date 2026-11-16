@@ -7,14 +7,15 @@ _Última actualización: 2026-11-15_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) y **9** (registro con código de invitación), todos del 15/11.
-- Tests: servidor 193 ✓, app 65 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) y **10** (loader «Evaluando…» en errores para repasar), todos del 15/11.
+- Tests: servidor 193 ✓, app 68 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (15/11) **Errores para repasar**: mientras el servidor evalúa la frase, loader de W2W en el centro con «Evaluando tu pronunciación…» y luego «Preparando cómo decirlo mejor…» (mic bloqueado). En la app (parche 10, también reinstalada en el iPhone) y en la web (`speak.js` v11, caché v43).
 - (15/11) **Registro solo con código de invitación** (`invitation_codes`, `InviteService`, comando `php artisan invites list|create|disable`, JSON). Varios usos, caducidad opcional, desactivar; mismo mensaje para código malo/agotado/caducado. Campo en web (enlace `/app/?invite=CODIGO`) y app (la app Android ahora tiene pantalla «Crear cuenta»). `W2W_INVITE_REQUIRED=false` lo abre. Parche 9.
 - (15/11) Escalera de español según la ESCUCHA: todos empiezan como mucho en el escalón 2 (la prueba de nivel mide leer). Sube al escalón del nivel si acierta ≥80 % en Oído (≥15 respuestas/7 días) y casi no pide repetir; baja uno si <60 % o ≥15 «repeat/slower». Datos en `listening_days` (`ListeningService`); app y web avisan con `POST /api/listening/help`. Parche 8.
 - (15/11) Tests: `HUERGA_AI_KEY` vacía en phpunit.xml (con la clave en .env los tests llamaban al gateway de verdad).
@@ -42,6 +43,7 @@ _Última actualización: 2026-11-15_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] Probar «Practicar → errores para repasar» en el iPhone y ver el loader «Evaluando…» (no probado en teléfono real).
 - [ ] Crear el primer código en el panel (W2W → Invitaciones) y probar el registro en la web y en la app con el enlace `/app/?invite=…`.
 - [ ] Probar en el iPhone Air con los AirPods puestos y el iPhone en el bolsillo (conversación y manos libres). No probado aún.
 - [ ] Mirar la app nativa en el iPhone Air (instalada el 15/11): Progreso, Ajustes y un recordatorio.

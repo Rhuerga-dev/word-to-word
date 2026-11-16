@@ -250,11 +250,12 @@ async function spReviewSay() {
       if (!alts.length) { rv.result = { silent: true }; return; }
       body = { text: alts[0] };
     }
+    rv.listening = false; rv.checking = true; renderSpeak();
     rv.result = await api(`/speaking/mistakes/${m.id}/review`, { method: "POST", body });
     if (rv.result.passed) rv.ok++;
     if (!rv.result.silent) { rv.shown = true; rv.speaking = spSay(m.correct); }
   } catch (e) { rv.result = { error: e.message }; }
-  finally { sp.busy = false; rv.listening = false; renderSpeak(); }
+  finally { sp.busy = false; rv.listening = false; rv.checking = false; renderSpeak(); }
 }
 
 // ---------- pantalla ----------
@@ -422,6 +423,7 @@ function reviewHTML() {
     <p><b>Dilo bien en voz alta.</b></p>
     ${rv.shown ? `<p class="sp-correct">${esc(m.correct)} <button type="button" class="round" id="spListen" aria-label="Escuchar">${ICON_SPK}</button></p>` : ""}`;
   if (rv.listening) html += `<p class="sp-status"><span class="hf-dot listen"></span>Te escucho…</p>`;
+  if (rv.checking) html += `<div class="w2w-wait" id="spChecking" role="status"><span class="w2w-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><p>Evaluando tu pronunciación…</p></div>`;
   if (r) {
     if (r.error) html += `<p class="warnbox">${esc(r.error)}</p>`;
     else if (r.silent) html += `<p class="warnbox">No te oí. Habla un poco más cerca del micrófono.</p>`;

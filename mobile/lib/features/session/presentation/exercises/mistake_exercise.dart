@@ -6,6 +6,7 @@ import '../../../../core/widgets/feedback_bar.dart';
 import '../../../../core/widgets/how_to_say.dart';
 import '../../../../core/widgets/mic_button.dart';
 import '../../../../core/widgets/step_page.dart';
+import '../../../../core/widgets/w2w_loader.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
 import 'mistake_controller.dart';
@@ -21,13 +22,13 @@ class MistakeExercise extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = mistakeControllerProvider(mistake);
     final s = ref.watch(provider), r = s.review, m = mistake;
-    return StepPage(
+    final page = StepPage(
       bottom: s.finished
           ? FeedbackBar(ok: s.passed, title: s.passed ? tr('¡Bien dicho!') : tr('Vuelve mañana'), detail: m.correct, onNext: () => onDone(s.outcome))
           : Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                MicButton(recording: s.recording, onPressed: s.recording ? null : ref.read(provider.notifier).attempt),
+                MicButton(recording: s.recording, onPressed: s.recording || s.busy ? null : ref.read(provider.notifier).attempt),
                 const SizedBox(height: 10),
                 Text(r == null ? tr('Dilo bien en voz alta') : tr('Otra vez'), style: const TextStyle(color: W.muted)),
               ]),
@@ -46,5 +47,22 @@ class MistakeExercise extends ConsumerWidget {
         if (s.msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: Text(s.msg, style: const TextStyle(color: W.warn))),
       ],
     );
+    return Stack(children: [
+      page,
+      if (s.busy) Positioned.fill(child: _Evaluating(label: s.checking ? tr('Evaluando tu pronunciación…') : tr('Preparando cómo decirlo mejor…'))),
+    ]);
   }
+}
+
+/// Velo con el loader de W2W en el centro mientras el servidor evalúa (tapa la pantalla y no deja tocar).
+class _Evaluating extends StatelessWidget {
+  const _Evaluating({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+        key: const ValueKey('mistake-evaluating'),
+        color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+        child: Center(child: W2WLoader(label: label)),
+      );
 }

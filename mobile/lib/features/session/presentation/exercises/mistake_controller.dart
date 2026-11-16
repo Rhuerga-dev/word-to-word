@@ -14,8 +14,14 @@ import 'exercise_outcome.dart';
 import '../../../../core/l10n/tr.dart';
 
 class MistakeState {
-  const MistakeState({this.recording = false, this.review, this.tries = 0, this.msg = '', this.xp = 0, this.tips = const [], this.loadingTips = false});
+  const MistakeState({this.recording = false, this.checking = false, this.review, this.tries = 0, this.msg = '', this.xp = 0, this.tips = const [], this.loadingTips = false});
   final bool recording, loadingTips;
+
+  /// Esperando al servidor: evaluando lo que dijiste.
+  final bool checking;
+
+  /// Mientras evalúa o prepara los consejos se muestra el loader en el centro.
+  bool get busy => checking || loadingTips;
 
   /// Cuando no salió: cómo decir las palabras que no se entendieron.
   final List<WordTips> tips;
@@ -27,8 +33,9 @@ class MistakeState {
   bool get finished => review != null && (passed || tries >= 2);
   ExerciseOutcome get outcome => ExerciseOutcome(xp: xp, ok: passed);
 
-  MistakeState copyWith({bool? recording, MistakeReview? review, int? tries, String? msg, int? xp, List<WordTips>? tips, bool? loadingTips}) => MistakeState(
+  MistakeState copyWith({bool? recording, bool? checking, MistakeReview? review, int? tries, String? msg, int? xp, List<WordTips>? tips, bool? loadingTips}) => MistakeState(
       recording: recording ?? this.recording,
+      checking: checking ?? this.checking,
       review: review ?? this.review,
       tries: tries ?? this.tries,
       msg: msg ?? this.msg,
@@ -46,7 +53,13 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
 
   /// Envía lo que dijiste; devuelve false si no se entendió nada.
   Future<bool> _check(Uint8List wav) async {
-    final r = await ref.read(sessionRepositoryProvider).reviewMistake(mistake.id, wav);
+    state = state.copyWith(checking: true, msg: '');
+    final MistakeReview r;
+    try {
+      r = await ref.read(sessionRepositoryProvider).reviewMistake(mistake.id, wav);
+    } finally {
+      state = state.copyWith(checking: false);
+    }
     if (r.silent) {
       state = state.copyWith(msg: tr('No se entendió. Prueba otra vez.'));
       return false;
@@ -71,9 +84,11 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
 
   Future<void> attempt() async {
     final audio = ref.read(audioProvider);
+    if (state.recording || state.busy) return;
     state = state.copyWith(recording: true, msg: '');
     try {
       final rec = await audio.record(maxMs: 15000, silenceMs: 1400);
+      state = state.copyWith(recording: false);
       if (!rec.heard && !rec.maybeVoice) {
         state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
       } else if (await _check(rec.wav)) {
