@@ -43,4 +43,11 @@ void main() {
     expect(find.byKey(const ValueKey('mistake-evaluating')), findsNothing);
     expect(find.text('Dilo bien en voz alta'), findsOneWidget);
   });
+
+  testWidgets('antes de hablar ya muestra la frase que hay que decir', (tester) async {
+    await _pump(tester, const MistakeState());
+    expect(find.text('I have 30 years'), findsOneWidget);      // lo que dijiste mal
+    expect(find.text('Dilo así:'), findsOneWidget);
+    expect(find.text('I am 30 years old'), findsOneWidget);    // lo que hay que repetir
+  });
 }

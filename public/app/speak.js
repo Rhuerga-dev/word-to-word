@@ -193,7 +193,7 @@ async function spFinish(quiet) {
 // ---------- repaso de errores ----------
 async function spReviewStart() {
   unlockAudio();
-  sp.view = "review"; sp.review = { list: [], i: 0, result: null, shown: false, ok: 0 }; renderSpeak();
+  sp.view = "review"; sp.review = { list: [], i: 0, result: null, shown: true, ok: 0 }; renderSpeak();
   try { sp.review.list = (await api("/speaking/mistakes")).mistakes; } catch (e) { sp.status = e.message; }
   renderSpeak();
   if (sp.reviewHf) spReviewLoop();
@@ -220,7 +220,7 @@ async function spReviewLoop() {
       if (cmd === "stop") { sp.reviewHf = false; spSaveRevHf(); renderSpeak(); break; }
       if (cmd === "repeat") { rv.result = null; await spSayEs("Se dice:"); await spSay(m.correct); continue; }
       if (cmd === "skip" || r.passed || (r.passed === false && ++rv.attempts >= 2) || r.error) {
-        rv.i++; rv.result = null; rv.shown = false; rv.attempts = 0; rv.misses = 0; renderSpeak();
+        rv.i++; rv.result = null; rv.shown = true; rv.attempts = 0; rv.misses = 0; renderSpeak();
         await new Promise(res => setTimeout(res, 700));
         continue;
       }
@@ -420,7 +420,7 @@ function reviewHTML() {
     <label class="switch" for="spRevHf"><input type="checkbox" id="spRevHf" role="switch"${sp.reviewHf ? " checked" : ""}> 🎧 Manos libres</label>
     <p class="note">Dijiste:</p><p class="sp-said"><s>${esc(m.said)}</s></p>
     ${m.why ? `<p class="note">💡 ${esc(m.why)}</p>` : ""}
-    <p><b>Dilo bien en voz alta.</b></p>
+    <p><b>Dilo así en voz alta:</b></p>
     ${rv.shown ? `<p class="sp-correct">${esc(m.correct)} <button type="button" class="round" id="spListen" aria-label="Escuchar">${ICON_SPK}</button></p>` : ""}`;
   if (rv.listening) html += `<p class="sp-status"><span class="hf-dot listen"></span>Te escucho…</p>`;
   if (rv.checking) html += `<div class="w2w-wait" id="spChecking" role="status"><span class="w2w-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><p>Evaluando tu pronunciación…</p></div>`;

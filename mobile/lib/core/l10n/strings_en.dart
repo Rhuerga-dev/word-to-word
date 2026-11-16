@@ -40,6 +40,7 @@ const stringsEn = <String, String>{
   "Dijiste:": "You said:",
   "Dila en voz alta dos veces y úsala en una frase tuya.": "Say it out loud twice and use it in a sentence of your own.",
   "Dilo bien en voz alta": "Say it right out loud",
+  "Dilo así:": "Say it like this:",
   "Dilo en voz alta antes de ver la respuesta.": "Say it out loud before you see the answer.",
   "Dominado": "Mastered",
   "Dominio": "Mastery",

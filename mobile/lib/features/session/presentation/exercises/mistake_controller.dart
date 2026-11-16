@@ -102,7 +102,8 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
 
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {
     if (state.finished) return state.outcome;
-    await hf.say('You said: ${mistake.said}. Say it the right way.');
+    await hf.say('You said: ${mistake.said}. Say it the right way:');
+    await hf.say(mistake.correct, slow: true);
     while (!state.finished) {
       final h = await hf.listen(maxMs: 15000, silenceMs: 1400, transcribe: false);
       if (h.silent) {

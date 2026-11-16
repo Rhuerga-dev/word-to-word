@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/services/audio_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback_bar.dart';
 import '../../../../core/widgets/how_to_say.dart';
@@ -38,10 +39,15 @@ class MistakeExercise extends ConsumerWidget {
         Text(tr('Dijiste:'), style: const TextStyle(color: W.muted)),
         Text(m.said, style: const TextStyle(fontSize: 22, decoration: TextDecoration.lineThrough, color: W.bad)),
         if (m.why != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('💡 ${m.why}', style: const TextStyle(color: W.muted))),
+        const SizedBox(height: 14),
+        Text(tr('Dilo así:'), style: const TextStyle(color: W.muted)),
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          Expanded(child: Text(m.correct, key: const ValueKey('mistake-correct'), style: W.display(22, color: W.good, weight: FontWeight.w600))),
+          IconButton(tooltip: tr('Escuchar'), icon: const Icon(Icons.volume_up), onPressed: () => ref.read(audioProvider).say(m.correct, slow: true)),
+        ]),
         if (r != null && !s.passed) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(tr('Entendí: “{0}”', [r.heard]), style: const TextStyle(color: W.muted)),
-          Text(m.correct, style: W.display(22, color: W.good, weight: FontWeight.w600)),
         ],
         if (!s.passed && (s.loadingTips || s.tips.isNotEmpty)) HowToSay(tips: s.tips, loading: s.loadingTips, target: m.correct),
         if (s.msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: Text(s.msg, style: const TextStyle(color: W.warn))),
