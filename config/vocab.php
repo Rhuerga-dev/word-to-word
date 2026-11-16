@@ -139,4 +139,7 @@ return [
         'key' => env('AZURE_SPEECH_KEY'),
         'region' => env('AZURE_SPEECH_REGION') ?: 'eastus',
     ],
+
+    // Escenas AID escritas de antemano (sin IA). Las palabras que no estén se piden a la IA.
+    'aids_bank' => database_path('content/aids.json'),
 ];

@@ -25,6 +25,10 @@ class AidController extends Controller
 
     public function suggest(Word $word, ClaudeService $claude)
     {
+        // Primero las escenas escritas de antemano (sin IA); si la palabra no está, se piden a la IA.
+        if ($ready = self::prepared($word->word)) {
+            return ['suggestions' => $ready];
+        }
         abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
 
         try {
@@ -33,5 +37,19 @@ class AidController extends Controller
             report($e);
             abort(502, 'No se pudieron generar sugerencias ahora. Intenta en un momento.');
         }
+    }
+
+    /** Escenas preparadas en database/content/aids.json: {"word": ["...", "...", "..."]}. */
+    public static function prepared(string $word): array
+    {
+        static $bank = [];
+        $path = (string) config('vocab.aids_bank', database_path('content/aids.json'));
+        if (! array_key_exists($path, $bank)) {
+            $data = is_file($path) ? json_decode((string) file_get_contents($path), true) : null;
+            $bank[$path] = is_array($data) ? array_change_key_case($data, CASE_LOWER) : [];
+        }
+        $list = $bank[$path][mb_strtolower($word)] ?? [];
+
+        return array_values(array_slice(array_filter(is_array($list) ? $list : [], fn ($s) => is_string($s) && trim($s) !== ''), 0, 3));
     }
 }

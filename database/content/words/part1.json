@@ -1,0 +1,1570 @@
+{
+ "capacity": {
+  "definition": "the largest amount or number that something can hold"
+ },
+ "border": {
+  "definition": "the line that separates two countries or areas"
+ },
+ "shake": {
+  "definition": "to move something quickly up and down or side to side",
+  "sentence_long": "Before you drink the juice, shake the bottle well so everything mixes together nicely."
+ },
+ "assessment": {
+  "definition": "a judgment about the quality or value of something"
+ },
+ "shoe": {
+  "definition": "something you wear on your foot, usually with a hard bottom"
+ },
+ "ought": {
+  "definition": "used to say what is the right thing to do"
+ },
+ "ad": {
+  "definition": "a short message or picture that tries to sell something"
+ },
+ "fee": {
+  "definition": "money you pay for a service or to join something"
+ },
+ "hall": {
+  "definition": "a long space inside a building that leads to rooms"
+ },
+ "regulation": {
+  "definition": "an official rule made by a government or group"
+ },
+ "escape": {
+  "definition": "to get away from a place where you are kept"
+ },
+ "studio": {
+  "definition": "a room where people make art, music, films, or photos"
+ },
+ "proper": {
+  "definition": "correct or right for a situation"
+ },
+ "relax": {
+  "definition": "to rest and feel calm after work or stress"
+ },
+ "tourist": {
+  "definition": "a person who travels to a place for fun"
+ },
+ "component": {
+  "definition": "one of the parts that make up a machine or system"
+ },
+ "lawyer": {
+  "definition": "a person whose job is to give legal advice and help"
+ },
+ "suspect": {
+  "definition": "to think that something is true, especially something bad"
+ },
+ "cup": {
+  "definition": "a small round container with a handle for hot drinks"
+ },
+ "description": {
+  "definition": "words that tell what someone or something is like",
+  "sentence_long": "Can you give me a short description of the man you saw near the store?"
+ },
+ "confidence": {
+  "definition": "the feeling that you can do things well",
+  "sentence_long": "After a few weeks of practice, she spoke English with much more confidence at work."
+ },
+ "industrial": {
+  "definition": "connected with factories and making goods in large amounts",
+  "sentence_long": "My grandfather worked for many years in a big industrial area outside the city."
+ },
+ "complain": {
+  "definition": "to say that you are unhappy or annoyed about something",
+  "sentence_long": "My neighbors always complain about the noise when we play music late at night."
+ },
+ "perspective": {
+  "definition": "a way of thinking about or seeing something",
+  "sentence_long": "Talking to my grandmother gave me a new perspective on what really matters in life."
+ },
+ "error": {
+  "definition": "a mistake"
+ },
+ "arrest": {
+  "definition": "when the police take someone away because of a crime"
+ },
+ "assess": {
+  "definition": "to judge or decide the value or quality of something",
+  "sentence_long": "The teacher will assess your speaking and writing at the end of this month."
+ },
+ "register": {
+  "definition": "to put your name on an official list",
+  "sentence_long": "You need to register online before Friday if you want to take the class."
+ },
+ "asset": {
+  "definition": "something useful or valuable that helps you succeed",
+  "sentence_long": "Speaking two languages is a real asset when you are looking for a new job."
+ },
+ "signal": {
+  "definition": "a sound, light, or action that gives a message",
+  "sentence_long": "The phone signal is very weak in the mountains, so I could not call you."
+ },
+ "finger": {
+  "definition": "one of the five long parts at the end of your hand"
+ },
+ "relevant": {
+  "definition": "connected with what is being talked about or done",
+  "sentence_long": "Please only ask questions that are relevant to the lesson we are studying today."
+ },
+ "explore": {
+  "definition": "to travel around a place to learn about it",
+  "sentence_long": "This weekend we want to explore the old part of the city on foot."
+ },
+ "leadership": {
+  "definition": "the ability to guide and direct a group of people",
+  "sentence_long": "The team won the game thanks to the strong leadership of their young captain."
+ },
+ "commitment": {
+  "definition": "a promise or strong decision to do something",
+  "sentence_long": "Learning a new language takes time, patience, and a real commitment to practice every day."
+ },
+ "wake": {
+  "definition": "to stop sleeping"
+ },
+ "necessarily": {
+  "definition": "in a way that must happen; always"
+ },
+ "bright": {
+  "definition": "full of strong light or shining strongly"
+ },
+ "frame": {
+  "definition": "the border that holds a picture, window, or door"
+ },
+ "slowly": {
+  "definition": "at a low speed; not quickly"
+ },
+ "bond": {
+  "definition": "a strong feeling that connects people",
+  "sentence_long": "There is a strong bond between my mother and her sisters, even though they live far apart."
+ },
+ "hire": {
+  "definition": "to give someone a job and pay them",
+  "sentence_long": "The restaurant needs to hire two more cooks before the busy summer season starts."
+ },
+ "hole": {
+  "definition": "an empty space or opening in something"
+ },
+ "tie": {
+  "definition": "a long piece of cloth worn around the neck with a shirt"
+ },
+ "internal": {
+  "definition": "inside something, such as a body, building, or company"
+ },
+ "chain": {
+  "definition": "a line of metal rings joined together"
+ },
+ "literature": {
+  "definition": "books, poems, and plays that are thought to be good art"
+ },
+ "victim": {
+  "definition": "a person who is hurt or killed by a crime or accident"
+ },
+ "threaten": {
+  "definition": "to say you will hurt someone or do something bad"
+ },
+ "division": {
+  "definition": "the act of separating something into parts"
+ },
+ "secure": {
+  "definition": "safe and protected from danger or harm"
+ },
+ "amaze": {
+  "definition": "to surprise someone very much"
+ },
+ "device": {
+  "definition": "a machine or tool made for a special purpose"
+ },
+ "birth": {
+  "definition": "the time when a baby comes out of its mother"
+ },
+ "forest": {
+  "definition": "a large area covered with many trees"
+ },
+ "label": {
+  "definition": "a piece of paper on something that gives information about it"
+ },
+ "root": {
+  "definition": "the part of a plant that grows under the ground"
+ },
+ "factory": {
+  "definition": "a building where things are made with machines"
+ },
+ "expense": {
+  "definition": "money spent on something"
+ },
+ "channel": {
+  "definition": "a TV station or a way of sending information"
+ },
+ "investigate": {
+  "definition": "to try to find out the facts about something"
+ },
+ "recommendation": {
+  "definition": "advice about what someone should do or choose"
+ },
+ "rank": {
+  "definition": "a position or level in a group or organization"
+ },
+ "typical": {
+  "definition": "having the usual qualities of a person or thing"
+ },
+ "west": {
+  "definition": "the direction where the sun goes down"
+ },
+ "friendly": {
+  "definition": "kind and nice to other people"
+ },
+ "resident": {
+  "definition": "a person who lives in a particular place"
+ },
+ "provision": {
+  "definition": "the act of giving people things they need"
+ },
+ "concentrate": {
+  "definition": "to give all your attention to something"
+ },
+ "plenty": {
+  "definition": "a large amount; more than enough"
+ },
+ "export": {
+  "definition": "to sell and send goods to another country"
+ },
+ "entirely": {
+  "definition": "completely; in every way"
+ },
+ "strongly": {
+  "definition": "in a powerful or very sure way"
+ },
+ "bridge": {
+  "definition": "a structure built over a river or road so people can cross"
+ },
+ "consist": {
+  "definition": "to be made of particular parts or things"
+ },
+ "graduate": {
+  "definition": "to finish school or university and get a diploma"
+ },
+ "brand": {
+  "definition": "the name of a product made by a company"
+ },
+ "moral": {
+  "definition": "about what is right and wrong in behavior"
+ },
+ "insist": {
+  "definition": "to say firmly that something must happen or is true"
+ },
+ "combination": {
+  "definition": "two or more things mixed or joined together"
+ },
+ "abuse": {
+  "definition": "cruel or bad treatment of a person or animal"
+ },
+ "ice": {
+  "definition": "frozen water"
+ },
+ "principal": {
+  "definition": "the person in charge of a school"
+ },
+ "master": {
+  "definition": "to learn how to do something very well"
+ },
+ "definitely": {
+  "definition": "without any doubt; certainly"
+ },
+ "session": {
+  "definition": "a period of time used for a particular activity"
+ },
+ "grade": {
+  "definition": "a letter or number that shows how good schoolwork is"
+ },
+ "nevertheless": {
+  "definition": "in spite of that; however"
+ },
+ "predict": {
+  "definition": "to say what will happen in the future"
+ },
+ "previously": {
+  "definition": "before now or before a certain time"
+ },
+ "protection": {
+  "definition": "keeping someone or something safe from harm"
+ },
+ "largely": {
+  "definition": "mostly; mainly"
+ },
+ "wed": {
+  "definition": "to marry someone"
+ },
+ "shot": {
+  "definition": "the act of firing a gun",
+  "sentence_long": "The nurse gave my little brother a shot, and he did not even cry."
+ },
+ "appearance": {
+  "definition": "the way a person or thing looks",
+  "sentence_long": "She changed her appearance completely with a new haircut and a pair of glasses."
+ },
+ "reasonable": {
+  "definition": "fair and sensible; not too expensive",
+  "sentence_long": "The food at that small restaurant is good and the prices are very reasonable."
+ },
+ "guarantee": {
+  "definition": "a promise that something will happen or work",
+  "sentence_long": "The new phone comes with a guarantee, so they will fix it for free."
+ },
+ "till": {
+  "definition": "until; up to a certain time"
+ },
+ "theme": {
+  "definition": "the main subject or idea of something",
+  "sentence_long": "The theme of the party was the 1980s, so everyone wore old clothes."
+ },
+ "judgment": {
+  "definition": "the ability to make good decisions",
+  "sentence_long": "I trust your judgment, so you can choose the restaurant for dinner tonight."
+ },
+ "odd": {
+  "definition": "strange or unusual",
+  "sentence_long": "It is odd that he has not called me back, because he always answers quickly."
+ },
+ "approve": {
+  "definition": "to officially agree to something or think it is good",
+  "sentence_long": "My parents did not approve of my plan to travel alone after high school."
+ },
+ "definition": {
+  "definition": "the meaning of a word explained in words",
+  "sentence_long": "If you do not know a word, look for its definition in the dictionary."
+ },
+ "elect": {
+  "definition": "to choose someone for a job by voting",
+  "sentence_long": "Next year the people of this town will elect a new mayor for four years."
+ },
+ "atmosphere": {
+  "definition": "the feeling or mood of a place",
+  "sentence_long": "I love the friendly atmosphere in this little cafe near my house."
+ },
+ "farmer": {
+  "definition": "a person who grows food or keeps animals on land"
+ },
+ "comparison": {
+  "definition": "looking at things to see how they are alike or different",
+  "sentence_long": "In comparison with last year, this winter has been much warmer and drier here."
+ },
+ "characteristic": {
+  "definition": "a typical quality or feature of someone or something",
+  "sentence_long": "Being patient is the most important characteristic of a good teacher, in my opinion."
+ },
+ "license": {
+  "definition": "an official paper that allows you to do something",
+  "sentence_long": "My sister finally got her driver's license after failing the test two times."
+ },
+ "rely": {
+  "definition": "to need or trust someone or something for help",
+  "sentence_long": "You can always rely on your family when you have a problem or need help."
+ },
+ "narrow": {
+  "definition": "small from one side to the other; not wide",
+  "sentence_long": "The streets in the old town are very narrow, so big cars cannot drive there."
+ },
+ "succeed": {
+  "definition": "to do what you tried or wanted to do",
+  "sentence_long": "If you practice a little every day, you will succeed in learning English."
+ },
+ "identity": {
+  "definition": "who or what a person is",
+  "sentence_long": "You need to show a document with your identity before you can open a bank account."
+ },
+ "desk": {
+  "definition": "a table you use for working, reading, or writing",
+  "sentence_long": "I keep my laptop, my books, and a small plant on my desk at home."
+ },
+ "permit": {
+  "definition": "to allow something to happen",
+  "sentence_long": "The rules do not permit people to smoke inside the building or near the doors."
+ },
+ "seriously": {
+  "definition": "in a way that is not joking; in a very bad way",
+  "sentence_long": "Please take your health seriously and go to the doctor if you feel sick."
+ },
+ "wild": {
+  "definition": "living or growing in nature, not controlled by people",
+  "sentence_long": "We saw some wild horses running near the river during our trip last summer."
+ },
+ "empty": {
+  "definition": "having nothing inside"
+ },
+ "commission": {
+  "definition": "an official group chosen to study or control something",
+  "sentence_long": "The city created a commission to study the traffic problems and find some solutions."
+ },
+ "unique": {
+  "definition": "being the only one of its kind",
+  "sentence_long": "Every person has a unique voice, so nobody sounds exactly the same as you."
+ },
+ "association": {
+  "definition": "an organization of people with the same interest",
+  "sentence_long": "My father joined an association of retired teachers that meets every Tuesday afternoon."
+ },
+ "instrument": {
+  "definition": "an object used to make music, like a guitar or piano",
+  "sentence_long": "My son wants to learn a musical instrument, maybe the piano or the drums."
+ },
+ "investor": {
+  "definition": "a person who puts money into something to make more money",
+  "sentence_long": "An investor from Miami put a lot of money into my cousin's small business."
+ },
+ "practical": {
+  "definition": "useful and sensible in real situations",
+  "sentence_long": "These shoes are not very pretty, but they are practical for walking all day."
+ },
+ "tea": {
+  "definition": "a hot drink made by putting dry leaves in water",
+  "sentence_long": "Every afternoon my grandmother drinks a cup of tea with a little milk and sugar."
+ },
+ "lovely": {
+  "definition": "very nice, beautiful, or pleasant",
+  "sentence_long": "We had a lovely dinner at the beach with the whole family last Saturday night."
+ },
+ "soft": {
+  "definition": "not hard; nice to touch",
+  "sentence_long": "This new pillow is so soft that I fell asleep in just a few minutes."
+ },
+ "row": {
+  "definition": "a line of people or things next to each other",
+  "sentence_long": "We sat in the front row at the concert, so we could see everything perfectly."
+ },
+ "youth": {
+  "definition": "the time of life when someone is young",
+  "sentence_long": "In his youth, my father played baseball every weekend with his friends from school."
+ },
+ "lock": {
+  "definition": "a thing on a door that you open with a key",
+  "sentence_long": "Do not forget to lock the door when you leave the house in the morning."
+ },
+ "fuel": {
+  "definition": "something burned to make heat or power, like gas",
+  "sentence_long": "The price of fuel went up again, so driving to work costs much more now."
+ },
+ "expectation": {
+  "definition": "a belief about what will or should happen",
+  "sentence_long": "The movie was not as good as I thought, so it did not meet my expectations."
+ },
+ "employment": {
+  "definition": "having a paid job; work",
+  "sentence_long": "After finishing school, many young people move to the city to look for employment."
+ },
+ "celebrate": {
+  "definition": "to do something fun for a special day or event",
+  "sentence_long": "We are going to celebrate my mother's birthday with a big dinner on Sunday."
+ },
+ "sexual": {
+  "definition": "connected with physical love and the body's desires",
+  "sentence_long": "The doctor talked with the students about sexual health in a calm and honest way."
+ },
+ "shoulder": {
+  "definition": "the part of the body between the neck and the arm",
+  "sentence_long": "I hurt my shoulder at the gym, so I cannot lift heavy things this week."
+ },
+ "breath": {
+  "definition": "the air that goes into and out of your body"
+ },
+ "increasingly": {
+  "definition": "more and more as time passes",
+  "sentence_long": "It is becoming increasingly hard to find a cheap apartment in the center of the city."
+ },
+ "import": {
+  "definition": "to buy and bring goods from another country",
+  "sentence_long": "Our country has to import a lot of rice and oil because we do not produce enough."
+ },
+ "bottle": {
+  "definition": "a glass or plastic container for liquids with a narrow top",
+  "sentence_long": "Can you bring a bottle of water for me when you come back from the store?"
+ },
+ "ourselves": {
+  "definition": "used when we are the ones doing and receiving the action",
+  "sentence_long": "We painted the whole house ourselves because we did not have money to pay anyone."
+ },
+ "sheet": {
+  "definition": "a large piece of cloth used on a bed",
+  "sentence_long": "I need to wash the sheet on my bed because the dog slept on it."
+ },
+ "engine": {
+  "definition": "the part of a car or machine that makes it move",
+  "sentence_long": "The car will not start this morning, so I think there is a problem with the engine."
+ },
+ "cast": {
+  "definition": "all the actors in a movie or play"
+ },
+ "notion": {
+  "definition": "an idea or belief about something"
+ },
+ "conservative": {
+  "definition": "not liking quick changes or new ideas"
+ },
+ "journey": {
+  "definition": "a trip from one place to another, often a long one"
+ },
+ "opposition": {
+  "definition": "strong disagreement with a plan or idea"
+ },
+ "relief": {
+  "definition": "a good feeling when worry or pain stops"
+ },
+ "debt": {
+  "definition": "money that you owe to someone"
+ },
+ "honor": {
+  "definition": "great respect people show you; something that makes you proud"
+ },
+ "outcome": {
+  "definition": "the final result of something"
+ },
+ "blame": {
+  "definition": "to say someone is responsible for something bad"
+ },
+ "explanation": {
+  "definition": "words that make something clear and easy to understand"
+ },
+ "arise": {
+  "definition": "to begin to happen or appear"
+ },
+ "musical": {
+  "definition": "connected with songs and playing instruments"
+ },
+ "recover": {
+  "definition": "to get healthy again after being sick or hurt"
+ },
+ "dad": {
+  "definition": "an informal word for father"
+ },
+ "stretch": {
+  "definition": "to make your body or arms long and straight"
+ },
+ "declare": {
+  "definition": "to say something officially or publicly"
+ },
+ "retire": {
+  "definition": "to stop working, usually because you are old"
+ },
+ "tiny": {
+  "definition": "very small"
+ },
+ "careful": {
+  "definition": "thinking about what you do to avoid mistakes or danger"
+ },
+ "suitable": {
+  "definition": "right or good for a purpose or situation"
+ },
+ "native": {
+  "definition": "connected with the place where you were born"
+ },
+ "fruit": {
+  "definition": "a sweet food that grows on plants, like apples"
+ },
+ "analyze": {
+  "definition": "to study something carefully to understand it"
+ },
+ "witness": {
+  "definition": "a person who sees a crime or accident happen"
+ },
+ "mail": {
+  "definition": "letters and packages sent by post"
+ },
+ "terrible": {
+  "definition": "very bad or unpleasant"
+ },
+ "researcher": {
+  "definition": "a person who studies a subject to find new facts"
+ },
+ "ordinary": {
+  "definition": "normal and usual; not special"
+ },
+ "selection": {
+  "definition": "a group of things chosen from many"
+ },
+ "anywhere": {
+  "definition": "in or to any place"
+ },
+ "mental": {
+  "definition": "connected with the mind"
+ },
+ "participant": {
+  "definition": "a person who takes part in an activity"
+ },
+ "vision": {
+  "definition": "the ability to see"
+ },
+ "personality": {
+  "definition": "the qualities that make a person who they are"
+ },
+ "specifically": {
+  "definition": "for a particular reason or purpose; exactly"
+ },
+ "fat": {
+  "definition": "weighing too much; having a big round body"
+ },
+ "entry": {
+  "definition": "the act of going into a place"
+ },
+ "fellow": {
+  "definition": "a man; also used for people in the same group"
+ },
+ "chemical": {
+  "definition": "a substance made by or used in science"
+ },
+ "capture": {
+  "definition": "to catch a person or animal and keep them"
+ },
+ "tip": {
+  "definition": "extra money you give to a waiter for good service"
+ },
+ "discount": {
+  "definition": "a lower price than usual"
+ },
+ "peak": {
+  "definition": "the highest point of something, like a mountain"
+ },
+ "chairman": {
+  "definition": "the person in charge of a meeting or company"
+ },
+ "proportion": {
+  "definition": "a part or amount compared to the whole"
+ },
+ "ear": {
+  "definition": "the part of the body you hear with"
+ },
+ "disappear": {
+  "definition": "to go where you cannot be seen anymore"
+ },
+ "shout": {
+  "definition": "to say something very loudly"
+ },
+ "yard": {
+  "definition": "the land around a house, often with grass"
+ },
+ "constant": {
+  "definition": "happening all the time; not changing"
+ },
+ "significantly": {
+  "definition": "in a large or important way"
+ },
+ "hill": {
+  "definition": "a high area of land, smaller than a mountain"
+ },
+ "considerable": {
+  "definition": "large in size or amount"
+ },
+ "instruction": {
+  "definition": "information that tells you how to do something"
+ },
+ "intelligence": {
+  "definition": "the ability to learn and understand things"
+ },
+ "ideal": {
+  "definition": "perfect or the best possible"
+ },
+ "folk": {
+  "definition": "traditional and coming from ordinary people"
+ },
+ "surely": {
+  "definition": "used to show you are almost certain"
+ },
+ "guard": {
+  "definition": "a person whose job is to protect a place or people"
+ },
+ "cat": {
+  "definition": "a small animal with soft fur that people keep as a pet"
+ },
+ "somewhat": {
+  "definition": "a little; to some degree"
+ },
+ "kiss": {
+  "definition": "to touch someone with your lips to show love"
+ },
+ "presentation": {
+  "definition": "a talk that shows or explains something to a group"
+ },
+ "joint": {
+  "definition": "a place where two bones meet, like the knee"
+ },
+ "compete": {
+  "definition": "to try to win against others"
+ },
+ "poll": {
+  "definition": "a survey to find out what people think"
+ },
+ "weak": {
+  "definition": "not strong; having little power"
+ },
+ "faith": {
+  "definition": "strong trust or belief, especially in God"
+ },
+ "reduction": {
+  "definition": "making something smaller or less"
+ },
+ "reserve": {
+  "definition": "to ask for a seat or room to be kept for you"
+ },
+ "complaint": {
+  "definition": "words that say you are unhappy with something"
+ },
+ "bore": {
+  "definition": "to make someone feel tired and not interested"
+ },
+ "mission": {
+  "definition": "an important job or task that someone is sent to do"
+ },
+ "somehow": {
+  "definition": "in some way that is not known"
+ },
+ "tone": {
+  "definition": "the way a voice sounds, showing a feeling"
+ },
+ "neighborhood": {
+  "definition": "an area of a town where people live"
+ },
+ "passenger": {
+  "definition": "a person traveling in a car, bus, plane, or train"
+ },
+ "justice": {
+  "definition": "fair treatment according to the law"
+ },
+ "thin": {
+  "definition": "not thick; not fat"
+ },
+ "rush": {
+  "definition": "to move or do something very quickly"
+ },
+ "formal": {
+  "definition": "serious and following rules, not casual"
+ },
+ "religion": {
+  "definition": "belief in God or gods and the ways to worship"
+ },
+ "employer": {
+  "definition": "a person or company that gives people jobs"
+ },
+ "reject": {
+  "definition": "to say no to something; to not accept"
+ },
+ "latter": {
+  "definition": "the second of two things just mentioned"
+ },
+ "plate": {
+  "definition": "a flat round dish that you eat food from"
+ },
+ "ban": {
+  "definition": "to officially say that something is not allowed"
+ },
+ "steal": {
+  "definition": "to take something that is not yours without asking"
+ },
+ "protest": {
+  "definition": "to show strongly in public that you disagree"
+ },
+ "index": {
+  "definition": "a list at the end of a book showing topics"
+ },
+ "sad": {
+  "definition": "unhappy"
+ },
+ "frequently": {
+  "definition": "often; many times"
+ },
+ "circle": {
+  "definition": "a round shape like the letter O"
+ },
+ "helpful": {
+  "definition": "useful; happy to give support to others"
+ },
+ "command": {
+  "definition": "an order that someone must follow"
+ },
+ "attractive": {
+  "definition": "nice to look at; pretty or handsome"
+ },
+ "sick": {
+  "definition": "not healthy; ill"
+ },
+ "impression": {
+  "definition": "an idea or feeling you get about someone"
+ },
+ "unable": {
+  "definition": "not able to do something"
+ },
+ "joke": {
+  "definition": "something funny you say to make people laugh"
+ },
+ "sky": {
+  "definition": "the space above the earth where you see clouds and the sun"
+ },
+ "column": {
+  "definition": "a tall stone or wood post that holds up a building"
+ },
+ "electronic": {
+  "definition": "using computer chips and small parts that control power"
+ },
+ "impose": {
+  "definition": "to force people to accept a rule or tax"
+ },
+ "criminal": {
+  "definition": "a person who has done something against the law"
+ },
+ "besides": {
+  "definition": "in addition to; also"
+ },
+ "properly": {
+  "definition": "in the correct or right way"
+ },
+ "ancient": {
+  "definition": "very old; from a long time ago"
+ },
+ "coast": {
+  "definition": "the land next to the sea"
+ },
+ "ill": {
+  "definition": "not healthy; sick"
+ },
+ "kick": {
+  "definition": "to hit something with your foot"
+ },
+ "closely": {
+  "definition": "carefully and with attention; near"
+ },
+ "multiple": {
+  "definition": "more than one; many"
+ },
+ "yield": {
+  "definition": "to produce something, like crops or a result"
+ },
+ "via": {
+  "definition": "by going through a place or using something"
+ },
+ "legislation": {
+  "definition": "a law or group of laws"
+ },
+ "county": {
+  "definition": "an area of a state or nation with its own local government",
+  "definition_easy": "an area of a state with its own local leaders"
+ },
+ "unlike": {
+  "definition": "different from; not like"
+ },
+ "mobile": {
+  "definition": "able to move or be moved easily"
+ },
+ "assistant": {
+  "definition": "a person whose job is to help another person"
+ },
+ "implement": {
+  "definition": "to start using a plan or system"
+ },
+ "chart": {
+  "definition": "a picture that shows information with lines or bars"
+ },
+ "attach": {
+  "definition": "to join or fix one thing to another"
+ },
+ "hell": {
+  "definition": "in religion, a place of punishment after death"
+ },
+ "everywhere": {
+  "definition": "in or to all places"
+ },
+ "advise": {
+  "definition": "to tell someone what you think they should do",
+  "sentence_long": "The doctor will advise you to rest at home and drink a lot of water."
+ },
+ "household": {
+  "definition": "all the people who live together in one house"
+ },
+ "acknowledge": {
+  "definition": "to accept or admit that something is true"
+ },
+ "reward": {
+  "definition": "something good you get for doing well"
+ },
+ "east": {
+  "definition": "the direction where the sun comes up"
+ },
+ "hat": {
+  "definition": "something you wear on your head"
+ },
+ "academic": {
+  "definition": "connected with schools, colleges, and studying"
+ },
+ "voter": {
+  "definition": "a person who chooses in an election"
+ },
+ "meanwhile": {
+  "definition": "while something else is happening"
+ },
+ "furthermore": {
+  "definition": "also; in addition"
+ },
+ "accuse": {
+  "definition": "to say that someone did something wrong"
+ },
+ "scientific": {
+  "definition": "connected with studying nature through tests and facts"
+ },
+ "wage": {
+  "definition": "money you get for work, usually each hour or week"
+ },
+ "absence": {
+  "definition": "the state of not being in a place"
+ },
+ "construct": {
+  "definition": "to build something"
+ },
+ "remark": {
+  "definition": "something that you say"
+ },
+ "medicine": {
+  "definition": "something you take to feel better when you are sick"
+ },
+ "professor": {
+  "definition": "a teacher at a university"
+ },
+ "rare": {
+  "definition": "not happening or seen very often"
+ },
+ "intention": {
+  "definition": "a plan or aim to do something"
+ },
+ "dozen": {
+  "definition": "a group of twelve things"
+ },
+ "settlement": {
+  "definition": "an official agreement that ends an argument"
+ },
+ "gap": {
+  "definition": "an empty space between two things"
+ },
+ "widely": {
+  "definition": "by many people or in many places"
+ },
+ "minimum": {
+  "definition": "the smallest amount possible or allowed"
+ },
+ "northern": {
+  "definition": "in or from the north"
+ },
+ "estate": {
+  "definition": "a large area of land with a big house"
+ },
+ "equally": {
+  "definition": "in the same amount or way"
+ },
+ "expose": {
+  "definition": "to show something that was hidden"
+ },
+ "alive": {
+  "definition": "living; not dead"
+ },
+ "shut": {
+  "definition": "to close something"
+ },
+ "victory": {
+  "definition": "winning a game, fight, or war"
+ },
+ "resolve": {
+  "definition": "to find an answer to a problem"
+ },
+ "critic": {
+  "definition": "a person whose job is to judge books, films, or art"
+ },
+ "variable": {
+  "definition": "likely to change; not always the same"
+ },
+ "enormous": {
+  "definition": "very large"
+ },
+ "sweet": {
+  "definition": "tasting like sugar"
+ },
+ "permanent": {
+  "definition": "lasting for a very long time or forever"
+ },
+ "emotion": {
+  "definition": "a strong feeling, like love, anger, or fear"
+ },
+ "pursue": {
+  "definition": "to try to reach a goal over time"
+ },
+ "tall": {
+  "definition": "higher than most people or things"
+ },
+ "urge": {
+  "definition": "a strong wish to do something"
+ },
+ "enemy": {
+  "definition": "a person who hates you or fights against you"
+ },
+ "appoint": {
+  "definition": "to choose someone for an official job"
+ },
+ "milk": {
+  "definition": "a white drink that comes from cows"
+ },
+ "talent": {
+  "definition": "a natural ability to do something well"
+ },
+ "smell": {
+  "definition": "what you notice with your nose"
+ },
+ "prior": {
+  "definition": "happening before something else"
+ },
+ "online": {
+  "definition": "connected to or done on the internet"
+ },
+ "phrase": {
+  "definition": "a small group of words used together"
+ },
+ "pilot": {
+  "definition": "a person who flies a plane"
+ },
+ "stable": {
+  "definition": "not likely to change or move"
+ },
+ "merely": {
+  "definition": "only; just"
+ },
+ "resolution": {
+  "definition": "a firm decision to do or not do something"
+ },
+ "communicate": {
+  "definition": "to share information or feelings with others"
+ },
+ "injury": {
+  "definition": "harm done to a person's body"
+ },
+ "vast": {
+  "definition": "extremely large"
+ },
+ "exhibition": {
+  "definition": "a public show of art or other objects"
+ },
+ "producer": {
+  "definition": "a person who makes or grows things to sell"
+ },
+ "regional": {
+  "definition": "connected with a particular area of a country"
+ },
+ "immediate": {
+  "definition": "happening right now, without waiting",
+  "sentence_long": "After the accident, the injured man needed immediate help, so we called an ambulance."
+ },
+ "incident": {
+  "definition": "something that happens, often something bad"
+ },
+ "childhood": {
+  "definition": "the time when you are a child"
+ },
+ "draft": {
+  "definition": "a first version of a text that is not finished"
+ },
+ "slip": {
+  "definition": "to slide by accident and lose your balance"
+ },
+ "accompany": {
+  "definition": "to go somewhere with someone"
+ },
+ "politician": {
+  "definition": "a person who works in government or wants to be elected"
+ },
+ "knock": {
+  "definition": "to hit a door to let people know you are there"
+ },
+ "seed": {
+  "definition": "a small part of a plant that a new plant grows from"
+ },
+ "salary": {
+  "definition": "money you get every month for your job"
+ },
+ "illustrate": {
+  "definition": "to explain something by using examples or pictures"
+ },
+ "imply": {
+  "definition": "to suggest something without saying it directly"
+ },
+ "breakfast": {
+  "definition": "the first meal of the day"
+ },
+ "temporary": {
+  "definition": "lasting only for a short time"
+ },
+ "liberal": {
+  "definition": "open to new ideas and accepting of others"
+ },
+ "lake": {
+  "definition": "a large area of water with land all around it"
+ },
+ "qualify": {
+  "definition": "to have the skills or results needed for something"
+ },
+ "competitive": {
+  "definition": "wanting very much to win or be better than others"
+ },
+ "truly": {
+  "definition": "really; honestly"
+ },
+ "hi": {
+  "definition": "a friendly word you say when you meet someone"
+ },
+ "yellow": {
+  "definition": "the color of lemons or the sun"
+ },
+ "habit": {
+  "definition": "something you do often, almost without thinking"
+ },
+ "disk": {
+  "definition": "a flat round object, often used to store computer data"
+ },
+ "core": {
+  "definition": "the central or most important part of something"
+ },
+ "emotional": {
+  "definition": "connected with feelings"
+ },
+ "aircraft": {
+  "definition": "a plane or other machine that flies"
+ },
+ "self": {
+  "definition": "the person you are, your own nature",
+  "sentence_long": "After a long illness, my aunt is finally back to her happy, normal self again."
+ },
+ "metal": {
+  "definition": "a hard material like iron, gold, or steel"
+ },
+ "existence": {
+  "definition": "the state of being real or alive"
+ },
+ "bone": {
+  "definition": "one of the hard white parts inside your body"
+ },
+ "panel": {
+  "definition": "a flat piece of material; a small group of experts"
+ },
+ "prime": {
+  "definition": "main or most important"
+ },
+ "emphasize": {
+  "definition": "to show that something is very important"
+ },
+ "maximum": {
+  "definition": "the largest amount possible or allowed"
+ },
+ "effectively": {
+  "definition": "in a way that works well and gets results"
+ },
+ "elsewhere": {
+  "definition": "in or to another place"
+ },
+ "bother": {
+  "definition": "to annoy or worry someone"
+ },
+ "initiative": {
+  "definition": "a new plan to solve a problem"
+ },
+ "sharp": {
+  "definition": "having a thin edge that can cut easily"
+ },
+ "diet": {
+  "definition": "the food that a person usually eats"
+ },
+ "motion": {
+  "definition": "the act of moving"
+ },
+ "gray": {
+  "definition": "the color between black and white"
+ },
+ "plastic": {
+  "definition": "a light material made from chemicals, used for many things"
+ },
+ "complicate": {
+  "definition": "to make something harder to do or understand"
+ },
+ "discipline": {
+  "definition": "training people to obey rules and control their behavior"
+ },
+ "disappoint": {
+  "definition": "to make someone sad because something was not as hoped"
+ },
+ "boss": {
+  "definition": "the person who is in charge of you at work"
+ },
+ "assumption": {
+  "definition": "something you think is true without proof"
+ },
+ "freeze": {
+  "definition": "to become hard and cold like ice"
+ },
+ "extreme": {
+  "definition": "very great or very strong; not normal"
+ },
+ "passage": {
+  "definition": "a short part of a book or text"
+ },
+ "reputation": {
+  "definition": "what people generally think about someone or something"
+ },
+ "forth": {
+  "definition": "forward or out from a place",
+  "definition_easy": "forward or away from a place"
+ },
+ "negotiation": {
+  "definition": "talks between people trying to reach an agreement"
+ },
+ "mechanism": {
+  "definition": "a part of a machine that does a certain job"
+ },
+ "coat": {
+  "definition": "a warm piece of clothing you wear over other clothes"
+ },
+ "democracy": {
+  "definition": "a system where people choose their government by voting"
+ },
+ "pocket": {
+  "definition": "a small bag sewn into clothes to keep things in"
+ },
+ "lucky": {
+  "definition": "having good things happen by chance"
+ },
+ "crash": {
+  "definition": "an accident where a car or plane hits something"
+ },
+ "observation": {
+  "definition": "the act of watching something carefully"
+ },
+ "meat": {
+  "definition": "the flesh of an animal that people eat"
+ },
+ "concentration": {
+  "definition": "the ability to think carefully about one thing"
+ },
+ "implication": {
+  "definition": "a possible effect or result of an action"
+ },
+ "deserve": {
+  "definition": "to have earned something because of what you did"
+ },
+ "unusual": {
+  "definition": "not normal or common; strange"
+ },
+ "defend": {
+  "definition": "to protect someone or something from attack"
+ },
+ "classic": {
+  "definition": "very good and popular for a long time"
+ },
+ "king": {
+  "definition": "a man from a royal family who rules a country"
+ },
+ "interaction": {
+  "definition": "the way people talk and act with each other"
+ },
+ "repair": {
+  "definition": "to fix something that is broken"
+ },
+ "collapse": {
+  "definition": "to fall down suddenly"
+ },
+ "fundamental": {
+  "definition": "basic and very important"
+ },
+ "dish": {
+  "definition": "a plate or bowl; also food made a special way"
+ },
+ "abroad": {
+  "definition": "in or to a foreign country"
+ },
+ "soul": {
+  "definition": "the part of a person that is not the body"
+ },
+ "capable": {
+  "definition": "having the ability to do something"
+ },
+ "defeat": {
+  "definition": "to win against someone in a game or fight"
+ },
+ "presidential": {
+  "definition": "connected with the leader of a country or the election"
+ },
+ "perfectly": {
+  "definition": "completely; in a way that has no mistakes"
+ },
+ "enhance": {
+  "definition": "to make something better or stronger"
+ },
+ "emergency": {
+  "definition": "a sudden dangerous situation that needs fast action"
+ },
+ "educational": {
+  "definition": "helping people learn"
+ },
+ "distinguish": {
+  "definition": "to see or know the difference between things"
+ },
+ "substantial": {
+  "definition": "large in amount or importance"
+ },
+ "nearby": {
+  "definition": "close to a place; not far away"
+ },
+ "manufacturer": {
+  "definition": "a company that makes products in large numbers"
+ },
+ "slide": {
+  "definition": "to move smoothly over a surface"
+ },
+ "valuable": {
+  "definition": "worth a lot of money; very useful"
+ },
+ "personally": {
+  "definition": "in your own opinion; by yourself"
+ },
+ "breast": {
+  "definition": "the chest of a person; meat from a bird's chest"
+ },
+ "cope": {
+  "definition": "to deal successfully with a hard situation"
+ },
+ "approximately": {
+  "definition": "close to an exact number; about"
+ },
+ "accommodation": {
+  "definition": "a place to live or stay, like a hotel room"
+ },
+ "highlight": {
+  "definition": "to make something stand out so people notice it"
+ },
+ "reporter": {
+  "definition": "a person who writes or tells the news"
+ },
+ "climate": {
+  "definition": "the usual weather of a place"
+ },
+ "shirt": {
+  "definition": "a piece of clothing for the upper body with buttons"
+ },
+ "exception": {
+  "definition": "something that does not follow the general rule"
+ },
+ "corporation": {
+  "definition": "a large company or business"
+ },
+ "chip": {
+  "definition": "a thin fried slice of potato"
+ },
+ "winner": {
+  "definition": "a person who wins a game or prize"
+ },
+ "encounter": {
+  "definition": "a meeting, often by chance"
+ },
+ "brown": {
+  "definition": "the color of coffee or chocolate"
+ },
+ "breathe": {
+  "definition": "to take air into your body and let it out"
+ },
+ "excuse": {
+  "definition": "a reason you give to explain a mistake"
+ },
+ "partly": {
+  "definition": "not completely; to some degree"
+ },
+ "tennis": {
+  "definition": "a sport where players hit a ball over a net with rackets"
+ },
+ "urban": {
+  "definition": "connected with a city or town"
+ },
+ "confuse": {
+  "definition": "to make someone unsure or unable to understand"
+ },
+ "southern": {
+  "definition": "in or from the south"
+ },
+ "output": {
+  "definition": "the amount of something produced"
+ },
+ "beauty": {
+  "definition": "the quality of being pretty or nice to look at"
+ },
+ "massive": {
+  "definition": "very big and heavy"
+ },
+ "install": {
+  "definition": "to put a machine or program in place so it works"
+ },
+ "calculate": {
+  "definition": "to find a number or amount using math"
+ },
+ "mouse": {
+  "definition": "a small animal with a long tail"
+ },
+ "mathematics": {
+  "definition": "the study of numbers, shapes, and amounts"
+ },
+ "upper": {
+  "definition": "higher; at the top"
+ },
+ "creation": {
+  "definition": "the act of making something new"
+ },
+ "occupy": {
+  "definition": "to live in or use a place"
+ },
+ "outline": {
+  "definition": "a short description of the main ideas"
+ },
+ "sufficient": {
+  "definition": "enough for a purpose"
+ },
+ "update": {
+  "definition": "to add the newest information to something"
+ },
+ "luck": {
+  "definition": "good or bad things that happen by chance"
+ },
+ "preserve": {
+  "definition": "to keep something safe or in good condition"
+ },
+ "split": {
+  "definition": "to divide into parts"
+ },
+ "swing": {
+  "definition": "to move back and forth from a fixed point"
+ },
+ "illness": {
+  "definition": "a disease or a period of being sick"
+ },
+ "journalist": {
+  "definition": "a person who writes news for newspapers, TV, or websites"
+ },
+ "sudden": {
+  "definition": "happening quickly and without warning"
+ },
+ "advertisement": {
+  "definition": "a message or picture that tries to sell something"
+ },
+ "consistent": {
+  "definition": "always acting or happening in the same way"
+ },
+ "originally": {
+  "definition": "at first; in the beginning"
+ },
+ "aside": {
+  "definition": "to one side; away from others"
+ },
+ "comfort": {
+  "definition": "a pleasant feeling of being relaxed and without pain"
+ },
+ "secondly": {
+  "definition": "used to give the next point after the first"
+ },
+ "severe": {
+  "definition": "very bad or serious"
+ },
+ "gene": {
+  "definition": "a part of a cell that controls traits passed from parents"
+ },
+ "volunteer": {
+  "sentence_long": "My sister works as a volunteer at the hospital, helping old people every Saturday morning."
+ },
+ "rural": {
+  "sentence_long": "My grandparents live in a quiet rural area with lots of farms and fresh air."
+ },
+ "efficient": {
+  "definition": "working well without wasting time or energy"
+ },
+ "revolution": {
+  "definition": "a big change, often when people remove a government"
+ },
+ "delight": {
+  "definition": "a feeling of great happiness"
+ },
+ "spell": {
+  "definition": "to say or write the letters of a word in order"
+ },
+ "premise": {
+  "definition": "an idea that an argument or story is based on"
+ },
+ "lean": {
+  "definition": "to bend your body toward or against something",
+  "definition_easy": "to bend your body to one side to rest"
+ },
+ "dramatic": {
+  "definition": "sudden and very big or exciting"
+ },
+ "differ": {
+  "definition": "to be not the same as something else"
+ },
+ "grateful": {
+  "definition": "feeling thankful for something someone did"
+ },
+ "protein": {
+  "definition": "a substance in food like meat and eggs that builds muscles"
+ },
+ "bike": {
+  "definition": "a vehicle with two wheels that you ride by pedaling"
+ },
+ "distribute": {
+  "definition": "to give things to many people"
+ },
+ "intellectual": {
+  "definition": "connected with thinking and the mind"
+ },
+ "derive": {
+  "definition": "to come from something; to get from a source"
+ },
+ "crucial": {
+  "definition": "extremely important"
+ },
+ "unemployment": {
+  "definition": "the state of not having a job"
+ },
+ "crop": {
+  "definition": "a plant grown on a farm for food"
+ },
+ "minority": {
+  "definition": "a smaller part of a group"
+ },
+ "origin": {
+  "definition": "the place or point where something begins"
+ },
+ "interpretation": {
+  "definition": "an explanation of the meaning of something"
+ },
+ "gentleman": {
+  "definition": "a polite and kind man"
+ },
+ "drama": {
+  "definition": "a play or a serious story on TV"
+ },
+ "landscape": {
+  "definition": "everything you can see in a large area of land"
+ },
+ "educate": {
+  "definition": "to teach someone, usually at school"
+ },
+ "toy": {
+  "definition": "an object that children play with"
+ },
+ "fault": {
+  "definition": "responsibility for a mistake; a problem in something"
+ },
+ "exhibit": {
+  "definition": "to show something in public, like art"
+ },
+ "minor": {
+  "definition": "small and not very important"
+ },
+ "hunt": {
+  "definition": "to chase and kill wild animals"
+ },
+ "storm": {
+  "definition": "very bad weather with strong wind and rain"
+ }
+}

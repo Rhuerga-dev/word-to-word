@@ -145,7 +145,6 @@ class SpeakingController extends Controller
     /** Texto para shadowing de tu nivel (el mismo para todos ese día y tema: se guarda en caché). */
     public function shadowing(Request $request, ClaudeService $claude)
     {
-        abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
         $data = $request->validate(['skip' => ['sometimes', 'integer', 'min:0', 'max:50'], 'unit' => ['sometimes', 'string', 'max:40']]);
         $user = $request->user();
         $level = $user->cefr_level ?: 'A2';
@@ -160,6 +159,13 @@ class SpeakingController extends Controller
         }
         $theme = $unit['shadow'] ?? $themes[$i];
 
+        // Primero el banco escrito de antemano (sin IA): cada vez que vuelve el tema, otro texto.
+        $variant = $unit ? (int) ($data['skip'] ?? 0) : intdiv((int) $day->format('z') + (int) ($data['skip'] ?? 0), count($themes));
+        if ($text = \App\Services\ShadowingBank::pick($level, $theme, $variant)) {
+            return $text + ['theme' => $theme, 'level' => $level];
+        }
+
+        abort_unless($claude->enabled(), 503, 'La IA no está configurada en el servidor (ANTHROPIC_API_KEY).');
         try {
             $text = Cache::remember("shadowing:{$level}:{$day->toDateString()}:{$i}", now()->addDays(2), fn () => $claude->shadowingText($level, $theme));
         } catch (Throwable $e) {

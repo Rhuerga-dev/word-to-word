@@ -39,6 +39,9 @@ return [
     ],
 
     // Shadowing: temas de los textos (se generan una vez por día, nivel y tema, y se reutilizan).
+    // Textos de shadowing escritos de antemano (sin IA). Si falta un nivel o tema, se pide a la IA.
+    'shadowing_bank' => database_path('content/shadowing.json'),
+
     'shadowing_themes' => [
         'ordering coffee', 'a phone call with a client', 'small talk with a coworker', 'asking for directions',
         'a quick team meeting', 'talking about the weekend', 'at the doctor', 'returning something at a store',

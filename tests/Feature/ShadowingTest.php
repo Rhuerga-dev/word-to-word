@@ -16,7 +16,7 @@ class ShadowingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['vocab.anthropic.key' => 'test-key']);
+        config(['vocab.anthropic.key' => 'test-key', 'speaking.shadowing_bank' => '/no/existe.json']);   // sin banco: IA
         Sanctum::actingAs(User::factory()->create(['cefr_level' => 'B1']));
     }
 
@@ -49,5 +49,23 @@ class ShadowingTest extends TestCase
     {
         Http::fake(['*' => Http::response(['content' => [['type' => 'text', 'text' => '{"title":"x","sentences":["1 2 3","ok"]}']]])]);
         $this->getJson('/api/speaking/shadowing')->assertStatus(502);
+    }
+
+    public function test_with_the_bank_no_ai_is_called_and_each_return_of_the_theme_brings_another_text(): void
+    {
+        Http::fake();
+        $themes = config('speaking.shadowing_themes');
+        $texts = fn ($n) => ['title' => "Text {$n}", 'sentences' => ['I would like a coffee, please.', "Sure, what size do you want?", 'A small one is fine, thanks.', 'It costs 5 dollars.']];
+        $bank = ['B1' => array_fill_keys($themes, [$texts(1), $texts(2)])];
+        $path = tempnam(sys_get_temp_dir(), 'shadow').'.json';
+        file_put_contents($path, json_encode($bank));
+        config(['speaking.shadowing_bank' => $path, 'vocab.anthropic.key' => null]);   // ni siquiera hace falta la IA
+
+        $a = $this->getJson('/api/speaking/shadowing')->assertOk()->assertJsonPath('level', 'B1');
+        $this->assertCount(3, $a->json('sentences'));                                   // la frase con número no vale
+        $b = $this->getJson('/api/speaking/shadowing?skip='.count($themes))->assertOk(); // el mismo tema, otra vuelta
+        $this->assertSame($a->json('theme'), $b->json('theme'));
+        $this->assertNotSame($a->json('title'), $b->json('title'));
+        Http::assertNothingSent();
     }
 }

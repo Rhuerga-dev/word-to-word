@@ -1,0 +1,2318 @@
+{
+ "A1": {
+  "ordering coffee": [
+   {
+    "title": "A Small Coffee, Please",
+    "sentences": [
+     "Hi, can I have a small coffee, please?",
+     "Do you want milk in your coffee?",
+     "Yes, a little milk and no sugar, please.",
+     "Is that for here or to go?",
+     "It's to go, thank you very much."
+    ]
+   },
+   {
+    "title": "Tea and a Muffin",
+    "sentences": [
+     "Good morning, I want a hot tea, please.",
+     "We have green tea and black tea today.",
+     "Black tea, please, and one chocolate muffin too.",
+     "That's five dollars and fifty cents, please.",
+     "Here you are, and have a nice day!"
+    ]
+   },
+   {
+    "title": "Coffee With a Friend",
+    "sentences": [
+     "My friend and I want two big coffees.",
+     "Can we sit at the table by the window?",
+     "Sure, I bring your coffees to the table.",
+     "Thank you, the coffee here is really good.",
+     "We come to this cafe every Saturday morning."
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Calling a Client",
+    "sentences": [
+     "Hello, this is Ana from the sales office.",
+     "Is this a good time to talk?",
+     "I call about your order for this week.",
+     "Your order is ready, and we send it tomorrow.",
+     "Thank you, and please call me if you need help."
+    ]
+   },
+   {
+    "title": "A Client Has a Question",
+    "sentences": [
+     "Good morning, how can I help you today?",
+     "I see, you have a question about the price.",
+     "The price is the same as last month.",
+     "Yes, I can send you the list by email.",
+     "Thank you for your call, have a good day."
+    ]
+   },
+   {
+    "title": "Booking a Meeting by Phone",
+    "sentences": [
+     "Hi, it's Mark from Blue Tech, how are you?",
+     "I want to meet with you next week.",
+     "Are you free on Tuesday in the morning?",
+     "Great, Tuesday at ten is perfect for me.",
+     "See you then, and thank you for your time."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "Monday Morning Chat",
+    "sentences": [
+     "Good morning, how are you today?",
+     "I'm fine, but I'm a little tired today.",
+     "Me too, I need a big cup of coffee.",
+     "Do you want to have lunch together later?",
+     "Yes, let's go to the cafe at noon."
+    ]
+   },
+   {
+    "title": "Talking About the Weather",
+    "sentences": [
+     "It's really cold in the office today.",
+     "Yes, and it's very cold outside too.",
+     "I like the winter, but I don't like rain.",
+     "Do you have an umbrella in your bag?",
+     "No, I don't, so I hope it's sunny later."
+    ]
+   },
+   {
+    "title": "A New Desk",
+    "sentences": [
+     "Hey, is this your new desk by the window?",
+     "Yes, I like it here, it's very quiet.",
+     "You have a nice view of the park.",
+     "I know, and the light is really good too.",
+     "Come and have a coffee with me sometime."
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "Where Is the Station?",
+    "sentences": [
+     "Excuse me, where is the train station, please?",
+     "Go straight and turn left at the bank.",
+     "Is it far from here on foot?",
+     "No, it's about five minutes from here.",
+     "Thank you very much for your help!"
+    ]
+   },
+   {
+    "title": "Looking for a Pharmacy",
+    "sentences": [
+     "Excuse me, is there a pharmacy near here?",
+     "Yes, there's one on the next street.",
+     "It's next to the big supermarket on the right.",
+     "Is it open now, in the evening?",
+     "Yes, it's open until nine every night."
+    ]
+   },
+   {
+    "title": "Lost in the Hotel",
+    "sentences": [
+     "Sorry, where is the restaurant in this hotel?",
+     "It's on the first floor, near the lifts.",
+     "And where are the bathrooms, please?",
+     "They're at the end of the hall, on the left.",
+     "Great, thanks a lot, you're very kind."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "Monday Team Meeting",
+    "sentences": [
+     "Good morning, everyone, let's start the meeting now.",
+     "Today we have three things to talk about.",
+     "Maria, can you tell us about the new client?",
+     "Tom, please send the report to me today.",
+     "Okay, thank you all, see you tomorrow."
+    ]
+   },
+   {
+    "title": "Who Does What",
+    "sentences": [
+     "Hi team, this meeting is very short today.",
+     "I work on the website this week.",
+     "Sam, you call the clients on Wednesday, okay?",
+     "Lisa and Ben help with the new project.",
+     "Any questions? No? Great, let's get to work."
+    ]
+   },
+   {
+    "title": "A Problem With the Printer",
+    "sentences": [
+     "Hello everyone, I have one quick thing today.",
+     "The printer on our floor doesn't work.",
+     "Please use the printer on the second floor.",
+     "The technician comes to fix it on Friday.",
+     "Thanks, and have a good day, everybody."
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "My Weekend Plans",
+    "sentences": [
+     "What do you do on the weekend?",
+     "On Saturday, I usually clean my house.",
+     "On Sunday, I visit my parents for lunch.",
+     "My mom cooks rice and chicken for us.",
+     "I really love my Sundays with my family."
+    ]
+   },
+   {
+    "title": "A Weekend at the Beach",
+    "sentences": [
+     "I go to the beach every weekend in summer.",
+     "My friends and I swim and play volleyball.",
+     "We eat fish at a small restaurant there.",
+     "The water is warm and the sun is nice.",
+     "Do you like the beach too?"
+    ]
+   },
+   {
+    "title": "A Quiet Weekend",
+    "sentences": [
+     "My weekends are usually very quiet and slow.",
+     "I sleep late and read a good book.",
+     "In the afternoon, I walk my dog in the park.",
+     "At night, I watch a movie on TV.",
+     "It's simple, but I really like it."
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "I Have a Headache",
+    "sentences": [
+     "Good morning, doctor, I don't feel very well.",
+     "I have a bad headache and a sore throat.",
+     "Do you have a fever too?",
+     "Yes, I'm hot and I'm very tired.",
+     "Okay, take this medicine three times a day."
+    ]
+   },
+   {
+    "title": "A Stomach Ache",
+    "sentences": [
+     "Hello, what's the problem with you today?",
+     "My stomach hurts a lot after I eat.",
+     "Do you eat a lot of spicy food?",
+     "Yes, I eat spicy food every day.",
+     "Please eat simple food and drink lots of water."
+    ]
+   },
+   {
+    "title": "Making an Appointment",
+    "sentences": [
+     "Hi, I want to see the doctor, please.",
+     "Is tomorrow morning at nine okay for you?",
+     "Yes, that's good, thank you very much.",
+     "What is your name and your phone number?",
+     "My name is Carlos Perez, and here's my card."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "The Shirt Is Too Small",
+    "sentences": [
+     "Hi, I want to return this shirt, please.",
+     "It's too small for me, I'm sorry.",
+     "Do you have the receipt with you?",
+     "Yes, here is the receipt from the store.",
+     "Okay, do you want your money back or another shirt?"
+    ]
+   },
+   {
+    "title": "A Broken Lamp",
+    "sentences": [
+     "Excuse me, this lamp doesn't work at home.",
+     "The light doesn't turn on at all.",
+     "Oh, I'm sorry, can I see it, please?",
+     "You're right, it's broken, I can change it.",
+     "Thank you, that's very nice of you."
+    ]
+   },
+   {
+    "title": "Wrong Color Shoes",
+    "sentences": [
+     "Hello, I have a problem with these shoes.",
+     "I want black shoes, but these are brown.",
+     "Do you have them in black in size nine?",
+     "Yes, we do, wait here one minute, please.",
+     "Here you are, black shoes in size nine."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "Late for Work",
+    "sentences": [
+     "Hi, it's me, I'm sorry, but I'm late.",
+     "The bus is very slow this morning.",
+     "There's a lot of traffic on the road.",
+     "I'm at the office in twenty minutes.",
+     "Please tell the team I'm on my way."
+    ]
+   },
+   {
+    "title": "The Train Is Late",
+    "sentences": [
+     "Hello, I'm on the train, but it's not moving.",
+     "There's a problem with the train today.",
+     "I'm late for our meeting, I'm very sorry.",
+     "Can we start the meeting at eleven, please?",
+     "Thank you for your patience, see you soon."
+    ]
+   },
+   {
+    "title": "Late for Dinner",
+    "sentences": [
+     "Hi, honey, I'm still at work right now.",
+     "My boss needs help with a big report.",
+     "I'm home at eight, not at seven.",
+     "Please eat dinner, don't wait for me.",
+     "I love you, see you later tonight."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "Hi, I'm Laura",
+    "sentences": [
+     "Hi, my name is Laura, nice to meet you.",
+     "Nice to meet you too, I'm David.",
+     "So, David, where are you from?",
+     "I'm from Mexico, but I live here now.",
+     "Cool, I'm from Spain, and I love this city."
+    ]
+   },
+   {
+    "title": "A New Neighbor",
+    "sentences": [
+     "Hello, I'm your new neighbor in number five.",
+     "Oh, welcome! I'm Peter, I live next door.",
+     "Do you live here with your family?",
+     "No, I live alone with my cat, Luna.",
+     "Great, please knock on my door if you need help."
+    ]
+   },
+   {
+    "title": "A New Classmate",
+    "sentences": [
+     "Hi, is this seat free? I'm new here.",
+     "Yes, sit down, please, I'm Sara.",
+     "Thanks, I'm Ali, and this is my first class.",
+     "Do you like learning English, Ali?",
+     "Yes, I like it a lot, but it's difficult."
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "A Trip to the Beach",
+    "sentences": [
+     "I want to go to the beach in July.",
+     "I like the sun and the warm water.",
+     "My sister wants to come with me.",
+     "We need a hotel near the beach.",
+     "Do you know a good and cheap hotel?"
+    ]
+   },
+   {
+    "title": "Visiting New York",
+    "sentences": [
+     "My dream is to visit New York City.",
+     "I want to see the big buildings and parks.",
+     "I need a passport and a plane ticket.",
+     "The tickets are very expensive in December.",
+     "So I want to go there in March."
+    ]
+   },
+   {
+    "title": "A Weekend in the Mountains",
+    "sentences": [
+     "This weekend we go to the mountains by car.",
+     "We need warm clothes, because it's cold there.",
+     "I take my camera to take a lot of photos.",
+     "My husband makes sandwiches for the trip.",
+     "I'm very happy, I love the mountains."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "About Me",
+    "sentences": [
+     "My name is Rosa, and I'm from Colombia.",
+     "I'm a nurse, and I love my job.",
+     "I work at a big hospital in the city.",
+     "I like to help people every day.",
+     "I speak Spanish and a little English."
+    ]
+   },
+   {
+    "title": "Why I Want This Job",
+    "sentences": [
+     "I want this job because I like computers.",
+     "I'm good at my work, and I learn fast.",
+     "I like to work with a team.",
+     "I'm always on time, and I work hard.",
+     "Thank you for this chance to talk with you."
+    ]
+   },
+   {
+    "title": "My Strengths",
+    "sentences": [
+     "I'm a very friendly and happy person.",
+     "I like to talk with customers every day.",
+     "I'm good with numbers and with money.",
+     "I can work in the morning or at night.",
+     "I'm ready to start work next week."
+    ]
+   }
+  ]
+ },
+ "A2": {
+  "ordering coffee": [
+   {
+    "title": "The Wrong Order",
+    "sentences": [
+     "Excuse me, I ordered a latte, but this is a cappuccino.",
+     "Oh, I'm so sorry, I'll make you a new one.",
+     "No problem, I'll wait here by the counter.",
+     "Here's your latte, and I added a free cookie.",
+     "That's very kind, thank you, I'll come back tomorrow."
+    ]
+   },
+   {
+    "title": "Ordering for the Office",
+    "sentences": [
+     "Hi, I'd like to order six coffees for my office.",
+     "Sure, will you take them with you or wait?",
+     "I'll wait, but I'm in a bit of a hurry.",
+     "They'll be ready in about ten minutes.",
+     "Great, I'll sit down and read my email."
+    ]
+   },
+   {
+    "title": "Trying a New Coffee Shop",
+    "sentences": [
+     "Yesterday I tried a new coffee shop near my house.",
+     "I ordered an iced coffee with oat milk.",
+     "It was sweet and cold, and I really liked it.",
+     "The barista was very friendly and talked with me.",
+     "I think I'll go back there this weekend."
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Following Up on an Email",
+    "sentences": [
+     "Hi, this is Julia calling from Green Office.",
+     "I sent you an email yesterday about the new prices.",
+     "Did you have time to read it?",
+     "Okay, no problem, I'll send it again this afternoon.",
+     "I'll call you back on Thursday to talk about it."
+    ]
+   },
+   {
+    "title": "A Late Delivery",
+    "sentences": [
+     "Good afternoon, I understand your package didn't arrive yesterday.",
+     "I'm really sorry about that, I checked the system.",
+     "The driver had a problem with the truck.",
+     "Your package will arrive tomorrow before noon.",
+     "We'll also give you a discount on your next order."
+    ]
+   },
+   {
+    "title": "Confirming the Meeting",
+    "sentences": [
+     "Hello, I'm calling about our meeting on Friday.",
+     "Last week you said ten in the morning was fine.",
+     "Is that still a good time for you?",
+     "Perfect, I'll bring the documents and the samples.",
+     "I'll see you at your office then, goodbye."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "How Was Your Vacation?",
+    "sentences": [
+     "Welcome back to work! How was your vacation?",
+     "It was great, we went to the coast for a week.",
+     "Did you have good weather there?",
+     "Yes, it was sunny every day, and we swam a lot.",
+     "I'm going to show you some photos at lunch."
+    ]
+   },
+   {
+    "title": "The New Coffee Machine",
+    "sentences": [
+     "Did you see the new coffee machine in the kitchen?",
+     "Yes, I tried it this morning, and it's amazing.",
+     "The old one broke last month, remember?",
+     "I'm going to drink so much coffee now.",
+     "Me too, but I'll probably sleep badly tonight!"
+    ]
+   },
+   {
+    "title": "Plans After Work",
+    "sentences": [
+     "Are you going to do anything after work today?",
+     "I'm going to the gym, and then I'll cook dinner.",
+     "I went to the gym yesterday, and I'm still tired.",
+     "You should come with me one day next week.",
+     "Maybe, but I'll need new running shoes first."
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "Finding the Museum",
+    "sentences": [
+     "Excuse me, could you tell me how to get to the museum?",
+     "Sure, walk down this street until you see a church.",
+     "Then turn right, and you'll see the museum on your left.",
+     "Will it take a long time to walk there?",
+     "No, you'll get there in about ten minutes."
+    ]
+   },
+   {
+    "title": "Taking the Wrong Bus",
+    "sentences": [
+     "Excuse me, I think I took the wrong bus.",
+     "I wanted to go to the city center.",
+     "You need to get off at the next stop.",
+     "Then take bus number twelve across the street.",
+     "Thanks, I'll do that, you really helped me."
+    ]
+   },
+   {
+    "title": "Finding the Office",
+    "sentences": [
+     "Hi, I'm here for a meeting with the marketing team.",
+     "I walked around the building, but I couldn't find the entrance.",
+     "The main door is closed today because of repairs.",
+     "You'll need to use the side door near the parking lot.",
+     "Then take the elevator to the fourth floor."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "Weekly Update",
+    "sentences": [
+     "Okay, let's start, I'll keep this meeting short.",
+     "Last week we finished the design for the new app.",
+     "This week we're going to test it with real users.",
+     "Anna will write the report and send it on Friday.",
+     "Did I forget anything, or are we done?"
+    ]
+   },
+   {
+    "title": "Planning the Party",
+    "sentences": [
+     "Thanks for coming, we need to plan the company party.",
+     "Last year the party was at a restaurant downtown.",
+     "This year we're going to have it in the office.",
+     "Jack will order the food, and Mia will buy drinks.",
+     "We'll meet again on Monday to check everything."
+    ]
+   },
+   {
+    "title": "A Missed Deadline",
+    "sentences": [
+     "Hi everyone, I have some bad news this morning.",
+     "We didn't finish the project on time last week.",
+     "The client called me and wasn't very happy.",
+     "We'll work together to finish it by Wednesday.",
+     "I'll call the client today and explain the new plan."
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "A Busy Weekend",
+    "sentences": [
+     "How was your weekend? Did you do anything fun?",
+     "On Saturday, I helped my brother move to a new apartment.",
+     "We carried boxes all day, and I was so tired.",
+     "On Sunday, I just stayed home and watched movies.",
+     "Next weekend I'm going to relax a lot more."
+    ]
+   },
+   {
+    "title": "A Birthday Party",
+    "sentences": [
+     "Last Saturday was my daughter's seventh birthday.",
+     "We had a small party in the garden with her friends.",
+     "The kids played games and ate a big chocolate cake.",
+     "She got a new bike, and she loved it.",
+     "It was a long day, but everybody had fun."
+    ]
+   },
+   {
+    "title": "Plans for Next Weekend",
+    "sentences": [
+     "What are you going to do next weekend?",
+     "I'm going to visit my grandparents in the countryside.",
+     "They have a farm with horses, cows and chickens.",
+     "I'll help my grandfather in the garden on Saturday.",
+     "On Sunday, we'll have a big family lunch together."
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "I Hurt My Ankle",
+    "sentences": [
+     "Hello, doctor, I hurt my ankle yesterday.",
+     "I fell on the stairs when I was going to work.",
+     "It got very big and it hurt all night.",
+     "We'll take a picture of your ankle to check it.",
+     "Don't walk too much, and you'll feel better soon."
+    ]
+   },
+   {
+    "title": "A Bad Cold",
+    "sentences": [
+     "I started feeling sick three days ago.",
+     "I had a fever and a cough all weekend.",
+     "Did you take any medicine for the fever?",
+     "Yes, I took some pills, but they didn't help much.",
+     "I'll give you something stronger, and you'll rest at home."
+    ]
+   },
+   {
+    "title": "A Yearly Checkup",
+    "sentences": [
+     "Good morning, I'm here for my yearly checkup.",
+     "When did you last see a doctor?",
+     "I came here last year, in the spring.",
+     "Your blood pressure looks fine today, good news.",
+     "I'll send you the test results next week."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "A Gift I Didn't Need",
+    "sentences": [
+     "Hi, my aunt gave me this toaster for my birthday.",
+     "I already have one, so I'd like to return it.",
+     "Do you have a receipt or a gift receipt?",
+     "Yes, she put a gift receipt in the box.",
+     "Great, I'll give you a store card for the full amount."
+    ]
+   },
+   {
+    "title": "A Phone That Stopped Working",
+    "sentences": [
+     "I bought this phone here two weeks ago.",
+     "Yesterday it stopped working, and it won't turn on.",
+     "Did you drop it or get it wet?",
+     "No, I didn't, I was always careful with it.",
+     "Okay, we'll send it for repair or give you a new one."
+    ]
+   },
+   {
+    "title": "The Jacket Didn't Fit",
+    "sentences": [
+     "Hello, I ordered this jacket online last week.",
+     "When it arrived, it was too big for me.",
+     "Can I exchange it here in the store?",
+     "Yes, you can, I'll check if we have a medium.",
+     "Here it is, try it on in the fitting room."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "I Missed the Bus",
+    "sentences": [
+     "Sorry I'm late, I missed the bus this morning.",
+     "I waited for the next one for twenty minutes.",
+     "Then it was full, so I had to take a taxi.",
+     "I'll leave home earlier tomorrow, I promise.",
+     "Did I miss anything important in the meeting?"
+    ]
+   },
+   {
+    "title": "The Report Will Be Late",
+    "sentences": [
+     "Hi, I'm writing about the report for Friday.",
+     "I'm sorry, but I won't finish it on time.",
+     "Two people on my team were sick this week.",
+     "I'll send you the report on Monday morning.",
+     "I hope that's okay with you, and thanks for understanding."
+    ]
+   },
+   {
+    "title": "A Delayed Flight",
+    "sentences": [
+     "Hi, Mom, I'm still at the airport.",
+     "My flight was delayed because of the bad weather.",
+     "They said it will leave in two hours.",
+     "So I'll arrive very late tonight, around midnight.",
+     "Don't wait for me, I'll take a taxi home."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "At a Wedding",
+    "sentences": [
+     "Hi, I don't think we met before, I'm Daniel.",
+     "I'm a friend of the bride, we studied together.",
+     "How did you meet the groom?",
+     "We worked at the same company for five years.",
+     "It was a beautiful ceremony, wasn't it?"
+    ]
+   },
+   {
+    "title": "First Day at Work",
+    "sentences": [
+     "Hi, I'm Sofia, I started here this morning.",
+     "Welcome! I'm Leo, and I work in sales.",
+     "Where did you work before this job?",
+     "I worked at a small bank for three years.",
+     "Great, I'll show you the kitchen at lunch."
+    ]
+   },
+   {
+    "title": "At the Gym",
+    "sentences": [
+     "Hi, I saw you here last week, are you new?",
+     "Yes, I joined the gym two weeks ago.",
+     "I'm Nina, I come here every morning before work.",
+     "I'm Omar, nice to meet you, Nina.",
+     "Maybe we'll see each other in the yoga class tomorrow."
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "Booking a Hotel",
+    "sentences": [
+     "We're going to visit Lisbon next month.",
+     "I found a nice hotel near the old town.",
+     "It had good reviews, and the price was okay.",
+     "I'll book it tonight before the prices go up.",
+     "Will you check the flights for us tomorrow?"
+    ]
+   },
+   {
+    "title": "A Road Trip",
+    "sentences": [
+     "This summer we're going to drive along the coast.",
+     "Last year we went by train, but it was expensive.",
+     "We'll stop in small towns and eat local food.",
+     "My brother will drive, and I'll read the map.",
+     "I think it's going to be a great adventure."
+    ]
+   },
+   {
+    "title": "Visiting Family Abroad",
+    "sentences": [
+     "In December, I'm going to fly to Cuba to see my family.",
+     "The last time I saw them was two years ago.",
+     "I bought the tickets last week, and they were cheap.",
+     "I'll bring presents for my nieces and nephews.",
+     "My mother is going to cook my favorite food."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "My Last Job",
+    "sentences": [
+     "In my last job, I worked as a waiter.",
+     "I worked there for three years, and I learned a lot.",
+     "I talked with many customers every day.",
+     "I left because I wanted a job with more hours.",
+     "I'm sure I'll learn this new job quickly."
+    ]
+   },
+   {
+    "title": "A Problem I Solved",
+    "sentences": [
+     "Once, a customer was very angry about a late order.",
+     "I listened to him and said I was sorry.",
+     "Then I called the kitchen and checked the order.",
+     "Ten minutes later, he got his food and smiled.",
+     "In this job, I'll stay calm with customers too."
+    ]
+   },
+   {
+    "title": "My Future Plans",
+    "sentences": [
+     "In five years, I'm going to be a manager.",
+     "Last year I finished a course in business.",
+     "I'm going to take more English classes next year.",
+     "I'll work hard and learn from my team.",
+     "I think this company is the right place for me."
+    ]
+   }
+  ]
+ },
+ "B1": {
+  "ordering coffee": [
+   {
+    "title": "A Special Order",
+    "sentences": [
+     "Could I get a medium oat latte with an extra shot?",
+     "Actually, could you make it decaf? I've had enough caffeine today.",
+     "Sure, would you like any syrup, like vanilla or caramel?",
+     "Just a little vanilla, but not too sweet, please.",
+     "And could you put it in my own cup, if that's okay?"
+    ]
+   },
+   {
+    "title": "Out of Almond Milk",
+    "sentences": [
+     "I'm afraid we've run out of almond milk this morning.",
+     "Oh, that's a shame, what other options do you have?",
+     "We've got soy, oat and coconut, and oat is really popular.",
+     "Alright, I'll give oat a try, then.",
+     "If I don't like it, I'll stick to regular milk next time."
+    ]
+   },
+   {
+    "title": "Catching Up at the Cafe",
+    "sentences": [
+     "I'll grab the coffees while you find us a table.",
+     "What are you having? The usual flat white?",
+     "Actually, I've been trying to cut down, so just a tea.",
+     "Fair enough, I'll get a herbal tea and a cappuccino then.",
+     "Should we share a slice of that carrot cake as well?"
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Handling a Complaint",
+    "sentences": [
+     "I'm sorry to hear the software has been crashing again.",
+     "Could you tell me exactly when the problem started?",
+     "Thanks, that's really helpful, I'll pass it on to our technical team.",
+     "They should be able to fix it within the next two days.",
+     "In the meantime, I'll keep you updated by email every afternoon."
+    ]
+   },
+   {
+    "title": "Discussing a Proposal",
+    "sentences": [
+     "Thanks for taking the time to go over our proposal.",
+     "I understand the budget is a bit tight this year.",
+     "What if we started with a smaller package and grew from there?",
+     "That way, you could see the results before spending more.",
+     "I'll put together a revised offer and send it by Thursday."
+    ]
+   },
+   {
+    "title": "Leaving a Message",
+    "sentences": [
+     "Hi, I was hoping to speak with Elena, is she available?",
+     "Oh, I see, she's in a meeting until three.",
+     "Could you let her know that I called about the contract?",
+     "She can reach me on my mobile any time this afternoon.",
+     "If it's easier, we could reschedule for tomorrow morning instead."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "Working From Home",
+    "sentences": [
+     "Have you been working from home much lately?",
+     "I've been coming in twice a week, which suits me fine.",
+     "At home I get more done, but I miss chatting with people.",
+     "I know what you mean, the office feels a bit empty these days.",
+     "Maybe we should organize a team lunch to get everyone together."
+    ]
+   },
+   {
+    "title": "A New Series",
+    "sentences": [
+     "Have you watched that new detective series everyone's talking about?",
+     "I've just started it, and I'm already hooked.",
+     "No spoilers, please, I'm only on the second episode!",
+     "Don't worry, my lips are sealed, but it gets even better.",
+     "I'll probably end up watching the whole thing this weekend."
+    ]
+   },
+   {
+    "title": "A Terrible Commute",
+    "sentences": [
+     "The traffic was terrible this morning, wasn't it?",
+     "It took me nearly an hour to get here from downtown.",
+     "I've been thinking about cycling to work instead of driving.",
+     "That's a great idea, as long as it doesn't rain.",
+     "True, I suppose I'd need some decent waterproof gear first."
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "Finding a Restaurant",
+    "sentences": [
+     "Sorry to bother you, but do you know where Rosa's Kitchen is?",
+     "I've been walking around for ages, and my phone has died.",
+     "I think it's just past the square, opposite the bookshop.",
+     "If you get to the river, you've gone too far.",
+     "Brilliant, thanks so much, I would never have found it alone."
+    ]
+   },
+   {
+    "title": "Driving to the Airport",
+    "sentences": [
+     "Excuse me, is this the right way to the airport?",
+     "Not quite, you'll need to turn around and head back.",
+     "Take the second exit at the roundabout, then follow the signs.",
+     "Watch out, because there are some roadworks near the bridge.",
+     "It should take you about twenty minutes if traffic is okay."
+    ]
+   },
+   {
+    "title": "Lost in a Big Hospital",
+    "sentences": [
+     "Excuse me, I'm trying to find the children's ward.",
+     "I followed the signs, but I ended up in the cafeteria.",
+     "Don't worry, this building is really confusing for everyone.",
+     "Take the lift to the third floor, then turn right.",
+     "If you get lost again, just ask at the reception desk."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "A Quick Progress Check",
+    "sentences": [
+     "Let's go around quickly so everyone can share their progress.",
+     "I've finished the first draft, but it still needs some editing.",
+     "Is anyone blocked or waiting on something from another team?",
+     "I'm still waiting for the data from finance, actually.",
+     "Okay, I'll follow up with them right after this meeting."
+    ]
+   },
+   {
+    "title": "Changing Priorities",
+    "sentences": [
+     "I just wanted to let you know about a change in priorities.",
+     "The client has asked us to launch the app two weeks earlier.",
+     "That means we'll need to put the reporting feature on hold.",
+     "I know it's a lot of pressure, so tell me if you need help.",
+     "Let's meet again on Thursday to see how things are going."
+    ]
+   },
+   {
+    "title": "Feedback From Users",
+    "sentences": [
+     "So we've received the first round of feedback from users.",
+     "Most people liked the design, which is great news.",
+     "However, several users found the checkout process confusing.",
+     "I'd suggest we simplify it before the next release.",
+     "Could someone volunteer to put together a few new ideas?"
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "A Rainy Camping Weekend",
+    "sentences": [
+     "My weekend didn't go exactly as I'd planned, to be honest.",
+     "We were supposed to go camping, but it rained nonstop.",
+     "In the end, we stayed in and played board games instead.",
+     "It wasn't what we expected, but it was actually quite fun.",
+     "We're hoping to try the camping trip again next month."
+    ]
+   },
+   {
+    "title": "My First Pottery Class",
+    "sentences": [
+     "I finally took that pottery class I've been talking about.",
+     "It was much harder than it looks on social media!",
+     "My first bowl collapsed, but the teacher was really encouraging.",
+     "By the end, I'd made a small cup that I'm quite proud of.",
+     "I'm thinking of signing up for the full course now."
+    ]
+   },
+   {
+    "title": "A Lazy Sunday",
+    "sentences": [
+     "Honestly, I didn't do much at all this weekend.",
+     "I'd had such a stressful week that I just needed to rest.",
+     "I slept in, made pancakes, and finished a novel I'd been reading.",
+     "Sometimes doing nothing is exactly what you need, isn't it?",
+     "How about you, did you get up to anything interesting?"
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "Trouble Sleeping",
+    "sentences": [
+     "I've been having trouble sleeping for the past few weeks.",
+     "I usually fall asleep fine, but I wake up around three.",
+     "Have you been under more stress than usual lately?",
+     "Yes, things at work have been pretty intense recently.",
+     "Let's try some changes to your routine before we consider medication."
+    ]
+   },
+   {
+    "title": "Back Pain",
+    "sentences": [
+     "My lower back has been hurting since I started a new job.",
+     "I spend most of the day sitting at a computer.",
+     "It sounds like your posture might be causing the problem.",
+     "I'd recommend taking short breaks and doing some gentle stretches.",
+     "If it doesn't improve in a month, come back and see me."
+    ]
+   },
+   {
+    "title": "An Allergic Reaction",
+    "sentences": [
+     "I think I've had an allergic reaction to something I ate.",
+     "My face started itching, and now I've got these red spots.",
+     "Do you remember eating anything unusual in the last day?",
+     "I tried some shrimp at a restaurant last night, actually.",
+     "I'll prescribe an antihistamine, and you should avoid shellfish for now."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "No Receipt",
+    "sentences": [
+     "I'd like to return this coffee maker, but I've lost the receipt.",
+     "I paid by card, so maybe you can find it in the system?",
+     "I'm afraid without a receipt, we can only offer store credit.",
+     "That's a bit disappointing, but I understand it's the policy.",
+     "Alright, store credit is fine, I'll probably use it today anyway."
+    ]
+   },
+   {
+    "title": "A Cracked Screen",
+    "sentences": [
+     "When I opened the box at home, the screen was cracked.",
+     "I hadn't even taken it out of the packaging yet.",
+     "I'm so sorry about that, it must have been damaged in delivery.",
+     "Would you prefer a replacement or a full refund?",
+     "A replacement would be great, as long as you check it first."
+    ]
+   },
+   {
+    "title": "Changing My Mind",
+    "sentences": [
+     "I bought this dress for a wedding, but I've changed my mind.",
+     "It's never been worn, and the tags are still on it.",
+     "That's no problem, as long as it's within thirty days.",
+     "Would you like to exchange it, or would you rather get a refund?",
+     "I'll take the refund, if that's okay, thanks for being so helpful."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "Stuck in Traffic",
+    "sentences": [
+     "I'm really sorry, but I'm going to be about half an hour late.",
+     "There's been an accident on the highway, and nothing is moving.",
+     "I've already let the receptionist know, so they're expecting me.",
+     "Could you start the presentation without me, just in case?",
+     "I'll join as soon as I get there and catch up quickly."
+    ]
+   },
+   {
+    "title": "A Project Behind Schedule",
+    "sentences": [
+     "I wanted to explain why the project is running behind schedule.",
+     "One of our suppliers delivered the materials a week late.",
+     "On top of that, we found a problem during the final testing.",
+     "We've fixed it now, but it set us back a few days.",
+     "We're confident we can deliver everything by the end of the month."
+    ]
+   },
+   {
+    "title": "Sorry for the Slow Reply",
+    "sentences": [
+     "Sorry for the slow reply, I've been swamped this week.",
+     "I only saw your message this morning, to be honest.",
+     "I didn't want to answer without checking the details first.",
+     "I've looked into it now, and everything seems to be in order.",
+     "Next time, feel free to call me if it's urgent."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "At a Conference",
+    "sentences": [
+     "Hi, mind if I join you? I don't really know anyone here.",
+     "Of course not, I'm Emma, I work in digital marketing.",
+     "Nice to meet you, I'm Javier, I'm a software developer.",
+     "Have you been to this conference before, or is it your first time?",
+     "It's my first time, and so far I've found it really useful."
+    ]
+   },
+   {
+    "title": "A Friend of a Friend",
+    "sentences": [
+     "So you're the famous Lucas, Mia's told me a lot about you!",
+     "All good things, I hope, how do you two know each other?",
+     "We met at university, and we've been friends ever since.",
+     "That's lovely, I only moved here last year, so I'm still making friends.",
+     "Well, you should come along next time we all go out."
+    ]
+   },
+   {
+    "title": "At a Language Exchange",
+    "sentences": [
+     "Hi, are you here for the language exchange as well?",
+     "Yes, I'm trying to improve my English, but I'm a bit nervous.",
+     "Don't worry, everyone's really friendly, and nobody judges your mistakes.",
+     "I'm learning Spanish, so maybe we could help each other.",
+     "That sounds perfect, shall we grab a drink and start chatting?"
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "Italy or Greece?",
+    "sentences": [
+     "I can't decide whether to go to Italy or Greece this summer.",
+     "Italy has amazing food, but Greece has those beautiful islands.",
+     "If I were you, I'd go to Greece and visit a few islands.",
+     "That's true, and it might be a bit cheaper than Italy, too.",
+     "Let me look at flights tonight, and then I'll make up my mind."
+    ]
+   },
+   {
+    "title": "What Should I Pack?",
+    "sentences": [
+     "I've never been to a cold country, so I don't know what to pack.",
+     "You'll definitely need a warm coat, gloves, and good boots.",
+     "It's better to wear several layers rather than one thick sweater.",
+     "Should I bring my laptop, or will that just be extra weight?",
+     "Honestly, I'd leave it at home and enjoy a proper break."
+    ]
+   },
+   {
+    "title": "A Trip on a Budget",
+    "sentences": [
+     "We're trying to plan a trip without spending too much money.",
+     "I've found a cheap hostel that has really good reviews.",
+     "If we travel by bus instead of train, we'll save quite a bit.",
+     "We could also cook some meals ourselves to cut down on costs.",
+     "As long as we're together, I don't mind keeping it simple."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "My Greatest Weakness",
+    "sentences": [
+     "I'd say my biggest weakness is that I find it hard to delegate.",
+     "In the past, I tried to do everything myself to make it perfect.",
+     "Recently, I've been learning to trust my team more.",
+     "I've noticed that we actually get better results that way.",
+     "It's still something I'm working on, but I've improved a lot."
+    ]
+   },
+   {
+    "title": "Why I Left My Last Job",
+    "sentences": [
+     "I really enjoyed my last job, and I learned a great deal there.",
+     "However, after four years, I felt I had stopped growing.",
+     "I was looking for a role with more responsibility and new challenges.",
+     "When I saw this position, it seemed like the perfect next step.",
+     "I'm especially excited about the chance to lead international projects."
+    ]
+   },
+   {
+    "title": "Working Under Pressure",
+    "sentences": [
+     "In my last role, we often had very tight deadlines.",
+     "Once, a client changed their requirements just two days before launch.",
+     "I stayed calm, organized the tasks, and kept everyone informed.",
+     "We managed to deliver on time, and the client was really pleased.",
+     "That experience taught me that clear communication is everything under pressure."
+    ]
+   }
+  ]
+ },
+ "B2": {
+  "ordering coffee": [
+   {
+    "title": "Morning Rush Order",
+    "sentences": [
+     "Hi, could I get a large latte to go, please?",
+     "Actually, can you make it with oat milk instead?",
+     "I'm running late, so I'll grab it at the end of the counter.",
+     "Oh, and could you throw in one of those blueberry muffins?",
+     "Thanks a lot, I'll tap my card right here."
+    ]
+   },
+   {
+    "title": "Wrong Drink Mixup",
+    "sentences": [
+     "Sorry, I think this isn't the drink I ordered.",
+     "I asked for a flat white, but this looks like a cappuccino.",
+     "No worries, these things happen when it's this busy.",
+     "I'll just wait here while you make another one.",
+     "That's perfect, thanks for sorting it out so quickly."
+    ]
+   },
+   {
+    "title": "Trying Something New",
+    "sentences": [
+     "I usually stick to black coffee, but I fancy a change today.",
+     "What would you recommend for someone who doesn't like things too sweet?",
+     "Oh, a cortado sounds good, I'll give that a try.",
+     "Could I have it in a mug, since I'm staying in?",
+     "I'll come back and let you know if I'm hooked."
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Following Up on a Proposal",
+    "sentences": [
+     "Hi Sarah, I'm just calling to follow up on our proposal.",
+     "Have you had a chance to look it over yet?",
+     "No rush at all, I just wanted to check in.",
+     "If anything's unclear, I'm happy to walk you through it.",
+     "Shall I call you back later in the week, then?"
+    ]
+   },
+   {
+    "title": "Rescheduling a Call",
+    "sentences": [
+     "Hello, it's Mark from the design team, how are you doing?",
+     "I'm afraid something's come up and I need to move our meeting.",
+     "Would Thursday afternoon work for you instead?",
+     "Great, I'll send over a new invite right after this call.",
+     "Sorry again for the short notice, and thanks for being flexible."
+    ]
+   },
+   {
+    "title": "Handling a Complaint",
+    "sentences": [
+     "I completely understand why you're frustrated about the late delivery.",
+     "Let me look into it and find out what went wrong.",
+     "I'll get back to you by the end of the day.",
+     "In the meantime, we'll take care of the shipping costs.",
+     "Thanks for bearing with us while we sort this out."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "Monday Morning Chat",
+    "sentences": [
+     "Morning! Did you manage to get some rest over the weekend?",
+     "I'm still trying to wake up, to be honest.",
+     "This coffee machine takes forever, doesn't it?",
+     "Anyway, are you going to the training session later?",
+     "I'll save you a seat if I get there first."
+    ]
+   },
+   {
+    "title": "The Office Is Freezing",
+    "sentences": [
+     "Is it just me, or is it freezing in here today?",
+     "I think someone turned the air conditioning up again.",
+     "I've started bringing a jumper to work just in case.",
+     "Maybe we should ask facilities to look into it.",
+     "Until then, I'm holding onto this hot tea for dear life."
+    ]
+   },
+   {
+    "title": "Lunch Plans",
+    "sentences": [
+     "Hey, are you heading out for lunch anytime soon?",
+     "A few of us are trying out that new Thai place.",
+     "You're welcome to come along if you're not too busy.",
+     "I've heard their noodles are really worth checking out.",
+     "Cool, we'll meet by the lifts in ten minutes."
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "Lost Near the Station",
+    "sentences": [
+     "Excuse me, could you help me out for a second?",
+     "I'm trying to find my way to the central station.",
+     "Should I keep going straight or turn around here?",
+     "Oh, so it's just past the bridge on the left?",
+     "Brilliant, thanks so much, I'd have been wandering around forever."
+    ]
+   },
+   {
+    "title": "Looking for a Pharmacy",
+    "sentences": [
+     "Sorry to bother you, is there a pharmacy around here?",
+     "I've been walking up and down this street for ages.",
+     "So I go down this road and take the second right?",
+     "And it's next to the bakery, opposite the bank?",
+     "Great, I really appreciate you pointing me in the right direction."
+    ]
+   },
+   {
+    "title": "Finding the Hotel",
+    "sentences": [
+     "Hi, I think I've got turned around somewhere.",
+     "Do you know how to get to the Riverside Hotel from here?",
+     "Is it within walking distance, or should I catch a bus?",
+     "Okay, I'll head towards the park and ask again there.",
+     "Thanks, you've been a real lifesaver this evening."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "Monday Check In",
+    "sentences": [
+     "Okay everyone, let's keep this short and get started.",
+     "First, how are we getting on with the website update?",
+     "Great, so we're on track to wrap it up by Friday.",
+     "Does anyone need help or have something blocking them?",
+     "Alright, let's catch up again same time next week."
+    ]
+   },
+   {
+    "title": "Splitting the Tasks",
+    "sentences": [
+     "So we've got three main tasks to get through this week.",
+     "Anna, could you take charge of the client report?",
+     "James and I will deal with the budget figures.",
+     "If anything comes up, just give us a shout.",
+     "Let's touch base again on Wednesday to see where we are."
+    ]
+   },
+   {
+    "title": "Quick Project Update",
+    "sentences": [
+     "I just wanted to bring everyone up to speed quickly.",
+     "The client has pushed back the launch by a couple of weeks.",
+     "That gives us a bit more time to iron out the bugs.",
+     "Please don't slow down, though, let's use the extra time wisely.",
+     "Any questions before we break off and get back to work?"
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "A Relaxing Weekend",
+    "sentences": [
+     "How was your weekend, did you get up to anything fun?",
+     "Mine was pretty quiet, I just stayed in and chilled out.",
+     "I finally caught up on that series everyone's talking about.",
+     "On Sunday I went for a long walk by the river.",
+     "It was exactly what I needed after such a hectic week."
+    ]
+   },
+   {
+    "title": "A Busy Family Weekend",
+    "sentences": [
+     "Honestly, I feel like I need another weekend to recover.",
+     "My sister's kids came over and we were run off our feet.",
+     "We took them to the zoo on Saturday morning.",
+     "Then we ended up having a barbecue in the garden.",
+     "It was exhausting, but we had a really good laugh."
+    ]
+   },
+   {
+    "title": "Weekend Plans Fell Through",
+    "sentences": [
+     "I was supposed to go camping, but the plans fell through.",
+     "The weather turned nasty, so we called the whole thing off.",
+     "Instead, I ended up sorting out my messy flat.",
+     "It wasn't exciting, but at least I got loads done.",
+     "Hopefully we'll be able to try again next month."
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "A Persistent Cough",
+    "sentences": [
+     "I've had this cough for about two weeks now.",
+     "It seems to get worse at night when I lie down.",
+     "I've tried cough syrup, but it hasn't really helped.",
+     "I don't have a fever, but I feel completely worn out.",
+     "Should I be worried, or will it clear up by itself?"
+    ]
+   },
+   {
+    "title": "Twisted Ankle",
+    "sentences": [
+     "I think I twisted my ankle while I was out running.",
+     "It swelled up pretty quickly and it's quite painful.",
+     "I can put a bit of weight on it, but not much.",
+     "I've been keeping it up and putting ice on it.",
+     "Do you think it needs to be looked at properly?"
+    ]
+   },
+   {
+    "title": "Picking Up a Prescription",
+    "sentences": [
+     "Hi, I'm here to pick up a repeat prescription.",
+     "I've almost run out of my allergy tablets.",
+     "Could the doctor also check my blood pressure while I'm here?",
+     "It was a little high last time, so I'm keeping an eye on it.",
+     "Thanks, I'll book a follow up appointment at the front desk."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "Shoes That Don't Fit",
+    "sentences": [
+     "Hi, I'd like to return these shoes, please.",
+     "I bought them last week, but they're a bit too tight.",
+     "I've only tried them on at home, so they're still like new.",
+     "Here's the receipt, I kept it just in case.",
+     "Could I swap them for a bigger size instead?"
+    ]
+   },
+   {
+    "title": "Faulty Headphones",
+    "sentences": [
+     "Excuse me, these headphones stopped working after just two days.",
+     "The left side keeps cutting out whenever I move my head.",
+     "I'd rather get a refund than a replacement, if that's okay.",
+     "I paid by card, so can it go back onto that?",
+     "Great, thanks for sorting it out without any fuss."
+    ]
+   },
+   {
+    "title": "Unwanted Gift",
+    "sentences": [
+     "I got this jumper as a gift, but it's not really me.",
+     "I don't have the receipt, but there's a gift receipt in the bag.",
+     "Would it be possible to get store credit for it?",
+     "That's fine, I'll probably pick something else out today.",
+     "Thanks, I'll have a look around and come back."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "Stuck in Traffic",
+    "sentences": [
+     "Hi, I'm really sorry, but I'm running a bit late.",
+     "There's been an accident and the traffic's backed up for miles.",
+     "I should be there in about twenty minutes.",
+     "Feel free to get started without me if you like.",
+     "I'll catch up as soon as I walk in."
+    ]
+   },
+   {
+    "title": "The Report Isn't Ready",
+    "sentences": [
+     "I'm afraid the report won't be ready by this afternoon.",
+     "We ran into a problem with some of the figures.",
+     "I'd rather take a bit longer and get it right.",
+     "Can I send it over first thing tomorrow morning?",
+     "I'll keep you posted if anything else comes up."
+    ]
+   },
+   {
+    "title": "Delayed Delivery",
+    "sentences": [
+     "I'm calling to let you know your order has been held up.",
+     "Our supplier ran out of stock earlier this week.",
+     "We're expecting a new delivery to come in on Monday.",
+     "As soon as it arrives, we'll ship it out to you.",
+     "Sorry for the hassle, and thanks for being so patient."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "At a Friend's Party",
+    "sentences": [
+     "Hi, I don't think we've met, I'm Daniel.",
+     "I know Laura from university, how about you?",
+     "Oh, so you two work together, that's cool.",
+     "What kind of stuff do you do there, then?",
+     "It's been great chatting, let's grab a drink later."
+    ]
+   },
+   {
+    "title": "New Neighbour",
+    "sentences": [
+     "Hi there, I've just moved into the flat next door.",
+     "I thought I'd pop round and introduce myself.",
+     "If the moving boxes get in your way, just let me know.",
+     "Have you been living in this building for long?",
+     "Well, it's lovely to meet you, see you around."
+    ]
+   },
+   {
+    "title": "First Day at the Gym",
+    "sentences": [
+     "Hey, is this your first time at this class too?",
+     "I've been meaning to sign up for ages.",
+     "I'm a bit nervous, I'm not exactly in great shape.",
+     "Oh, you come every week, how do you find it?",
+     "Cool, maybe we can push each other to keep going."
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "Weekend by the Sea",
+    "sentences": [
+     "How about we head to the coast for the weekend?",
+     "We could set off early on Saturday and beat the traffic.",
+     "I'll look into some cheap places to stay near the beach.",
+     "Can you check if the trains are running on Sunday?",
+     "If it rains, we can always just hang out in cafes."
+    ]
+   },
+   {
+    "title": "Booking Flights Abroad",
+    "sentences": [
+     "I've been looking at flights to Lisbon for next month.",
+     "The prices go up the longer we put it off.",
+     "Should we book now and sort out the hotel later?",
+     "I'd rather fly out on a Thursday to make the most of it.",
+     "Let's sit down tonight and figure out the budget together."
+    ]
+   },
+   {
+    "title": "Road Trip with Friends",
+    "sentences": [
+     "So, are we still up for the road trip this summer?",
+     "I think we should take turns driving to avoid getting tired.",
+     "We can stop off at a few small towns along the way.",
+     "Somebody needs to put together a decent playlist for the car.",
+     "Let's set up a group chat to plan everything."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "Tell Me About Yourself",
+    "sentences": [
+     "I've been working in customer service for about five years.",
+     "During that time, I've learned how to deal with difficult situations.",
+     "I really enjoy helping people and solving problems on the spot.",
+     "Now I'm looking to take on more responsibility in a team.",
+     "That's why this role caught my eye straight away."
+    ]
+   },
+   {
+    "title": "My Greatest Weakness",
+    "sentences": [
+     "I'd say my biggest weakness is that I take on too much.",
+     "I find it hard to turn down requests from colleagues.",
+     "Sometimes that means I end up working late to keep up.",
+     "Lately I've been learning to prioritise and set clearer limits.",
+     "It's definitely helped me stay focused on what matters most."
+    ]
+   },
+   {
+    "title": "Handling a Difficult Situation",
+    "sentences": [
+     "In my last job, we had a client who was really unhappy.",
+     "They felt we had let them down on a big project.",
+     "I set up a meeting to listen to their concerns properly.",
+     "Together, we came up with a plan to put things right.",
+     "In the end, they signed up for another year with us."
+    ]
+   }
+  ]
+ },
+ "C1": {
+  "ordering coffee": [
+   {
+    "title": "Picky About the Milk",
+    "sentences": [
+     "Could I get a flat white, but go easy on the foam?",
+     "And would you mind making it extra hot, I'm a slow drinker.",
+     "I know it's a bit of a faff, sorry about that.",
+     "Oh, you've got a seasonal blend on, what's it like?",
+     "Go on then, you've talked me into it."
+    ]
+   },
+   {
+    "title": "Catching Up Over Coffee",
+    "sentences": [
+     "Let me get these, you got them last time.",
+     "What are you having, your usual oat cappuccino?",
+     "I'll grab a table by the window while they're making them.",
+     "Honestly, I could do with a caffeine hit after the morning I've had.",
+     "Right, now tell me everything, I've been dying to hear."
+    ]
+   },
+   {
+    "title": "Cafe Out of Everything",
+    "sentences": [
+     "You're out of oat milk as well, are you serious?",
+     "No, it's fine, it's clearly been one of those mornings.",
+     "I'll just take whatever you've got left, I'm not fussy.",
+     "Actually, make it a double, I'm going to need it.",
+     "Cheers, and good luck getting through the rest of the rush."
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Managing Expectations",
+    "sentences": [
+     "I hear you, and I appreciate you being upfront about it.",
+     "That said, the timeline you're suggesting is pretty ambitious.",
+     "If we rush it, I'd worry about the quality taking a hit.",
+     "What if we phased it, delivering the core features first?",
+     "That way you've got something tangible without cutting corners."
+    ]
+   },
+   {
+    "title": "Smoothing Things Over",
+    "sentences": [
+     "I just wanted to reach out personally about last week's mix up.",
+     "Frankly, it fell short of the standard you've come to expect.",
+     "We've already looked into it and tightened up our process.",
+     "I'd hate for one slip to overshadow everything we've built together.",
+     "Is there anything else we can do to make it right?"
+    ]
+   },
+   {
+    "title": "Upselling Gently",
+    "sentences": [
+     "While I've got you, there's something I wanted to run by you.",
+     "We've just rolled out a service that might suit your team.",
+     "No pressure whatsoever, it's just something worth bearing in mind.",
+     "I could put together a quick overview if you're curious.",
+     "Great, I'll pop it in an email and you can mull it over."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "Surviving the Reorganisation",
+    "sentences": [
+     "So, how are you holding up with all these changes?",
+     "I'll be honest, I'm still getting my head around the new structure.",
+     "It feels like the goalposts keep moving every other week.",
+     "Still, I suppose there's no point getting worked up about it.",
+     "Let's grab a coffee later and have a proper moan."
+    ]
+   },
+   {
+    "title": "Back From Holiday",
+    "sentences": [
+     "Welcome back, you're looking annoyingly relaxed and well rested!",
+     "Did you manage to switch off completely, or did you cave?",
+     "I don't blame you, the inbox must have been brutal.",
+     "Well, you didn't miss much, it's been pretty uneventful here.",
+     "Ease yourself back in, there's no sense diving straight into chaos."
+    ]
+   },
+   {
+    "title": "Chat at the Next Desk",
+    "sentences": [
+     "I couldn't help overhearing, are you into rock climbing?",
+     "I've always fancied giving it a go, but never got round to it.",
+     "Is it the sort of thing you can just turn up and try?",
+     "Fair enough, I'd probably make a complete fool of myself.",
+     "Mind if I tag along next time you go?"
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "Contradictory Directions",
+    "sentences": [
+     "Sorry, I've been given conflicting directions and I'm completely lost.",
+     "Someone told me it was up the hill, but that can't be right.",
+     "Ah, so I've been going round in circles this whole time.",
+     "Is there a shortcut through the park, or is that asking for trouble?",
+     "Brilliant, I'll take your word for it, thanks ever so much."
+    ]
+   },
+   {
+    "title": "Driving in a New City",
+    "sentences": [
+     "Excuse me, I'm trying to get onto the motorway heading north.",
+     "My sat nav has completely given up on me, typically.",
+     "So I take the next left and then follow the signs?",
+     "Is the traffic usually this bad around here at rush hour?",
+     "Lovely, I'll brave it then, thanks for your patience."
+    ]
+   },
+   {
+    "title": "Inside a Huge Hospital",
+    "sentences": [
+     "Hi, I'm looking for cardiology, but this place is an absolute maze.",
+     "I've followed the signs, but they seem to lead nowhere.",
+     "So it's in the other wing, past the main cafe?",
+     "I'd never have figured that out on my own, honestly.",
+     "Thanks, you've saved me a good twenty minutes of wandering."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "Addressing Missed Deadlines",
+    "sentences": [
+     "I'll keep this brief, but there's something we need to address.",
+     "We've let a few deadlines slip lately, and the client's noticed.",
+     "I'm not pointing fingers, I just want to understand what's going on.",
+     "If workloads are unrealistic, I'd rather hear it now than later.",
+     "Let's agree on a plan before we walk out of this room."
+    ]
+   },
+   {
+    "title": "Brainstorming Fresh Ideas",
+    "sentences": [
+     "Right, let's throw some ideas around, nothing's off the table.",
+     "We've been playing it safe for a while, and it shows.",
+     "What would we do if budget weren't an issue at all?",
+     "I like where you're going with that, let's flesh it out.",
+     "Okay, let's park the rest and reconvene on Thursday."
+    ]
+   },
+   {
+    "title": "Celebrating a Win",
+    "sentences": [
+     "Before we dive in, I just want to say a massive thank you.",
+     "The launch went off without a hitch, and that's down to you lot.",
+     "I know it meant some late nights, and that hasn't gone unnoticed.",
+     "Let's take a moment to enjoy it before the next fire.",
+     "Drinks are on me Friday, so keep your evening free."
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "An Impulsive Getaway",
+    "sentences": [
+     "On a whim, we just jumped in the car and drove to the coast.",
+     "No plans, no bookings, we just figured we'd wing it.",
+     "We ended up in this tiny fishing village I'd never heard of.",
+     "The food was out of this world, and dirt cheap too.",
+     "It's made me rethink how much I overplan everything."
+    ]
+   },
+   {
+    "title": "Recovering From a Wedding",
+    "sentences": [
+     "I'm still recovering from my cousin's wedding, to be honest.",
+     "It went on well into the early hours of Sunday.",
+     "My uncle made a speech that left everyone in stitches.",
+     "I'm paying for it now, mind you, I'm absolutely shattered.",
+     "Remind me never to try and keep up with my cousins again."
+    ]
+   },
+   {
+    "title": "A Productive Weekend for Once",
+    "sentences": [
+     "For once, I actually got round to everything on my list.",
+     "I finally tackled the garden, which had become a bit of a jungle.",
+     "Then I batch cooked enough meals to last the whole week.",
+     "It's amazing how satisfying it is to tick things off.",
+     "Don't get used to it, though, it's unlikely to happen again."
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "Can't Sleep Properly",
+    "sentences": [
+     "I've been struggling to sleep properly for a couple of months now.",
+     "I drop off fine, but then I wake up around three.",
+     "My mind starts racing and I just can't switch off.",
+     "It's starting to take its toll on my work, frankly.",
+     "I'd rather avoid sleeping pills if there's another way round it."
+    ]
+   },
+   {
+    "title": "Unexplained Tiredness",
+    "sentences": [
+     "I can't quite put my finger on it, but something feels off.",
+     "I'm exhausted all the time, even after a decent night's sleep.",
+     "I've cut back on caffeine and I'm eating fairly well.",
+     "Would it be worth running some blood tests, just to rule things out?",
+     "I'd rather know for sure than keep second guessing myself."
+    ]
+   },
+   {
+    "title": "Discussing Side Effects",
+    "sentences": [
+     "I wanted to talk to you about the new medication you prescribed.",
+     "It's definitely helping, but it's left me feeling a bit queasy.",
+     "I wasn't sure whether to stick it out or stop taking it.",
+     "Is that a common side effect, or should I be concerned?",
+     "Okay, so I'll take it with food and see how I get on."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "Pushing Back Politely",
+    "sentences": [
+     "I understand it's past the return window, but hear me out.",
+     "The jacket started falling apart after wearing it only twice.",
+     "That's hardly what you'd expect for something at this price.",
+     "I'm not after a fight, I'd just like it put right.",
+     "Could you possibly check with a manager before turning me down?"
+    ]
+   },
+   {
+    "title": "Changed My Mind",
+    "sentences": [
+     "This is slightly awkward, but I've had second thoughts about this lamp.",
+     "It looked great in the shop, but it clashes with everything at home.",
+     "It's still in the box, and I've barely taken it out.",
+     "Would you be able to refund it, or is it exchange only?",
+     "Fair enough, I'll have a browse and see what catches my eye."
+    ]
+   },
+   {
+    "title": "Wrong Item in the Box",
+    "sentences": [
+     "I ordered a blender online, but this isn't what came in the box.",
+     "It's the right brand, but a completely different model altogether.",
+     "I'm guessing it was just a mix up at the warehouse.",
+     "I'd rather sort it out in person than go back and forth by email.",
+     "Brilliant, I appreciate you getting to the bottom of it."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "Owning a Mistake",
+    "sentences": [
+     "I owe you an apology, the delay is entirely down to me.",
+     "I underestimated how long the analysis would take, frankly.",
+     "I should've flagged it sooner instead of hoping I'd catch up.",
+     "I've blocked out tomorrow morning to get it over the line.",
+     "It won't happen again, and I'll keep you in the loop."
+    ]
+   },
+   {
+    "title": "Circumstances Beyond Our Control",
+    "sentences": [
+     "I'm afraid we've hit a snag that's completely out of our hands.",
+     "Customs have held the shipment while they carry out extra checks.",
+     "We're chasing it daily, but there's only so much we can do.",
+     "Realistically, we're looking at an extra week, maybe slightly more.",
+     "I'd rather give you a cautious estimate than overpromise again."
+    ]
+   },
+   {
+    "title": "Late to a Dinner",
+    "sentences": [
+     "Sorry, sorry, I know I'm unforgivably late.",
+     "The train sat outside the station for what felt like an eternity.",
+     "And of course, my phone chose that exact moment to die.",
+     "Please tell me you haven't been waiting for me to order.",
+     "Right, dinner's on me tonight, that's the least I can do."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "Networking Event",
+    "sentences": [
+     "Hi, mind if I join you, I don't really know anyone here.",
+     "I'm with a small startup, we work on renewable energy software.",
+     "Oh, really, I've heard great things about your company's culture.",
+     "I'd love to pick your brain about it at some point.",
+     "Here's my card, let's definitely keep in touch."
+    ]
+   },
+   {
+    "title": "Friend of a Friend",
+    "sentences": [
+     "So you're the famous Tom, I've heard so much about you!",
+     "Don't worry, it was all good, mostly anyway.",
+     "Marta tells me you've just come back from living in Japan.",
+     "That must've been quite the culture shock coming home.",
+     "I'd love to hear more about it once we've got drinks."
+    ]
+   },
+   {
+    "title": "Awkward Name Mixup",
+    "sentences": [
+     "Sorry, I'm terrible with names, could you remind me of yours?",
+     "Of course, Rachel, I knew it was something beginning with R.",
+     "We met briefly at Ben's birthday, if I'm not mistaken.",
+     "It was all a bit of a blur, to be fair.",
+     "Anyway, it's good to properly meet you this time round."
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "Disagreeing About Style",
+    "sentences": [
+     "I know you want to plan every minute, but hear me out.",
+     "What if we just booked the first couple of nights and improvised?",
+     "Half the fun is stumbling across places you'd never have found.",
+     "Fine, we'll compromise and plan the big things in advance.",
+     "But I'm drawing the line at a spreadsheet for every meal."
+    ]
+   },
+   {
+    "title": "Off the Beaten Track",
+    "sentences": [
+     "I'd quite like to steer clear of the usual tourist traps this time.",
+     "Somewhere a bit off the beaten track would be ideal.",
+     "I've been reading about a few mountain villages in northern Spain.",
+     "Getting there's a bit of a trek, but apparently worth it.",
+     "Let's weigh up the options tonight and make a call."
+    ]
+   },
+   {
+    "title": "Travelling on a Budget",
+    "sentences": [
+     "I'm keen to go, but money's a bit tight this year.",
+     "Is there any way we could do it on a shoestring?",
+     "We could stay in hostels and cook for ourselves most nights.",
+     "And if we travel out of season, things are bound to be cheaper.",
+     "Let's crunch the numbers before anyone gets too carried away."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "Why Are You Leaving",
+    "sentences": [
+     "To be honest, I've outgrown my current role in a lot of ways.",
+     "I've learned a great deal there, and I'm grateful for that.",
+     "But there's limited scope for progression at the moment.",
+     "I'm looking for somewhere I can genuinely stretch myself.",
+     "From what I've seen, your team offers exactly that kind of challenge."
+    ]
+   },
+   {
+    "title": "Leading Through Conflict",
+    "sentences": [
+     "In my previous role, two senior colleagues clashed over a project's direction.",
+     "It was starting to drag the whole team's morale down.",
+     "I sat down with each of them separately to hear them out.",
+     "Then we found some common ground and agreed on a compromise.",
+     "It taught me that most conflict boils down to poor communication."
+    ]
+   },
+   {
+    "title": "Where Do You See Yourself",
+    "sentences": [
+     "Ideally, I'd like to be leading a small team of my own.",
+     "I'm not fixated on titles, it's more about the impact I can have.",
+     "I'd want to have built real expertise in this particular field.",
+     "And I'd hope to be mentoring people who are where I am now.",
+     "I think this role would be the perfect stepping stone towards that."
+    ]
+   }
+  ]
+ },
+ "C2": {
+  "ordering coffee": [
+   {
+    "title": "A Regular's Shorthand",
+    "sentences": [
+     "Morning, the usual please, though I'll take it to stay today.",
+     "I've finally conceded that I can't drink it while walking without disaster.",
+     "Go on, surprise me with whichever pastry's least likely to survive the morning.",
+     "Cheers, you're a godsend, genuinely the highlight of my commute.",
+     "Keep the change, call it a down payment on tomorrow's."
+    ]
+   },
+   {
+    "title": "Coffee Snob Confession",
+    "sentences": [
+     "I'm aware this makes me insufferable, but which beans are you using?",
+     "I've rather fallen down the rabbit hole of single origin coffees lately.",
+     "My partner's started rolling their eyes whenever I mention tasting notes.",
+     "I'll have the Ethiopian as a pour over, if it's not a hassle.",
+     "And please don't judge me when I sniff it before drinking."
+    ]
+   },
+   {
+    "title": "A Gentle Complaint",
+    "sentences": [
+     "I hate to be that person, but this tastes a touch burnt.",
+     "It's not the end of the world, I'm just a creature of habit.",
+     "I suspect the machine might be running a bit hot this morning.",
+     "Would you mind terribly having another go, no rush whatsoever?",
+     "Lovely, that's much more like it, thank you for indulging me."
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Delicate Pricing Conversation",
+    "sentences": [
+     "I'll level with you, our costs have crept up considerably this year.",
+     "I'd rather raise it now than spring it on you at renewal.",
+     "We've absorbed as much as we reasonably can without compromising quality.",
+     "I'm entirely open to revisiting the scope if the budget's immovable.",
+     "Have a think, and we'll pick it up whenever suits you."
+    ]
+   },
+   {
+    "title": "Reading Between the Lines",
+    "sentences": [
+     "I get the sense there's a bit more to this than you're letting on.",
+     "If there's been a shift in priorities on your side, do say.",
+     "We'd much rather adapt now than find ourselves out of step later.",
+     "Nothing you tell me will put our relationship in jeopardy, I promise.",
+     "Right, that puts things in a rather different light, thank you."
+    ]
+   },
+   {
+    "title": "Declining Extra Work",
+    "sentences": [
+     "I'm genuinely flattered you thought of us for this.",
+     "But in all honesty, it's somewhat outside our wheelhouse.",
+     "I'd hate to take it on and deliver something half baked.",
+     "I could put you in touch with someone who does this brilliantly.",
+     "And naturally, the core work remains our top priority throughout."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "Dry Humour About Meetings",
+    "sentences": [
+     "Another meeting that could quite easily have been an email, then.",
+     "I lost the will to live somewhere around the third slide.",
+     "Still, I did learn that synergy is apparently making a comeback.",
+     "I'm half tempted to start a bingo card for next week.",
+     "Don't look at me like that, you know you'd play."
+    ]
+   },
+   {
+    "title": "Tactful Gossip",
+    "sentences": [
+     "I'm not one to gossip, but have you heard about Mike?",
+     "Apparently he's handed in his notice, rather out of the blue.",
+     "I gather things hadn't been entirely rosy with his manager for a while.",
+     "Mind you, that's purely hearsay, so take it with a pinch of salt.",
+     "Either way, the place won't quite be the same without him."
+    ]
+   },
+   {
+    "title": "Weather Grumbling",
+    "sentences": [
+     "Glorious weather we're having, if you happen to be a duck.",
+     "I made the fatal error of trusting the forecast this morning.",
+     "My umbrella turned inside out before I'd even reached the bus stop.",
+     "I've resigned myself to being vaguely damp until about lunchtime.",
+     "Roll on summer, though I daresay we'll complain about the heat."
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "Overly Polite Tourist",
+    "sentences": [
+     "I'm terribly sorry to accost you, but I'm hopelessly lost.",
+     "I'm after a little bookshop that's meant to be tucked away round here.",
+     "My phone's insisting it's right where we're standing, which seems unlikely.",
+     "Ah, down that alley, I'd have walked straight past it.",
+     "You've been immensely kind, I won't keep you any longer."
+    ]
+   },
+   {
+    "title": "A Local Knows Best",
+    "sentences": [
+     "Is there a quicker way to the station than the high street?",
+     "I'd steer clear of the high street, it's absolute gridlock at this hour.",
+     "Your best bet is to cut through the back of the market.",
+     "Bear left at the old church, then just follow your nose.",
+     "You'll know you've overshot it if you end up at the canal."
+    ]
+   },
+   {
+    "title": "Misleading Satnav",
+    "sentences": [
+     "I'm beginning to suspect my satnav has a rather cruel sense of humour.",
+     "It's sent me down the same dead end three times now.",
+     "Is there a road that actually connects to the old mill?",
+     "Ah, so it's only accessible from the far side of the village.",
+     "That would explain a great deal, thank you, I'm much obliged."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "Navigating Competing Priorities",
+    "sentences": [
+     "I'm conscious we're all stretched, so I'll keep this tight.",
+     "We've got two equally urgent requests and frankly not enough hands.",
+     "Rather than spread ourselves too thin, I'd suggest we sequence them.",
+     "I'll take the flak from whichever stakeholder ends up waiting.",
+     "Does anyone see a glaring flaw in that before we commit?"
+    ]
+   },
+   {
+    "title": "Diplomatic Pushback",
+    "sentences": [
+     "I take your point, but I'm not entirely convinced it's that straightforward.",
+     "My worry is that we're solving the symptom rather than the cause.",
+     "If we patch it now, we're simply storing up problems for later.",
+     "I'd be inclined to take the hit and fix it properly.",
+     "But I'm happy to be talked round if the numbers say otherwise."
+    ]
+   },
+   {
+    "title": "Ending on Time",
+    "sentences": [
+     "Right, I'm acutely aware we're bumping up against the hour.",
+     "Let's not reopen the debate on branding, we've been round the houses.",
+     "Can we agree to take that offline with the relevant people?",
+     "Everyone clear on their actions, or shall I circulate a summary?",
+     "Splendid, then I'll give you back five minutes of your day."
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "Understated Brag",
+    "sentences": [
+     "Oh, nothing much, just popped over to Paris for a long lunch.",
+     "I know, it sounds frightfully decadent when I say it out loud.",
+     "In my defence, the train tickets were practically being given away.",
+     "We spent most of it ambling along the river and eating far too much.",
+     "Next weekend will be a sobering return to laundry and admin."
+    ]
+   },
+   {
+    "title": "A Weekend That Went Sideways",
+    "sentences": [
+     "Well, it certainly didn't go according to plan, put it that way.",
+     "We'd booked a cosy cottage, only to find the heating had packed in.",
+     "Cue two nights huddled round a fire in every layer we owned.",
+     "In hindsight, it was rather charming, though it didn't feel it then.",
+     "I suspect it'll become one of those stories we dine out on."
+    ]
+   },
+   {
+    "title": "Deliberate Idleness",
+    "sentences": [
+     "I made a conscious decision to do absolutely nothing, and it was bliss.",
+     "Phone off, no plans, nobody expecting anything of me whatsoever.",
+     "I read a novel cover to cover, which I haven't done in years.",
+     "There's something quietly radical about refusing to be productive.",
+     "I'd thoroughly recommend it, though it's harder than it sounds."
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "Downplaying Symptoms",
+    "sentences": [
+     "I'm probably wasting your time, but my wife insisted I come in.",
+     "There's this nagging pain in my chest that comes and goes.",
+     "It's not excruciating, more a sort of dull, persistent ache.",
+     "I'd put it down to stress, but it's been dragging on for weeks.",
+     "Fine, I'll concede it's better to err on the side of caution."
+    ]
+   },
+   {
+    "title": "Asking the Right Questions",
+    "sentences": [
+     "Before we go down that route, could I ask a few questions?",
+     "What would the realistic downsides of the procedure actually be?",
+     "And if we held off for a while, would that narrow my options?",
+     "I'm not trying to second guess you, I just like to understand things.",
+     "That's really helpful, I feel far better equipped to decide now."
+    ]
+   },
+   {
+    "title": "Admitting Feeling Low",
+    "sentences": [
+     "I've been feeling rather flat lately, and I can't seem to shake it.",
+     "Nothing dramatic has happened, which almost makes it harder to explain.",
+     "I'm still functioning, but everything seems to take enormous effort.",
+     "I'm reluctant to make a fuss, but my sister thought I should come.",
+     "It's a relief, frankly, just to have said it out loud."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "Firm but Courteous",
+    "sentences": [
+     "I appreciate you're only following policy, and I don't hold it against you.",
+     "But the fault was clearly there from the outset, not caused by me.",
+     "Consumer law is fairly unambiguous on that point, as I understand it.",
+     "I'd rather resolve this amicably here than escalate it unnecessarily.",
+     "Thank you, I knew we'd find a sensible way through it."
+    ]
+   },
+   {
+    "title": "Sheepish Return",
+    "sentences": [
+     "This is mildly embarrassing, but I bought entirely the wrong size.",
+     "I was so convinced I knew my measurements that I didn't try it on.",
+     "Pride comes before a fall, as they say.",
+     "Would you be kind enough to swap it for the next size up?",
+     "You're a star, I'll check the fit before leaving next time."
+    ]
+   },
+   {
+    "title": "Return Without Packaging",
+    "sentences": [
+     "I'm afraid I've rather foolishly thrown away the original packaging.",
+     "The item itself is untouched, it simply turned out to be surplus to requirements.",
+     "I quite understand if that complicates matters on your end.",
+     "Would a credit note be a workable compromise in that case?",
+     "That's eminently reasonable, thank you for being so accommodating."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "Candid Update to the Boss",
+    "sentences": [
+     "I'll spare you the excuses and give it to you straight.",
+     "We're running about a week behind, and it's largely self inflicted.",
+     "We were too optimistic at the outset and didn't build in any slack.",
+     "I've reworked the plan, and I'm confident the new date will hold.",
+     "Lesson learned, I'll be rather more conservative with estimates from now on."
+    ]
+   },
+   {
+    "title": "Apologising to a Friend",
+    "sentences": [
+     "I've been appallingly slow getting back to you, and I'm sorry.",
+     "It's been one of those months where everything piles up at once.",
+     "That's not an excuse, mind, just a bit of context.",
+     "Your message genuinely meant a lot, even if I was hopeless at replying.",
+     "Let me make amends, dinner's on me whenever you're free."
+    ]
+   },
+   {
+    "title": "Delayed Departure Announcement",
+    "sentences": [
+     "We do apologise for the delay to this evening's departure.",
+     "An earlier technical issue has had a knock on effect across the schedule.",
+     "The crew are doing everything they can to get us underway promptly.",
+     "We'll update you the moment we have a firmer departure time.",
+     "In the meantime, thank you for your continued patience and understanding."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "Dinner Party Introduction",
+    "sentences": [
+     "I don't believe we've been introduced, I'm Clara, the host's sister.",
+     "So how do you know Paul, through work or something more scandalous?",
+     "Ah, the infamous book club, I've heard all the stories.",
+     "I must say, you're not quite what I'd pictured from his descriptions.",
+     "That's a compliment, I promise, he does rather exaggerate."
+    ]
+   },
+   {
+    "title": "Meeting a Partner's Parents",
+    "sentences": [
+     "It's lovely to finally put a face to the name.",
+     "Emma talks about you both constantly, all of it glowing, I assure you.",
+     "I brought a bottle of red, though I gather you're the real connoisseur.",
+     "Do forgive me if I'm a touch nervous, it's quite the occasion.",
+     "Something smells divine, I hope you haven't gone to too much trouble."
+    ]
+   },
+   {
+    "title": "Unexpected Connection",
+    "sentences": [
+     "Sorry, did you say you grew up in Galway as well?",
+     "How extraordinary, we must have been at school around the same time.",
+     "Don't tell me you knew the Murphys from down by the harbour.",
+     "Honestly, the world gets smaller every single day, doesn't it?",
+     "We'll have to compare notes properly over a drink sometime."
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "Reconciling Different Tastes",
+    "sentences": [
+     "The trick is finding somewhere that caters to both our whims.",
+     "You want mountains and solitude, I want museums and decent wine.",
+     "Northern Italy might just be the sweet spot, if you think about it.",
+     "We could split our time between the lakes and a couple of cities.",
+     "Neither of us gets everything, but nobody ends up sulking either."
+    ]
+   },
+   {
+    "title": "Talking Down an Overplanner",
+    "sentences": [
+     "I admire your thoroughness, truly, but this itinerary is borderline military.",
+     "There's no breathing room for anything serendipitous to happen.",
+     "Some of my fondest travel memories were complete accidents, you know.",
+     "How about we keep the essentials and leave the afternoons open?",
+     "Trust me, the city will reward us for loosening our grip."
+    ]
+   },
+   {
+    "title": "A Long Overdue Pilgrimage",
+    "sentences": [
+     "I've been meaning to walk the Camino for the best part of a decade.",
+     "Every year something conveniently crops up and I quietly shelve it.",
+     "This time I've booked the flights, so there's no wriggling out.",
+     "I'm under no illusions, my knees will have plenty to say about it.",
+     "But I suspect it's precisely the sort of reset I need."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "Addressing a Career Gap",
+    "sentences": [
+     "You'll notice there's a gap on my CV, and I'm happy to address it.",
+     "I took a year out to care for a family member who was unwell.",
+     "It was challenging, but it sharpened my priorities and my patience considerably.",
+     "I kept my skills current through freelance projects and a few courses.",
+     "I'd say I've come back with more clarity than I left with."
+    ]
+   },
+   {
+    "title": "Learning From Failure",
+    "sentences": [
+     "The project that taught me most was, rather fittingly, one that failed.",
+     "We'd committed to an ambitious launch without properly testing our assumptions.",
+     "When it fell flat, my instinct was to defend the decisions we'd made.",
+     "In retrospect, the more useful move was to own it and dissect it openly.",
+     "I've since built that kind of candid post mortem into every project."
+    ]
+   },
+   {
+    "title": "Why Should We Hire You",
+    "sentences": [
+     "I won't pretend I'm the only qualified candidate you'll see.",
+     "What I'd bring, I think, is a knack for translating between teams.",
+     "I'm equally comfortable with engineers and with the commercial side.",
+     "That tends to smooth out friction before it becomes costly.",
+     "And frankly, I'm genuinely excited by where this company is heading."
+    ]
+   }
+  ]
+ }
+}
