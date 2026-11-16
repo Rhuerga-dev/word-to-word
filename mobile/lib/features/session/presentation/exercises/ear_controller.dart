@@ -5,9 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/l10n/tr.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/hands_free.dart';
+import '../../../../core/services/word_drill_setting.dart';
 import '../../../../core/utils/compare.dart';
 import '../../../../core/utils/pron_tips.dart';
+import '../../../../core/utils/word_drill.dart';
 import '../../../../core/widgets/how_to_say.dart';
+import '../../../../core/widgets/word_drill_view.dart';
 import '../../../auth/presentation/auth_controller.dart';
 import '../../data/ear_item.dart';
 import '../../data/session_repository.dart';
@@ -29,6 +32,8 @@ class EarState {
     this.msg = '',
     this.tips = const [],
     this.loadingTips = false,
+    this.drill,
+    this.drillDone = false,
   });
   final bool playing;
 
@@ -49,6 +54,10 @@ class EarState {
   final List<WordTips> tips;
   final bool loadingTips;
 
+  /// Mini-taller de la palabra que falló al repetir (una vez, antes del segundo intento).
+  final DrillPlan? drill;
+  final bool drillDone;
+
   bool get answered => chosen != null;
   bool get finished => result != null || error != null;
 
@@ -67,6 +76,9 @@ class EarState {
     String? msg,
     List<WordTips>? tips,
     bool? loadingTips,
+    DrillPlan? drill,
+    bool clearDrill = false,
+    bool? drillDone,
   }) =>
       EarState(
         playing: playing ?? this.playing,
@@ -83,6 +95,8 @@ class EarState {
         msg: msg ?? this.msg,
         tips: tips ?? this.tips,
         loadingTips: loadingTips ?? this.loadingTips,
+        drill: clearDrill ? null : (drill ?? this.drill),
+        drillDone: drillDone ?? this.drillDone,
       );
 }
 
@@ -167,13 +181,17 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
     final target = item.target ?? item.word;
     final missed = [for (final (w, ok) in state.match?.tokens ?? const <(String, bool)>[]) if (!ok) w];
     state = state.copyWith(loadingTips: true);
-    var weak = <(String, List<String>)>[];
+    var weak = <WeakWord>[];
     try {
       weak = await ref.read(sessionRepositoryProvider).pronTips(target, wav).timeout(const Duration(seconds: 10));
     } catch (_) {}
-    if (weak.isEmpty) weak = [for (final w in missed.isEmpty ? target.split(' ') : missed) (w, const <String>[])];
-    state = state.copyWith(tips: buildTips(weak), loadingTips: false);
+    final pairs = weak.isEmpty ? [for (final w in missed.isEmpty ? target.split(' ') : missed) (w, const <String>[])] : [for (final w in weak) (w.word, w.phonemes)];
+    final drill = !state.finished && !state.drillDone && wordDrillOn(ref) ? pickDrill(weak, target, state.heard) : null;
+    state = state.copyWith(tips: buildTips(pairs), loadingTips: false, drill: drill, drillDone: drill != null ? true : null);
   }
+
+  /// Terminó (o saltó) el mini-taller: vuelve a repetir la frase.
+  void endDrill() => state = state.copyWith(clearDrill: true);
 
   Future<void> _send(bool ok, int ms, {required int chosen}) async {
     state = state.copyWith(chosen: chosen, ms: ms);
@@ -244,6 +262,14 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
           return outcome();
         }
         await hf.say('Almost.');
+        final drill = state.drill;
+        if (drill != null) {
+          await wordDrillHandsFree(hf, ref.read(sessionRepositoryProvider), drill, spanish: ref.read(spanishProvider).step <= 2);
+          endDrill();
+          await sayItem();
+          t0 = DateTime.now();
+          continue;
+        }
         await sayTip(hf, state.tips, spanish: ref.read(spanishProvider).step <= 2);
         await hf.say('Listen slowly, then say it.');
         await hf.say(item.target ?? item.word, slow: true);
@@ -273,13 +299,13 @@ class EarController extends AutoDisposeFamilyNotifier<EarState, EarItem> {
           final near = closestOption(h.text, item.options);
           if (near >= 0 && misses < 3) {
             await _sayHeard(hf, h.text);
-            var weak = <(String, List<String>)>[];
+            var weak = <WeakWord>[];
             if (h.wav != null) {
               try {
                 weak = await ref.read(sessionRepositoryProvider).pronTips(item.options[near], h.wav!).timeout(const Duration(seconds: 10));
               } catch (_) {}
             }
-            final tips = buildTips(weak.isEmpty ? [(item.options[near], const <String>[])] : weak);
+            final tips = buildTips(weak.isEmpty ? [(item.options[near], const <String>[])] : [for (final w in weak) (w.word, w.phonemes)]);
             state = state.copyWith(tips: tips);
             await sayTip(hf, tips, spanish: ref.read(spanishProvider).step <= 2);
             await hf.say('Listen: ${item.options[near]}. Now you.');

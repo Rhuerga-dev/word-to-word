@@ -7,6 +7,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback_bar.dart';
 import '../../../../core/widgets/mic_button.dart';
 import '../../../../core/widgets/step_page.dart';
+import '../../../../core/widgets/word_drill_view.dart';
+import '../../../../core/services/hands_free.dart';
 import '../../data/ear_item.dart';
 import 'ear_controller.dart';
 import 'exercise_outcome.dart';
@@ -54,6 +56,9 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
   Widget build(BuildContext context) {
     final provider = earControllerProvider(widget.item);
     final s = ref.watch(provider), ctl = ref.read(provider.notifier), e = widget.item;
+    if (s.drill != null && !ref.watch(handsFreeProvider.select((h) => h.on))) {
+      return WordDrillView(key: ValueKey('drill-${s.drill!.word}'), plan: s.drill!, onDone: ctl.endDrill);
+    }
     final ok = ctl.passed, fast = ctl.fast;
     final secs = (s.ms / 1000).toStringAsFixed(1);
     final newMode = s.result?.mode;

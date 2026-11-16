@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/hands_free.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback_bar.dart';
 import '../../../../core/widgets/how_to_say.dart';
 import '../../../../core/widgets/mic_button.dart';
 import '../../../../core/widgets/step_page.dart';
 import '../../../../core/widgets/w2w_loader.dart';
+import '../../../../core/widgets/word_drill_view.dart';
 import '../../data/word_card.dart';
 import 'exercise_outcome.dart';
 import 'mistake_controller.dart';
@@ -23,6 +25,10 @@ class MistakeExercise extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = mistakeControllerProvider(mistake);
     final s = ref.watch(provider), r = s.review, m = mistake;
+    // Falló una palabra: mini-taller de esa palabra y luego vuelve aquí para decir la frase completa.
+    if (s.drill != null && !ref.watch(handsFreeProvider.select((h) => h.on))) {
+      return WordDrillView(key: ValueKey('drill-${s.drill!.word}'), plan: s.drill!, onDone: ref.read(provider.notifier).endDrill);
+    }
     final page = StepPage(
       bottom: s.finished
           ? FeedbackBar(ok: s.passed, title: s.passed ? tr('¡Bien dicho!') : tr('Vuelve mañana'), detail: m.correct, onNext: () => onDone(s.outcome))

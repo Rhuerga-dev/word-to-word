@@ -7,6 +7,7 @@ import '../../../core/l10n/tr.dart';
 import '../../../core/services/airpods_service.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/reminder_service.dart';
+import '../../../core/services/word_drill_setting.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -34,6 +35,8 @@ class SettingsPage extends ConsumerWidget {
       const ProfessionCard(),
       _h(tr('Tu español')),
       const _SpanishCard(),
+      _h(tr('Pronunciación')),
+      const _WordDrillCard(),
       if (AirPodsService.supported) ...[
         _h(tr('AirPods')),
         const _AirPodsCard(),
@@ -379,6 +382,25 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
           child: Text(_busy ? tr('Borrando…') : tr('Borrar para siempre')),
         ),
       ],
+    );
+  }
+}
+
+/// «Practicar la palabra que fallo»: al fallar una frase, un mini-taller de esa palabra antes de repetirla.
+class _WordDrillCard extends ConsumerWidget {
+  const _WordDrillCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final on = ref.watch(wordDrillSettingProvider).valueOrNull ?? true;
+    return Card(
+      child: SwitchListTile(
+        key: const ValueKey('word-drill-switch'),
+        title: Text(tr('Practicar la palabra que fallo')),
+        subtitle: Text(tr('Si una palabra de la frase no se entiende, la practicas sola, luego en su trozo y vuelves a la frase.')),
+        value: on,
+        onChanged: (v) => ref.read(wordDrillSettingProvider.notifier).set(v),
+      ),
     );
   }
 }

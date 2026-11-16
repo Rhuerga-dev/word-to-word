@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/offline_cache.dart';
 import '../../../core/utils/json.dart';
+import '../../../core/utils/word_drill.dart';
 import '../../today/data/today.dart';
 import 'word_card.dart';
 import 'ear_item.dart';
@@ -93,18 +94,25 @@ class SessionRepository {
   Future<String> transcribe(Uint8List wav) async => asString(asMap(await _api.upload('/speech/transcribe', wav))['text']);
 
   /// Cuando no se te entendió: las palabras que fallaron y sus sonidos flojos (vacío si no hay detalle).
-  Future<List<(String, List<String>)>> pronTips(String text, Uint8List wav) async {
+  /// Las palabras que salieron flojas al decir [text] (Azure): nota, tipo de error y sonidos flojos.
+  Future<List<WeakWord>> pronTips(String text, Uint8List wav) async {
     final r = asMap(await _api.upload('/pronunciation/tips', wav, fields: {'text': text}));
     final words = r['words'] is List ? r['words'] as List : const [];
     return [
       for (final w in words)
-        (asString(asMap(w)['word']), [for (final p in (asMap(w)['phonemes'] is List ? asMap(w)['phonemes'] as List : const [])) '$p']),
+        WeakWord(
+          asString(asMap(w)['word']),
+          accuracy: asInt(asMap(w)['accuracy']),
+          error: asString(asMap(w)['error']),
+          phonemes: [for (final p in (asMap(w)['phonemes'] is List ? asMap(w)['phonemes'] as List : const [])) '$p'],
+        ),
     ];
   }
 
   /// Puntuación (0–100) del sonido [phoneme] al decir [word].
-  Future<int> assess(String word, String phoneme, Uint8List wav) async {
-    final r = asMap(await _api.upload('/pronunciation/assess', wav, fields: {'text': word, 'phoneme': phoneme}));
+  /// Sin [phoneme], la nota de toda la pronunciación de [word] (una palabra o un trozo de frase).
+  Future<int> assess(String word, String? phoneme, Uint8List wav) async {
+    final r = asMap(await _api.upload('/pronunciation/assess', wav, fields: {'text': word, if (phoneme != null) 'phoneme': phoneme}));
     return asInt(r['target_score'] ?? r['score']);
   }
 
