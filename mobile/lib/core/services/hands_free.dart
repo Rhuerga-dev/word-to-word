@@ -111,6 +111,30 @@ class HandsFreeController extends Notifier<HandsFreeState> {
   int _silent = 0;
   static const maxSilent = 2;
 
+  /// Errores seguidos del servidor. Uno suelto (fallo de red o 500) solo se avisa y se vuelve a intentar;
+  /// al segundo seguido se lanza y el manos libres se pausa (el servidor de verdad está mal).
+  int _serverErrors = 0;
+  static const maxServerErrors = 2;
+
+  /// Llama al servidor con [call]. Si falla por un error pasajero, lo dice en voz alta y devuelve null:
+  /// el ejercicio vuelve a escuchar en vez de pausarlo todo. Otros errores (sesión caducada, límite del día,
+  /// datos malos) se lanzan como antes, porque repetir no los arregla.
+  Future<T?> server<T>(Future<T> Function() call) async {
+    try {
+      final r = await call();
+      _serverErrors = 0;
+      return r;
+    } on ApiException catch (e) {
+      final passing = e.isNetwork || e.status >= 500;
+      if (!passing || ++_serverErrors >= maxServerErrors) {
+        _serverErrors = 0;
+        rethrow;
+      }
+      await say('Sorry, something went wrong. Try again.');
+      return null;
+    }
+  }
+
   AppAudio get _audio => ref.read(audioProvider);
 
   /// Cada pantalla que usa el manos libres hace su "vuelta" con un número. Si sales de la pantalla

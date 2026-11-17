@@ -130,7 +130,10 @@ class MistakeController extends AutoDisposeFamilyNotifier<MistakeState, Mistake>
         await hf.say("I didn't hear you. Try again.");
         continue;
       }
-      if (!await _check(h.wav!)) {
+      // Un error suelto del servidor no pausa el manos libres: lo dice y vuelve a escuchar.
+      final understood = await hf.server(() => _check(h.wav!));
+      if (understood == null) continue;
+      if (!understood) {
         await hf.say("Sorry, I didn't understand. Try again.");
         continue;
       }

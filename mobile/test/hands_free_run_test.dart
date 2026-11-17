@@ -61,6 +61,37 @@ void main() {
     expect(parseOptionNumber('1', 3), 0);
   });
 
+  test('manos libres: un error suelto del servidor se avisa y sigue; dos seguidos sí se lanzan', () async {
+    final audio = _FakeAudio();
+    final c = ProviderContainer(overrides: [audioProvider.overrideWithValue(audio)]);
+    addTearDown(c.dispose);
+    final hf = c.read(handsFreeProvider.notifier);
+    await hf.setOn(true);
+
+    // Un 500 suelto: lo dice y devuelve null (el ejercicio vuelve a escuchar).
+    expect(await hf.server<bool>(() async => throw ApiException('Error del servidor', 500)), isNull);
+    expect(audio.said, ['Sorry, something went wrong. Try again.']);
+    // Si luego sale bien, el contador vuelve a cero...
+    expect(await hf.server(() async => true), isTrue);
+    expect(await hf.server<bool>(() async => throw ApiException('sin red')), isNull); // red caída (status 0)
+    // ...y al segundo error seguido se lanza: el manos libres se pausará como antes.
+    await expectLater(hf.server<bool>(() async => throw ApiException('Error del servidor', 503)), throwsA(isA<ApiException>()));
+    expect(audio.said.length, 2);
+  });
+
+  test('manos libres: límite del día o sesión caducada no se reintentan', () async {
+    final audio = _FakeAudio();
+    final c = ProviderContainer(overrides: [audioProvider.overrideWithValue(audio)]);
+    addTearDown(c.dispose);
+    final hf = c.read(handsFreeProvider.notifier);
+    await hf.setOn(true);
+
+    for (final status in [401, 422, 429]) {
+      await expectLater(hf.server<bool>(() async => throw ApiException('no', status)), throwsA(isA<ApiException>()));
+    }
+    expect(audio.said, isEmpty);
+  });
+
   test('manos libres: si no te oye dos veces seguidas, se pausa (sin avanzar)', () async {
     final audio = _FakeAudio();
     final c = ProviderContainer(overrides: [audioProvider.overrideWithValue(audio)]);
