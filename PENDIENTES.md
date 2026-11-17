@@ -15,6 +15,7 @@ _Última actualización: 2026-11-17_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (17/11) **Manos libres aguanta un error suelto del servidor** (app, errores para repasar): si la nota falla por red o 5xx dice «Sorry, something went wrong. Try again.» y vuelve a escuchar; al 2.º seguido se pausa como antes; 401/422/429 no se reintentan. `HandsFreeController.server()` (sirve para otros ejercicios). Commit `8404a17`, +2 tests (app 93 ✓). **Parche**: no lo lancé yo; otra sesión estaba compilando uno a las 00:24 y probablemente lo incluye: comprobar el número y si salió después de `8404a17`.
 - (17/11) **Arreglado «database is locked» (error de servidor en errores para repasar)**: la app pide la nota y los consejos A LA VEZ; las dos peticiones subían el contador diario (`DemoGuard` → `Cache::increment`) y SQLite, con transacciones `DEFERRED`, fallaba al instante sin esperar. Ahora `transaction_mode = IMMEDIATE` (`DB_TRANSACTION_MODE` en .env lo cambia). El 500 pausaba el manos libres: la app dejaba de grabar/hablar y los AirPods salían del modo llamada (parecía que se desconectaban). Commit `21870da`, +1 test (reproduce el choque). Solo servidor: sin parche.
 - (16/11) **Shadowing de la unidad en la app** (antes solo en la web): el paso `shadow` del Camino se hace ya en Flutter (tras palabras y sonido). Carga el texto de la unidad, por frase Escuchar/Lento(🐢)/Ocultar, graba y Azure puntúa (palabra por palabra + nota/fluidez/precisión), pasa con ≥75% o 3 intentos y marca el paso con el promedio (`/path/units/{id}/shadow`, exige ≥60). Con manos libres. `shadowing_controller.dart`/`shadowing_exercise.dart`, `SessionRepository.shadowing/assessShadow/unitShadowDone`, `ShadowStep`. Sin iconos nuevos (parche seguro). Commit `b8b2b59`, **parche 16**, **iPhone reinstalado**. +5 tests. La *prueba* de la unidad y el shadowing de Practicar/Hoy siguen en la web.
 - (16/11) **Evaluación en vivo sin esperas largas** (servidor): las 4 llamadas de IA que un alumno espera (conversación, narración, describir foto, calificar la prueba de unidad) ahora cortan a **~25s y SIN reintentos**; los lotes de noche (definiciones, etc.) siguen con 60s + reintento. El peor caso baja de **~180s a ~25s**. Interruptor `$live` en `ClaudeService::message`. +test `ClaudeLiveTest`. Commit `368bd87`.
@@ -69,7 +70,7 @@ _Última actualización: 2026-11-17_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
-- [ ] (opcional) Manos libres: si el servidor da un error suelto, decir «Sorry, try again» y seguir en vez de pausarlo todo (necesita parche).
+- [ ] (opcional) Usar `hf.server()` en los demás ejercicios de manos libres (Oído, Sonido, shadowing, narración) para que un error suelto tampoco los pause.
 - Mini-taller de palabra en la web (`speak.js`): solo está en la app.
 - Palabras nuevas que se añadan: escribir su contenido con Claude Code y `words:content` (si no, las rellena el API de noche como antes).
 - [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
