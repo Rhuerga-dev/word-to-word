@@ -7,14 +7,15 @@ _Última actualización: 2026-11-16_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído).
-- Tests: servidor 203 ✓, app 80 ✓ (+2 saltados), `flutter analyze` limpio (16/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app).
+- Tests: servidor 203 ✓, app 85 ✓ (+2 saltados), `flutter analyze` limpio (16/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (16/11) **Shadowing de la unidad en la app** (antes solo en la web): el paso `shadow` del Camino se hace ya en Flutter (tras palabras y sonido). Carga el texto de la unidad, por frase Escuchar/Lento(🐢)/Ocultar, graba y Azure puntúa (palabra por palabra + nota/fluidez/precisión), pasa con ≥75% o 3 intentos y marca el paso con el promedio (`/path/units/{id}/shadow`, exige ≥60). Con manos libres. `shadowing_controller.dart`/`shadowing_exercise.dart`, `SessionRepository.shadowing/assessShadow/unitShadowDone`, `ShadowStep`. Sin iconos nuevos (parche seguro). Commit `b8b2b59`, **parche 16**, **iPhone reinstalado**. +5 tests. La *prueba* de la unidad y el shadowing de Practicar/Hoy siguen en la web.
 - (16/11) **Evaluación en vivo sin esperas largas** (servidor): las 4 llamadas de IA que un alumno espera (conversación, narración, describir foto, calificar la prueba de unidad) ahora cortan a **~25s y SIN reintentos**; los lotes de noche (definiciones, etc.) siguen con 60s + reintento. El peor caso baja de **~180s a ~25s**. Interruptor `$live` en `ClaudeService::message`. +test `ClaudeLiveTest`. Commit `368bd87`.
 - (16/11) **Loaders que faltaban** (web, con `368bd87`): al terminar una conversación, loader "Calificando tu conversación…" (antes la pantalla se quedaba congelada en "Te escucho…" durante la calificación, la llamada más lenta); y aviso "Evaluando…" en shadowing. `speak.js` v14, caché del SW **v46**.
 - (16/11) **Loaders que faltaban** (app Flutter, **parche 15**): en Taller/Sonido ahora sale el loader "Evaluando…" y el micro deja de verse "Grabando" mientras el servidor puntúa (`sound_controller`/`sound_exercise`); en Oído–repetir se mantiene el aviso "Preparando cómo decirlo mejor…" en el tramo de consejos (`ear_exercise`). Commit `368bd87`; parche Shorebird 15 publicado (stable, 1.0.14+16); **iPhone Air reinstalado con Xcode (16/11)**.
@@ -52,6 +53,7 @@ _Última actualización: 2026-11-16_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] Probar el **shadowing de la unidad en la app** (Camino → una unidad con palabras y sonido ya hechos → «Continuar la unidad» abre el paso shadow): escuchar, repetir, ver las palabras en verde/rojo y que al terminar marque el paso. Parche 16 (abrir la app 2 veces en Android) e iPhone ya reinstalado. No probado en teléfono real.
 - [ ] Ver los loaders de Taller/Sonido y Oído en un teléfono real (no probado aún): en Android, abrir la app 2 veces para bajar el **parche 15**; el **iPhone Air ya está reinstalado (16/11)** con ellos, solo abrir y mirar.
 - [ ] Probar el mini-taller en el iPhone: decir mal una palabra en «errores para repasar» (no probado en teléfono real).
 - [ ] Probar «Practicar → errores para repasar» en el iPhone y ver el loader «Evaluando…» (no probado en teléfono real).
@@ -73,6 +75,7 @@ _Última actualización: 2026-11-16_
 
 ## Decisiones
 - (15/11) No usar Claude Code como IA en vivo para los alumnos (términos de uso, lentitud, seguridad). Sí para preparar contenido de antemano.
+- (16/11) Shadowing portado a la app **solo para la unidad del Camino** (lo que pidió Reynaldo). El shadowing de Practicar/Hoy y la prueba de la unidad siguen en la web por ahora.
 - (16/11) Reafirmado: un **agente/suscripción de Claude como backend de los alumnos = no** (términos de uso + lentitud). Si el objetivo es **cero coste de API**, el sustituto real es un **modelo local en el Mac** (como Whisper/TTS) para la evaluación dinámica, + seguir ampliando el contenido precocinado. **Pendiente**: prueba de un modelo local comparando calidad/tiempo contra Claude antes de decidir. Mientras, el API ya está acotado (2000/día) y en vivo corta a ~25s.
 - (15/11) Mini-taller de palabra: al terminar la frase, nunca a mitad; en conversación/narración, no se interrumpe.
 - (15/11) Registro por invitación: códigos de varios usos con límite, creados por Reynaldo desde el panel.
