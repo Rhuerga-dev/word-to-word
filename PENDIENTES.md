@@ -3,18 +3,21 @@
 > Memoria del proyecto entre chats. **Léelo antes de empezar** y actualízalo al terminar.
 > Lo mantiene al día la bitácora nocturna y el cierre de cada sesión.
 
-_Última actualización: 2026-11-15_
+_Última actualización: 2026-11-16_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11.
-- Tests: servidor 201 ✓, app 80 ✓ (+2 saltados), `flutter analyze` limpio (15/11).
+- Tests: servidor 203 ✓, app 80 ✓ (+2 saltados), `flutter analyze` limpio (16/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (16/11) **Evaluación en vivo sin esperas largas** (servidor): las 4 llamadas de IA que un alumno espera (conversación, narración, describir foto, calificar la prueba de unidad) ahora cortan a **~25s y SIN reintentos**; los lotes de noche (definiciones, etc.) siguen con 60s + reintento. El peor caso baja de **~180s a ~25s**. Interruptor `$live` en `ClaudeService::message`. +test `ClaudeLiveTest`. Commit `368bd87`.
+- (16/11) **Loaders que faltaban** (web, con `368bd87`): al terminar una conversación, loader "Calificando tu conversación…" (antes la pantalla se quedaba congelada en "Te escucho…" durante la calificación, la llamada más lenta); y aviso "Evaluando…" en shadowing. `speak.js` v14, caché del SW **v46**.
+- (16/11) **Loaders que faltaban** (app Flutter, Dart; **pendiente de parche Shorebird**): en Taller/Sonido ahora sale el loader "Evaluando…" y el micro deja de verse "Grabando" mientras el servidor puntúa (`sound_controller`/`sound_exercise`); en Oído–repetir se mantiene el aviso "Preparando cómo decirlo mejor…" en el tramo de consejos (`ear_exercise`). Commiteado en `368bd87` pero **no llega a los teléfonos hasta hacer el parche**.
 - (16/11) **Contenido preparado sin IA** (escrito por Claude Code, no por el API): las 2.952 palabras ya tienen definición, definición fácil y frase larga (`database/content/words/*.json`, cargado con `php artisan words:content`, que solo rellena huecos y aplica las reglas de calidad). Banco de shadowing de 216 textos (6 niveles × 12 temas × 3, `database/content/shadowing.json`) y 3 escenas AID para las 500 palabras más comunes (`database/content/aids.json`): se usan primero y la IA solo si falta. Los trabajos `words:define`/`words:simplify` quedan sin nada que hacer salvo con palabras nuevas. Copia previa: `~/Backups/w2w/database-2026-11-16-antes-contenido.sqlite`.
 - (16/11) **Manos libres**: tocar el círculo de la barra mientras escucha termina al instante; en errores, silencio 1,1 s y los consejos de Azure se piden a la vez que la nota. Parche 14.
 - (15/11) **Mini-taller de la palabra que fallas** (app: errores para repasar y Oído-repetir, también manos libres): tras el 1.er intento fallido, si una palabra tiene nota Azure < 60 **y** no se entendió, se practica sola (2 intentos, nota ≥ 70), luego en su trozo de frase y se vuelve a la frase. Solo la peor palabra, una vez por frase; nunca se atasca. Interruptor en Ajustes → Pronunciación. `core/utils/word_drill.dart`, `core/widgets/word_drill_view.dart`. Parche 13, iPhone reinstalado. La web no lo tiene.
@@ -49,6 +52,7 @@ _Última actualización: 2026-11-15_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Parche Shorebird pendiente** para los loaders de la app (Taller/Sonido y Oído del `368bd87`): `shorebird patch android --release-version=1.0.14+16 --dry-run` primero (solo Dart). Y reinstalar en el iPhone para verlos. **Sin el parche, la app no los muestra.**
 - [ ] Probar el mini-taller en el iPhone: decir mal una palabra en «errores para repasar» (no probado en teléfono real).
 - [ ] Probar «Practicar → errores para repasar» en el iPhone y ver el loader «Evaluando…» (no probado en teléfono real).
 - [ ] Crear el primer código en el panel (W2W → Invitaciones) y probar el registro en la web y en la app con el enlace `/app/?invite=…`.
@@ -69,6 +73,7 @@ _Última actualización: 2026-11-15_
 
 ## Decisiones
 - (15/11) No usar Claude Code como IA en vivo para los alumnos (términos de uso, lentitud, seguridad). Sí para preparar contenido de antemano.
+- (16/11) Reafirmado: un **agente/suscripción de Claude como backend de los alumnos = no** (términos de uso + lentitud). Si el objetivo es **cero coste de API**, el sustituto real es un **modelo local en el Mac** (como Whisper/TTS) para la evaluación dinámica, + seguir ampliando el contenido precocinado. **Pendiente**: prueba de un modelo local comparando calidad/tiempo contra Claude antes de decidir. Mientras, el API ya está acotado (2000/día) y en vivo corta a ~25s.
 - (15/11) Mini-taller de palabra: al terminar la frase, nunca a mitad; en conversación/narración, no se interrumpe.
 - (15/11) Registro por invitación: códigos de varios usos con límite, creados por Reynaldo desde el panel.
 - (15/11) La escalera de español tiene en cuenta cómo entiende el alumno al oír, no solo la prueba de nivel.
