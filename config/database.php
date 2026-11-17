@@ -43,7 +43,10 @@ return [
             'busy_timeout' => (int) env('DB_BUSY_TIMEOUT', 5000),
             'journal_mode' => env('DB_JOURNAL_MODE', 'wal'),
             'synchronous' => env('DB_SYNCHRONOUS', 'normal'),
-            'transaction_mode' => 'DEFERRED',
+            // IMMEDIATE: la transacción pide el turno de escritura al empezar. Con DEFERRED, una que lee y luego
+            // escribe (p. ej. Cache::increment del contador diario) falla AL INSTANTE si otra petición escribió
+            // en medio, sin respetar busy_timeout. Pasaba con la nota + consejos que la app pide a la vez.
+            'transaction_mode' => env('DB_TRANSACTION_MODE', 'IMMEDIATE'),
         ],
 
         'mysql' => [
