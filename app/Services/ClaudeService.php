@@ -42,8 +42,10 @@ class ClaudeService
 
     /**
      * @param  array<int, array{role: string, content: string}>  $messages
+     *
+     * @param  bool  $live  true = un alumno está esperando: cortar antes y sin reintentos.
      */
-    public function message(string $system, array $messages, int $maxTokens = 800): string
+    public function message(string $system, array $messages, int $maxTokens = 800, bool $live = false): string
     {
         if (! $this->enabled()) {
             throw new RuntimeException('Falta HUERGA_AI_KEY (o ANTHROPIC_API_KEY) en el archivo .env');
@@ -52,7 +54,7 @@ class ClaudeService
 
         if ($this->viaGateway()) {
             try {
-                return $this->viaPanel($system, $messages, $kind);
+                return $this->viaPanel($system, $messages, $kind, $live);
             } catch (RuntimeException $e) {
                 // Si el panel está caído y aún queda la clave directa, no dejamos al alumno sin respuesta.
                 // (Un 429 es el límite del día: ahí no se salta por la puerta de atrás.)
@@ -63,12 +65,16 @@ class ClaudeService
             }
         }
 
-        $response = Http::withHeaders([
+        // En vivo (un alumno esperando) cortamos antes y sin reintentos: más vale un "inténtalo otra vez"
+        // que dejarlo ~3 minutos mirando. Los lotes de noche sí esperan y reintentan.
+        $request = Http::withHeaders([
             'x-api-key' => config('vocab.anthropic.key'),
             'anthropic-version' => config('vocab.anthropic.version'),
-        ])
-            ->timeout(60)
-            ->retry(2, 1500, throw: false)
+        ])->timeout($live ? 25 : 60);
+        if (! $live) {
+            $request = $request->retry(2, 1500, throw: false);
+        }
+        $response = $request
             ->post('https://api.anthropic.com/v1/messages', [
                 'model' => config('vocab.anthropic.model'),
                 'max_tokens' => $maxTokens,
@@ -109,7 +115,7 @@ class ClaudeService
      *
      * @param  array<int, array{role: string, content: string}>  $messages
      */
-    private function viaPanel(string $system, array $messages, string $kind): string
+    private function viaPanel(string $system, array $messages, string $kind, bool $live = false): string
     {
         $max = (int) config('vocab.ai_gateway.max_chars', 8000);
         $message = $this->flatten($system, $messages, $max);
@@ -119,7 +125,7 @@ class ClaudeService
         }
         $response = Http::withToken(config('vocab.ai_gateway.key'))
             ->acceptJson()
-            ->timeout(60)
+            ->timeout($live ? 25 : 60)
             ->post(config('vocab.ai_gateway.url'), [
                 'agent' => config('vocab.ai_gateway.agent'),
                 'message' => $message,
@@ -322,7 +328,7 @@ Answer with exactly these lines:
   FIX: <the student's words> => <the natural correct version> | <why, {$in}, max 12 words> | <type>
   where <type> is one of: {$types}
 TXT;
-        $out = self::parseTurn($this->message($system, [['role' => 'user', 'content' => $text]], 900), 5);
+        $out = self::parseTurn($this->message($system, [['role' => 'user', 'content' => $text]], 900, live: true), 5);
         $raw = $out['reply'];
         $comment = preg_match('/^COMMENT:\s*(.+)$/mi', $raw, $m) ? trim($m[1]) : trim(preg_replace('/^BETTER:.*$/mi', '', $raw));
         $better = preg_match('/^BETTER:\s*(.+)$/mi', $raw, $m) ? trim($m[1]) : null;
@@ -356,7 +362,7 @@ TXT;
             ['type' => 'image', 'source' => ['type' => 'url', 'url' => $imageUrl]],
             ['type' => 'text', 'text' => "My description: {$text}"],
         ]]];
-        $raw = $this->message($system, $messages, 1000);
+        $raw = $this->message($system, $messages, 1000, live: true);
         $out = self::parseTurn($raw, 4);
 
         $missed = [];
@@ -425,7 +431,7 @@ Answer with exactly two lines:
 SCORE: <0-10>
 FEEDBACK: <{$in}, max 3 short sentences: what went well and the one thing to improve>
 TXT;
-        $text = $this->message($system, [['role' => 'user', 'content' => "Transcript:\n".$transcript]], 300);
+        $text = $this->message($system, [['role' => 'user', 'content' => "Transcript:\n".$transcript]], 300, live: true);
         $score = preg_match('/SCORE:\s*(\d+)/i', $text, $m) ? max(0, min(10, (int) $m[1])) : 0;
         $feedback = preg_match('/FEEDBACK:\s*(.+)$/mis', $text, $m) ? trim($m[1]) : trim($text);
 
@@ -480,7 +486,7 @@ TXT;
             array_unshift($history, ['role' => 'user', 'content' => 'Hi! Please start the conversation in character.']);
         }
 
-        return self::parseTurn($this->message($system, $history, 600));
+        return self::parseTurn($this->message($system, $history, 600, live: true));
     }
 
     /** Separa la respuesta de la IA en: lo que dice, la nota en español, errores y palabras usadas. */

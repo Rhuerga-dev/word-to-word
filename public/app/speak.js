@@ -171,12 +171,20 @@ function spResume() { unlockAudio(); sp.paused = false; sp.misses = 0; renderTal
 // "Ya terminé": corta la grabación sin esperar el silencio.
 function spDone() { if (sp.recording && stopRecording) stopRecording(); }
 
+// Loader mientras se cierra la conversación. Calificar la prueba de una unidad es la llamada
+// más lenta de la app: sin esto la pantalla se quedaba congelada en "Te escucho…".
+function gradingHTML() {
+  const msg = sp.grading ? "Calificando tu conversación…" : "Guardando tu sesión…";
+  return `<div class="w2w-wait" role="status"><span class="w2w-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><p>${esc(msg)}</p></div>`;
+}
+
 async function spFinish(quiet) {
   if (!sp.session) return;
   const id = sp.session;
   sp.on = false; sp.paused = false; sp.session = null; spHush(); releaseMic();
   if (sp.recording && stopRecording) { sp.abortRec = true; stopRecording(); }
   try { sp.wake && sp.wake.release(); } catch (e) {} sp.wake = null;
+  if (!quiet) { sp.grading = !!sp.unitTest; sp.view = "grading"; renderSpeak(); }
   try {
     const r = await api(`/speaking/sessions/${id}/finish`, { method: "POST" });
     // Prueba de una unidad del Camino: la IA califica la conversación.
@@ -270,6 +278,7 @@ function renderSpeak() {
   else if (sp.view === "shadow") el.innerHTML = shHTML();
   else if (sp.view === "scenarios") el.innerHTML = scenariosHTML();
   else if (sp.view === "narrPick") el.innerHTML = narrPickHTML();
+  else if (sp.view === "grading") el.innerHTML = gradingHTML();
   else if (sp.view === "summary") el.innerHTML = summaryHTML();
   else if (sp.view === "review") el.innerHTML = reviewHTML();
   else el.innerHTML = homeHTML();
@@ -663,7 +672,9 @@ async function spShTry() {
       n.listening = false; renderSpeak();
       if (!wav.heard) { n.result = { silent: true }; return; }
       const fd = new FormData(); fd.append("text", t); fd.append("audio", wav, "voz.wav");
+      n.checking = true; renderSpeak();
       const r = await api("/pronunciation/assess", { method: "POST", body: fd });
+      n.checking = false;
       const a = r.assessment || {};
       if (a.status !== "Success") { n.result = { silent: true }; return; }
       n.result = { score: r.score, fluency: a.scores && a.scores.fluency, accuracy: a.scores && a.scores.accuracy,
@@ -679,7 +690,7 @@ async function spShTry() {
     n.result.passed = n.result.score >= 75;
     if (n.result.passed || n.tries >= 3) n.scores[n.i] = Math.max(n.scores[n.i] || 0, n.result.score);
   } catch (e) { n.result = { error: e.message }; }
-  finally { n.busy = false; n.listening = false; renderSpeak(); }
+  finally { n.busy = false; n.listening = false; n.checking = false; renderSpeak(); }
 }
 
 function shHTML() {
@@ -697,6 +708,7 @@ function shHTML() {
     <p class="sp-shline${n.hide ? " hidden-text" : ""}">${n.hide ? "🙈 Texto oculto: repítelo de oído" : esc(t)}</p>
     <div class="row"><button type="button" id="spShListen">🔊 Escuchar</button><button type="button" id="spShSlow">🐢 Lento</button><button type="button" class="linkish" id="spShHide">${n.hide ? "Mostrar texto" : "Ocultar texto"}</button></div>`;
   if (n.listening) html += '<p class="sp-status"><span class="hf-dot listen"></span>Te escucho…</p>';
+  if (n.checking) html += '<p class="sp-status"><span class="hf-dot"></span>Evaluando tu pronunciación…</p>';
   if (r) {
     if (r.error) html += `<p class="warnbox">${esc(r.error)}</p>`;
     else if (r.silent) html += '<p class="warnbox">No te oí. Habla un poco más cerca del micrófono.</p>';

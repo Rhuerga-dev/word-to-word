@@ -13,8 +13,11 @@ import 'exercise_outcome.dart';
 import '../../../../core/l10n/tr.dart';
 
 class SoundState {
-  const SoundState({this.recording = false, this.tries = 0, this.pct, this.msg = ''});
+  const SoundState({this.recording = false, this.checking = false, this.tries = 0, this.pct, this.msg = ''});
   final bool recording;
+
+  /// El servidor está puntuando: ya no se graba (así el micro no se queda "en rojo").
+  final bool checking;
   final int tries;
   final int? pct;
   final String msg;
@@ -23,8 +26,8 @@ class SoundState {
   bool get finished => pct != null && (passed || tries >= 3);
   ExerciseOutcome get outcome => ExerciseOutcome(ok: passed);
 
-  SoundState copyWith({bool? recording, int? tries, int? pct, String? msg}) =>
-      SoundState(recording: recording ?? this.recording, tries: tries ?? this.tries, pct: pct ?? this.pct, msg: msg ?? this.msg);
+  SoundState copyWith({bool? recording, bool? checking, int? tries, int? pct, String? msg}) =>
+      SoundState(recording: recording ?? this.recording, checking: checking ?? this.checking, tries: tries ?? this.tries, pct: pct ?? this.pct, msg: msg ?? this.msg);
 }
 
 /// Sonido débil: decir la palabra hasta que el sonido salga bien (o 3 intentos).
@@ -51,15 +54,17 @@ class SoundController extends AutoDisposeFamilyNotifier<SoundState, SoundStep> {
     try {
       final r = await audio.record(maxMs: 3500, silenceMs: 700);
       if (!r.heard && !r.maybeVoice) {
-        state = state.copyWith(msg: tr('No te oí. Habla un poco más cerca.'));
+        state = state.copyWith(recording: false, msg: tr('No te oí. Habla un poco más cerca.'));
       } else {
+        // Ya no graba: ahora evalúa. Así la vista muestra "Evaluando…" y no el micro en rojo.
+        state = state.copyWith(recording: false, checking: true);
         await _assess(r.wav);
+        state = state.copyWith(checking: false);
         if (!state.finished) audio.say(word, slow: true);
       }
     } catch (e) {
-      state = state.copyWith(msg: '$e');
+      state = state.copyWith(recording: false, checking: false, msg: '$e');
     }
-    state = state.copyWith(recording: false);
   }
 
   Future<ExerciseOutcome> handsFree(HandsFreeController hf) async {

@@ -89,10 +89,14 @@ class _EarExerciseState extends ConsumerState<EarExercise> {
               ? Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    MicButton(recording: s.recording, onPressed: s.recording || s.checking || s.playing ? null : ctl.attempt),
+                    MicButton(recording: s.recording, onPressed: s.recording || s.checking || s.loadingTips || s.playing ? null : ctl.attempt),
                     const SizedBox(height: 8),
                     Text(
-                      s.checking ? tr('Revisando lo que dijiste…') : (s.recording ? tr('Te escucho…') : (s.tries > 0 ? tr('Otra vez') : tr('Toca y repite'))),
+                      s.checking
+                          ? tr('Revisando lo que dijiste…')
+                          : s.loadingTips
+                              ? tr('Preparando cómo decirlo mejor…')
+                              : (s.recording ? tr('Te escucho…') : (s.tries > 0 ? tr('Otra vez') : tr('Toca y repite'))),
                       style: const TextStyle(color: W.muted),
                     ),
                   ]),

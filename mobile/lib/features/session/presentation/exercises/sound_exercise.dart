@@ -7,6 +7,7 @@ import '../../../../core/widgets/feedback_bar.dart';
 import '../../../../core/widgets/how_to_say.dart';
 import '../../../../core/widgets/mic_button.dart';
 import '../../../../core/widgets/step_page.dart';
+import '../../../../core/widgets/w2w_loader.dart';
 import '../../data/session_plan.dart';
 import 'exercise_outcome.dart';
 import 'sound_controller.dart';
@@ -35,16 +36,21 @@ class _SoundExerciseState extends ConsumerState<SoundExercise> {
     final s = ref.watch(provider);
     final w = widget.step;
     return StepPage(
-      bottom: s.finished
-          ? FeedbackBar(ok: s.passed, title: s.passed ? tr('¡Bien dicho!') : tr('Sigue practicándolo'), detail: '/${w.phoneme}/ al ${s.pct}%', onNext: () => widget.onDone(s.outcome))
-          : Padding(
+      bottom: s.checking
+          ? Padding(
               padding: const EdgeInsets.only(bottom: 24),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                MicButton(recording: s.recording, onPressed: s.recording ? null : ref.read(provider.notifier).attempt),
-                const SizedBox(height: 10),
-                Text(tr('Toca y dila en voz alta'), style: TextStyle(color: W.muted)),
-              ]),
-            ),
+              child: W2WLoader(label: tr('Evaluando tu pronunciación…')),
+            )
+          : s.finished
+              ? FeedbackBar(ok: s.passed, title: s.passed ? tr('¡Bien dicho!') : tr('Sigue practicándolo'), detail: '/${w.phoneme}/ al ${s.pct}%', onNext: () => widget.onDone(s.outcome))
+              : Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    MicButton(recording: s.recording, onPressed: s.recording ? null : ref.read(provider.notifier).attempt),
+                    const SizedBox(height: 10),
+                    Text(tr('Toca y dila en voz alta'), style: TextStyle(color: W.muted)),
+                  ]),
+                ),
       children: [
         stepKind(tr('Pronunciación: el sonido /{0}/', [w.phoneme])),
         Row(children: [
