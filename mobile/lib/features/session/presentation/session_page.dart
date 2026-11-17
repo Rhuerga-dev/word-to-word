@@ -7,6 +7,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/hands_free_bar.dart';
 import '../data/session_plan.dart';
 import 'exercises/exercise_outcome.dart';
+import 'exercises/conversation_controller.dart';
+import 'exercises/conversation_exercise.dart';
 import 'exercises/mistake_controller.dart';
 import 'exercises/mistake_exercise.dart';
 import 'exercises/narration_controller.dart';
@@ -85,6 +87,7 @@ class SessionPage extends ConsumerWidget {
         NewStep(:final card) => NewWordExercise(card: card, onDone: done),
         SoundStep() => SoundExercise(step: step, onDone: done),
         ShadowStep() => ShadowingExercise(step: step, onDone: done),
+        ConversationStep() => ConversationExercise(step: step, onDone: done),
         NarrateStep() => NarrationExercise(onDone: done),
         MistakeStep(:final mistake) => MistakeExercise(mistake: mistake, onDone: done),
       };
@@ -131,6 +134,7 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
         NewStep(:final card) => ref.read(newWordControllerProvider(card).notifier).handsFree(hf),
         SoundStep() => ref.read(soundControllerProvider(widget.step as SoundStep).notifier).handsFree(hf),
         ShadowStep() => ref.read(shadowingControllerProvider(widget.step as ShadowStep).notifier).handsFree(hf),
+        ConversationStep() => ref.read(conversationControllerProvider(widget.step as ConversationStep).notifier).handsFree(hf),
         NarrateStep() => ref.read(narrationControllerProvider.notifier).handsFree(hf),
         MistakeStep(:final mistake) => ref.read(mistakeControllerProvider(mistake).notifier).handsFree(hf),
       };

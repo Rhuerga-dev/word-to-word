@@ -13,6 +13,7 @@ class PathUnit {
     required this.wordsNeed,
     required this.preview,
     required this.sound,
+    required this.scenario,
     required this.scenarioTitle,
     required this.steps,
     this.testScore,
@@ -26,7 +27,7 @@ class PathUnit {
   final int wordsLearned, wordsNeed;
   final List<String> preview;
   final String sound;
-  final String scenarioTitle;
+  final String scenario, scenarioTitle;
 
   /// words · sound · shadow · test → hecho
   final Map<String, bool> steps;
@@ -48,6 +49,7 @@ class PathUnit {
       wordsNeed: asInt(words['need']),
       preview: [for (final w in (words['preview'] as List? ?? const [])) '$w'],
       sound: asString(j['sound']),
+      scenario: asString(j['scenario']),
       scenarioTitle: asString(j['scenario_title']),
       steps: {for (final k in stepOrder) k: asBool(steps[k])},
       testScore: test['score'] == null ? null : asInt(test['score']),

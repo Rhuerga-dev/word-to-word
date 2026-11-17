@@ -378,4 +378,18 @@ const stringsEn = <String, String>{
   "✓ Shadowing de la unidad completado.": "✓ Unit shadowing completed.",
   "No hay texto para practicar ahora.": "There's no text to practice right now.",
   "La prueba de la unidad se hace por ahora en la web (w2w.huergalabs.dev).": "The unit test is done on the web for now (w2w.huergalabs.dev).",
+  // Conversación (prueba de la unidad)
+  "Prueba de la unidad": "Unit test",
+  "Prueba": "Test",
+  "Prueba · {0}": "Test · {0}",
+  "Entendiendo lo que dijiste…": "Understanding what you said…",
+  "No te oí. Habla cuando quieras.": "I didn't hear you. Speak whenever you want.",
+  "No te entendí. Prueba otra vez.": "I didn't understand. Try again.",
+  "Calificando tu conversación…": "Grading your conversation…",
+  "Terminar y evaluar": "Finish and grade",
+  "Habla al menos {0} veces para la nota (llevas {1}).": "Speak at least {0} times for a grade (you have {1}).",
+  "¡Aprobaste la unidad!": "You passed the unit!",
+  "Casi: inténtalo otra vez": "Almost: try again",
+  "{0}/10": "{0}/10",
+  "Este paso se hace por ahora en la web (w2w.huergalabs.dev).": "This step is done on the web for now (w2w.huergalabs.dev).",
 };

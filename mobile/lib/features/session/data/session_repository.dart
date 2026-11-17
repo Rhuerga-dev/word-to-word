@@ -31,6 +31,22 @@ class MistakeReview {
   final int xpGained;
 }
 
+/// Un turno de la conversación: lo que responde la IA, y la corrección del último mensaje del alumno.
+class ConversationTurn {
+  const ConversationTurn({required this.reply, this.feedback, this.fixes = const []});
+  final String reply;
+  final String? feedback;
+  final List<(String said, String correct)> fixes;
+}
+
+/// Resultado de la prueba de la unidad (una conversación con nota).
+class UnitTestResult {
+  const UnitTestResult({required this.passed, this.score, required this.feedback});
+  final bool passed;
+  final int? score;
+  final String feedback;
+}
+
 /// Texto para el shadowing: un título y sus frases para repetir.
 class ShadowingText {
   const ShadowingText({required this.title, required this.sentences});
@@ -200,6 +216,26 @@ class SessionRepository {
 
   /// Marca hecho el shadowing de una unidad con el promedio (el servidor exige ≥60).
   Future<void> unitShadowDone(String unitId, int score) => _api.post('/path/units/$unitId/shadow', {'score': score});
+
+  /// Abre una conversación (prueba de la unidad) con su situación. Devuelve el id de la sesión.
+  Future<int> startConversation(String scenario) async =>
+      asInt(asMap(await _api.post('/speaking/sessions', {'scenario': scenario}))['id']);
+
+  /// Un turno: la IA responde y corrige el último mensaje del alumno.
+  Future<ConversationTurn> converse({required int sessionId, required String scenario, required List<Map<String, String>> messages}) async {
+    final r = asMap(await _api.post('/conversation', {'messages': messages, 'scenario': scenario, 'voice': true, 'session_id': sessionId}));
+    return ConversationTurn(
+      reply: asString(r['reply']),
+      feedback: asStringOrNull(r['feedback']),
+      fixes: [for (final m in asMaps(r['mistakes'])) (asString(m['said']), asString(m['correct']))],
+    );
+  }
+
+  /// Califica la conversación de la unidad (necesita ≥5 respuestas del alumno; aprueba con ≥6/10).
+  Future<UnitTestResult> unitTest(String unitId, int sessionId, List<Map<String, String>> messages) async {
+    final r = asMap(await _api.post('/path/units/$unitId/test', {'session_id': sessionId, 'messages': messages}));
+    return UnitTestResult(passed: asBool(r['passed']), score: r['score'] == null ? null : asInt(r['score']), feedback: asString(r['feedback']));
+  }
 }
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) => SessionRepository(ref.watch(apiProvider), ref.watch(offlineCacheProvider)));

@@ -36,8 +36,12 @@ class PathPage extends ConsumerWidget {
     if (plan == null && u.steps['sound'] == true && u.steps['shadow'] != true) {
       plan = SessionPlan([ShadowStep(unitId: u.id)], title: u.title);
     }
+    // La prueba de la unidad (conversación con nota) también se hace ya en la app.
+    if (plan == null && u.steps['shadow'] == true && u.steps['test'] != true) {
+      plan = SessionPlan([ConversationStep(unitId: u.id, scenario: u.scenario, scenarioTitle: u.scenarioTitle)], title: u.title);
+    }
     if (plan == null) {
-      messenger.showSnackBar(SnackBar(content: Text(tr('La prueba de la unidad se hace por ahora en la web (w2w.huergalabs.dev).'))));
+      messenger.showSnackBar(SnackBar(content: Text(tr('Este paso se hace por ahora en la web (w2w.huergalabs.dev).'))));
       return;
     }
     if (context.mounted) {

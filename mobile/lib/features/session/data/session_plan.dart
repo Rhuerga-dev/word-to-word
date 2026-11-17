@@ -61,6 +61,12 @@ class ShadowStep extends SessionStep {
   final String? unitId;
 }
 
+/// Prueba de la unidad: una conversación con la IA en la situación de la unidad, con nota al final.
+class ConversationStep extends SessionStep {
+  const ConversationStep({required this.unitId, required this.scenario, this.scenarioTitle = ''});
+  final String unitId, scenario, scenarioTitle;
+}
+
 /// Los ejercicios de una sesión, en orden.
 class SessionPlan {
   const SessionPlan(this.steps, {this.title, this.daily = false});
