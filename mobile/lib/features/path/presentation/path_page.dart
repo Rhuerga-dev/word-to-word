@@ -32,11 +32,18 @@ class PathPage extends ConsumerWidget {
       final k = soundKey(u.sound);
       if (k != null) plan = SessionPlan.sound(k, title: u.title);
     }
+    // El shadowing de la unidad ya se hace en la app (tras palabras y sonido).
+    if (plan == null && u.steps['sound'] == true && u.steps['shadow'] != true) {
+      plan = SessionPlan([ShadowStep(unitId: u.id)], title: u.title);
+    }
     if (plan == null) {
-      messenger.showSnackBar(SnackBar(content: Text(tr('El shadowing y la prueba de la unidad se hacen por ahora en la web (w2w.huergalabs.dev).'))));
+      messenger.showSnackBar(SnackBar(content: Text(tr('La prueba de la unidad se hace por ahora en la web (w2w.huergalabs.dev).'))));
       return;
     }
-    if (context.mounted) context.push(Routes.session, extra: plan);
+    if (context.mounted) {
+      await context.push(Routes.session, extra: plan);
+      ref.invalidate(pathProvider); // al volver, refresca el progreso de la unidad
+    }
   }
 
   @override

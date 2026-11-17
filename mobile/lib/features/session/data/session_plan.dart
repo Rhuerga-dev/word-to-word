@@ -55,6 +55,12 @@ class MistakeStep extends SessionStep {
   final Mistake mistake;
 }
 
+/// Shadowing: repetir frases copiando el ritmo. Con [unitId], el de una unidad del Camino.
+class ShadowStep extends SessionStep {
+  const ShadowStep({this.unitId});
+  final String? unitId;
+}
+
 /// Los ejercicios de una sesión, en orden.
 class SessionPlan {
   const SessionPlan(this.steps, {this.title, this.daily = false});

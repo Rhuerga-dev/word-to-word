@@ -31,6 +31,25 @@ class MistakeReview {
   final int xpGained;
 }
 
+/// Texto para el shadowing: un título y sus frases para repetir.
+class ShadowingText {
+  const ShadowingText({required this.title, required this.sentences});
+  final String title;
+  final List<String> sentences;
+}
+
+/// Nota de una frase de shadowing (Azure): pronunciación, fluidez, precisión y palabra por palabra.
+class ShadowingScore {
+  const ShadowingScore({required this.ok, required this.score, required this.fluency, required this.accuracy, required this.words});
+
+  /// Se reconoció la voz (si no, hay que repetir).
+  final bool ok;
+  final int score, fluency, accuracy;
+
+  /// Cada palabra y si sonó bien (verde) o no (rojo).
+  final List<(String word, bool good)> words;
+}
+
 /// Lo que devuelve terminar la sesión de Hoy.
 class SessionResult {
   const SessionResult({this.xp, this.streak, this.xpGained = 0, this.learned = 0, this.mistakesOk = 0, this.achievements = const []});
@@ -145,6 +164,42 @@ class SessionRepository {
   }
 
   Future<SessionResult> complete() async => SessionResult.fromJson(asMap(await _api.post('/session/complete')));
+
+  /// Texto de shadowing. Con [unit], el de esa unidad del Camino; [skip] trae otro texto del mismo tema.
+  Future<ShadowingText> shadowing({int skip = 0, String? unit}) async {
+    final q = <String>[
+      if (skip > 0) 'skip=$skip',
+      if (unit != null) 'unit=${Uri.encodeQueryComponent(unit)}',
+    ];
+    final r = asMap(await _api.get('/speaking/shadowing${q.isEmpty ? '' : '?${q.join('&')}'}'));
+    return ShadowingText(
+      title: asString(r['title']),
+      sentences: [for (final s in (r['sentences'] is List ? r['sentences'] as List : const [])) '$s'],
+    );
+  }
+
+  /// Nota completa de una frase de shadowing (nota, fluidez, precisión y palabra por palabra).
+  Future<ShadowingScore> assessShadow(String text, Uint8List wav) async {
+    final r = asMap(await _api.upload('/pronunciation/assess', wav, fields: {'text': text}));
+    final a = asMap(r['assessment']);
+    final scores = asMap(a['scores']);
+    final words = a['words'] is List ? a['words'] as List : const [];
+    return ShadowingScore(
+      ok: asString(a['status']) == 'Success',
+      score: asInt(r['score']),
+      fluency: asInt(scores['fluency']),
+      accuracy: asInt(scores['accuracy']),
+      // La "Insertion" (una palabra de más) no se pinta; el resto, verde si acertó y ≥60.
+      words: [
+        for (final w in words)
+          if (asString(asMap(w)['error']) != 'Insertion')
+            (asString(asMap(w)['word']), asString(asMap(w)['error']) == 'None' && asInt(asMap(w)['accuracy']) >= 60),
+      ],
+    );
+  }
+
+  /// Marca hecho el shadowing de una unidad con el promedio (el servidor exige ≥60).
+  Future<void> unitShadowDone(String unitId, int score) => _api.post('/path/units/$unitId/shadow', {'score': score});
 }
 
 final sessionRepositoryProvider = Provider<SessionRepository>((ref) => SessionRepository(ref.watch(apiProvider), ref.watch(offlineCacheProvider)));

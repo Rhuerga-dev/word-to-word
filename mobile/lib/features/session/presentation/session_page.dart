@@ -15,6 +15,8 @@ import 'exercises/new_word_controller.dart';
 import 'exercises/new_word_exercise.dart';
 import 'exercises/review_controller.dart';
 import 'exercises/review_exercise.dart';
+import 'exercises/shadowing_controller.dart';
+import 'exercises/shadowing_exercise.dart';
 import 'exercises/sound_controller.dart';
 import 'exercises/sound_exercise.dart';
 import 'session_controller.dart';
@@ -82,6 +84,7 @@ class SessionPage extends ConsumerWidget {
         ReviewStep(:final card) => ReviewExercise(card: card, onDone: done),
         NewStep(:final card) => NewWordExercise(card: card, onDone: done),
         SoundStep() => SoundExercise(step: step, onDone: done),
+        ShadowStep() => ShadowingExercise(step: step, onDone: done),
         NarrateStep() => NarrationExercise(onDone: done),
         MistakeStep(:final mistake) => MistakeExercise(mistake: mistake, onDone: done),
       };
@@ -127,6 +130,7 @@ class _HandsFreeDriverState extends ConsumerState<_HandsFreeDriver> {
         ReviewStep(:final card) => ref.read(reviewControllerProvider(card).notifier).handsFree(hf),
         NewStep(:final card) => ref.read(newWordControllerProvider(card).notifier).handsFree(hf),
         SoundStep() => ref.read(soundControllerProvider(widget.step as SoundStep).notifier).handsFree(hf),
+        ShadowStep() => ref.read(shadowingControllerProvider(widget.step as ShadowStep).notifier).handsFree(hf),
         NarrateStep() => ref.read(narrationControllerProvider.notifier).handsFree(hf),
         MistakeStep(:final mistake) => ref.read(mistakeControllerProvider(mistake).notifier).handsFree(hf),
       };
