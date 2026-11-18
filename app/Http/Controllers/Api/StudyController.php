@@ -204,6 +204,7 @@ class StudyController extends Controller
             DB::table('achievements')->where('user_id', $user->id)->delete();
             DB::table('speaking_mistakes')->where('user_id', $user->id)->delete();
             DB::table('speaking_sessions')->where('user_id', $user->id)->delete();
+            DB::table('pets')->where('user_id', $user->id)->delete();      // Brainy vuelve a nacer
             $user->forceFill(['xp_total' => 0, 'day_offset' => 0, 'streak' => 0, 'last_study_day' => null, 'cefr_level' => null])->save();
         });
 

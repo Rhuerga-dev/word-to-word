@@ -14,6 +14,9 @@ abstract class Routes {
   /// Brainy, la mascota que aprende lo que tú aprendes.
   static const pet = '/pet';
 
+  /// La pantalla «Hoy» de siempre, cuando el Modo Brainy ocupa la pestaña principal.
+  static const classicToday = '/today-classic';
+
   /// La sesión recibe su SessionPlan en `extra`.
   static const session = '/session';
 }

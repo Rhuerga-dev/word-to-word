@@ -11,6 +11,8 @@ import 'pet_texts.dart';
 /// enciende con lo que aprendes. Diseño propio, dibujado con código (sin imágenes).
 /// Crece con cada etapa: abre los ojos, le sale un brote, brazos, voz y, al final, brilla.
 /// Respira, parpadea y sus neuronas laten; con «Reducir movimiento» se queda quieta.
+/// Con cuidados (pet.care) su cara cambia: duerme, tiene hambre, quiere jugar, hay desorden o está malita.
+/// De adulta toma una forma según lo que más practicas (orejas, voz doble, gafas o una estrella).
 class PetFigure extends StatefulWidget {
   const PetFigure({super.key, required this.pet, this.size = 220, this.fit = false});
   final PetState pet;
@@ -77,6 +79,9 @@ class PetPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final t = time ?? 0.0, moving = time != null;
     final stage = pet.stage;
+    final care = pet.care;
+    final mood = care?.mood ?? '';
+    final form = stage >= 4 ? care?.form : null;
     // Tamaño: de pequeña a grande con las etapas (en la última ocupa todo lo que cabe).
     final grow = fit ? maxGrow : maxGrow - 0.065 * (4 - math.min(stage, 4));
     final breath = moving ? 1 + 0.012 * math.sin(t * 2 * math.pi * 2) : 1.0;
@@ -101,6 +106,22 @@ class PetPainter extends CustomPainter {
     // Brote en la cabeza (desde «Brote»): un tallo con dos hojas.
     if (stage >= 1) _sprout(canvas, c + Offset(0, -u * 0.86), u, moving ? 0.08 * math.sin(t * 2 * math.pi * 2) : 0.0);
 
+    // Forma «orejona»: dos orejas grandes a los lados de la cabeza.
+    if (form == 'listener') {
+      for (final side in [-1, 1]) {
+        final ear = Rect.fromCenter(center: c + Offset(u * 0.80 * side, -u * 0.34), width: u * 0.34, height: u * 0.52);
+        canvas.drawOval(ear, limb);
+        canvas.drawOval(ear.deflate(u * 0.07), Paint()..color = const Color(0x66F07A9A));
+      }
+    }
+    // Desorden: unas motas de polvo junto a los pies.
+    if (mood == 'messy') {
+      final dust = Paint()..color = const Color(0x88A0855B);
+      for (final (dx, dy, r) in const [(-0.86, 0.80, 0.06), (-0.70, 0.93, 0.04), (0.84, 0.84, 0.05), (0.66, 0.95, 0.035), (0.98, 0.94, 0.03)]) {
+        canvas.drawCircle(c + Offset(u * dx, u * dy), u * r, dust);
+      }
+    }
+
     // Cuerpo: un huevo redondeado.
     final body = Rect.fromCenter(center: c, width: u * 1.62, height: u * 1.82);
     canvas.drawRRect(
@@ -120,10 +141,52 @@ class PetPainter extends CustomPainter {
         ..color = const Color(0x55C8D6FF),
     );
 
-    _face(canvas, c + Offset(0, u * 0.50), u, t, moving, stage);
+    _face(canvas, c + Offset(0, u * 0.50), u, t, moving, stage, mood, form == 'scholar');
 
-    // Voz (desde «Voz»): ondas junto a la boca.
-    if (stage >= 3) _voice(canvas, c + Offset(u * 0.92, u * 0.42), u, t, moving);
+    final resting = care?.resting ?? false;
+    // Voz (desde «Voz»): ondas junto a la boca. Dormida no habla. La «parlanchina» habla por los dos lados.
+    if (stage >= 3 && !resting) {
+      _voice(canvas, c + Offset(u * 0.92, u * 0.42), u, t, moving);
+      if (form == 'talker') _voice(canvas, c + Offset(-u * 0.92, u * 0.42), u, t, moving, left: true);
+    }
+    // Forma «equilibrada»: una estrella sobre el brote.
+    if (form == 'balanced') _star(canvas, c + Offset(0, -u * 1.22), u * 0.13, t, moving);
+    if (resting) _zzz(canvas, c + Offset(u * 0.62, -u * 0.86), u, t, moving);
+  }
+
+  /// Tres zetas que suben: duerme.
+  void _zzz(Canvas canvas, Offset c, double u, double t, bool moving) {
+    final pen = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = u * 0.03;
+    for (var i = 0; i < 3; i++) {
+      final rise = moving ? ((t * 2 + i / 3) % 1) : i / 3;
+      final s = u * (0.07 + 0.05 * rise);
+      final o = c + Offset(u * 0.20 * rise + u * 0.06 * i, -u * 0.34 * rise);
+      pen.color = const Color(0xFF7C9CFF).withValues(alpha: 0.9 - 0.7 * rise);
+      canvas.drawPath(
+        Path()
+          ..moveTo(o.dx - s, o.dy - s)
+          ..lineTo(o.dx + s, o.dy - s)
+          ..lineTo(o.dx - s, o.dy + s)
+          ..lineTo(o.dx + s, o.dy + s),
+        pen,
+      );
+    }
+  }
+
+  void _star(Canvas canvas, Offset c, double r, double t, bool moving) {
+    final k = moving ? 0.85 + 0.15 * math.sin(t * 2 * math.pi * 2) : 1.0;
+    final path = Path();
+    for (var i = 0; i < 8; i++) {
+      final a = -math.pi / 2 + i * math.pi / 4;
+      final d = (i.isEven ? r : r * 0.40) * k;
+      final p = c + Offset(math.cos(a) * d, math.sin(a) * d);
+      i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(path..close(), Paint()..color = const Color(0xFFFFD84A));
   }
 
   void _brain(Canvas canvas, Offset c, double s, double t, bool moving) {
@@ -153,7 +216,7 @@ class PetPainter extends CustomPainter {
     }
   }
 
-  void _face(Canvas canvas, Offset c, double u, double t, bool moving, int stage) {
+  void _face(Canvas canvas, Offset c, double u, double t, bool moving, int stage, String mood, bool glasses) {
     final white = Paint()..color = Colors.white;
     final ink = Paint()..color = const Color(0xFF16212E);
     final stroke = Paint()
@@ -165,9 +228,13 @@ class PetPainter extends CustomPainter {
 
     // Recién nacida: ojos cerrados y contentos (dos arcos). Después, abiertos y con parpadeo.
     final blink = moving && (t * 6) % 3 > 2.9;
+    final resting = mood == 'asleep' || mood == 'hibernating';
     for (final side in [-1, 1]) {
       final e = c + Offset(eyeDx * side, 0);
-      if (stage == 0 || blink) {
+      if (resting) {
+        // Dormida: los ojos son dos rayitas curvas hacia abajo.
+        canvas.drawArc(Rect.fromCenter(center: e - Offset(0, u * 0.03), width: u * 0.20, height: u * 0.14), 0, math.pi, false, stroke);
+      } else if (stage == 0 || blink) {
         canvas.drawArc(Rect.fromCenter(center: e + Offset(0, u * 0.03), width: u * 0.20, height: u * 0.16), math.pi, math.pi, false, stroke);
       } else {
         canvas.drawCircle(e, u * 0.105, white);
@@ -175,13 +242,39 @@ class PetPainter extends CustomPainter {
         canvas.drawCircle(e + Offset(u * 0.035, -u * 0.035), u * 0.020, white);
       }
     }
-    // Mejillas.
-    final cheek = Paint()..color = const Color(0x55F07A9A);
+    // Gafas (forma «sabia»).
+    if (glasses && !resting) {
+      final rim = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = u * 0.03
+        ..color = const Color(0xFFFFD84A);
+      canvas.drawCircle(c + Offset(-eyeDx, 0), u * 0.15, rim);
+      canvas.drawCircle(c + Offset(eyeDx, 0), u * 0.15, rim);
+      canvas.drawLine(c + Offset(-eyeDx + u * 0.15, 0), c + Offset(eyeDx - u * 0.15, 0), rim);
+    }
+    // Mejillas (verdosas si está malita).
+    final cheek = Paint()..color = mood == 'sick' ? const Color(0x664AC487) : const Color(0x55F07A9A);
     canvas.drawCircle(c + Offset(-u * 0.44, u * 0.12), u * 0.07, cheek);
     canvas.drawCircle(c + Offset(u * 0.44, u * 0.12), u * 0.07, cheek);
     // Boca: siempre sonríe. Desde «Voz», abierta (está hablando).
     final mouth = Rect.fromCenter(center: c + Offset(0, u * 0.13), width: u * 0.24, height: u * 0.18);
-    if (stage >= 3) {
+    final m = c + Offset(0, u * 0.20);
+    if (resting) {
+      canvas.drawCircle(m, u * 0.035, white);                                       // boquita dormida
+    } else if (mood == 'hungry') {
+      canvas.drawOval(Rect.fromCenter(center: m, width: u * 0.16, height: u * 0.20), white);  // boca abierta: «¡comida!»
+    } else if (mood == 'sick') {
+      // Boca ondulada.
+      canvas.drawPath(
+        Path()
+          ..moveTo(m.dx - u * 0.13, m.dy)
+          ..quadraticBezierTo(m.dx - u * 0.065, m.dy - u * 0.06, m.dx, m.dy)
+          ..quadraticBezierTo(m.dx + u * 0.065, m.dy + u * 0.06, m.dx + u * 0.13, m.dy),
+        stroke,
+      );
+    } else if (mood == 'bored' || mood == 'messy') {
+      canvas.drawLine(m - Offset(u * 0.09, 0), m + Offset(u * 0.09, 0), stroke);    // boca recta
+    } else if (stage >= 3) {
       canvas.drawArc(mouth, 0, math.pi, true, white);
     } else {
       canvas.drawArc(mouth, 0.15, math.pi - 0.3, false, stroke);
@@ -216,7 +309,7 @@ class PetPainter extends CustomPainter {
     }
   }
 
-  void _voice(Canvas canvas, Offset c, double u, double t, bool moving) {
+  void _voice(Canvas canvas, Offset c, double u, double t, bool moving, {bool left = false}) {
     final wave = Paint()
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -225,7 +318,7 @@ class PetPainter extends CustomPainter {
       final alpha = moving ? 0.25 + 0.6 * (0.5 + 0.5 * math.sin((t * 4 - i * 0.22) * 2 * math.pi)) : 0.7;
       wave.color = const Color(0xFF1F4FD1).withValues(alpha: alpha);
       final r = u * (0.10 + 0.09 * i);
-      canvas.drawArc(Rect.fromCircle(center: c, radius: r), -0.7, 1.4, false, wave);
+      canvas.drawArc(Rect.fromCircle(center: c, radius: r), left ? math.pi - 0.7 : -0.7, 1.4, false, wave);
     }
   }
 

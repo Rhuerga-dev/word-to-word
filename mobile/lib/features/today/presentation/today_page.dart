@@ -16,7 +16,10 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/profession_picker.dart';
 import '../../path/data/path_models.dart';
 import '../../path/presentation/path_providers.dart';
+import '../../../core/services/brainy_mode_setting.dart';
 import '../../pet/presentation/pet_card.dart';
+import '../../pet/presentation/pet_home.dart';
+import '../../pet/presentation/pet_providers.dart';
 import '../../session/data/session_plan.dart';
 import '../data/today.dart';
 import 'today_providers.dart';
@@ -24,10 +27,19 @@ import '../../../core/l10n/tr.dart';
 
 /// Hoy: la meta de puntos y la sesión del día con un solo botón.
 class TodayPage extends ConsumerWidget {
-  const TodayPage({super.key});
+  const TodayPage({super.key, this.classic = false});
+
+  /// true = siempre la pantalla de siempre (aunque el Modo Brainy esté encendido).
+  final bool classic;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Modo Brainy (apagado por defecto): la pestaña principal es la mascota. Si no se puede
+    // enseñar (servidor viejo, sin datos), sale la pantalla de siempre.
+    if (!classic && (ref.watch(brainyModeProvider).valueOrNull ?? false)) {
+      final pet = ref.watch(petProvider).valueOrNull;
+      if (pet?.care != null) return PetHome(pet: pet!);
+    }
     final today = ref.watch(todayProvider);
     return AsyncView<TodayData>(
       value: today,
@@ -38,6 +50,14 @@ class TodayPage extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// «Hoy» de siempre en su propia pantalla (se abre desde el Modo Brainy).
+class ClassicTodayPage extends StatelessWidget {
+  const ClassicTodayPage({super.key});
+
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text(tr('Hoy'))), body: const SafeArea(child: TodayPage(classic: true)));
 }
 
 class _TodayBody extends ConsumerWidget {

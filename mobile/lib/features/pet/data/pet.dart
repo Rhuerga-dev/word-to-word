@@ -28,6 +28,84 @@ class PetSkill {
       PetSkill(count: asInt(j['count']), target: asInt(j['target']), level: asDouble(j['level']).clamp(0, 1).toDouble());
 }
 
+/// Lo que Brainy necesita. Cada cosa se cuida estudiando.
+enum PetNeed {
+  /// Comida: palabras nuevas y repasos.
+  food,
+
+  /// Ánimo: jugar (Oído, hablar).
+  joy,
+
+  /// Limpieza: sin repasos ni errores pendientes.
+  clean,
+
+  /// Salud: enferma si pasa un día con hambre o con mucho desorden.
+  health,
+}
+
+/// Los botones de cuidado. El servidor dice qué ejercicio toca (POST /api/pet/{name}).
+enum PetAction { feed, play, clean, medicine }
+
+/// Cómo está Brainy ahora (lo calcula el servidor con el reloj: baja aunque la app esté cerrada).
+class PetCare {
+  const PetCare({
+    this.hearts = const {},
+    this.max = 4,
+    this.mood = 'ok',
+    this.asleep = false,
+    this.hibernating = false,
+    this.sick = false,
+    this.mess = 0,
+    this.days = 0,
+    this.leaning,
+    this.form,
+    this.history = const [],
+  });
+
+  /// Corazones de cada barra, de 0 a [max].
+  final Map<PetNeed, int> hearts;
+  final int max;
+
+  /// hibernating · asleep · sick · hungry · messy · bored · happy · ok
+  final String mood;
+  final bool asleep, hibernating, sick;
+
+  /// Repasos y errores pendientes (su «desorden») y días distintos en que la cuidaste.
+  final int mess, days;
+
+  /// Hacia qué forma adulta va (talker · listener · scholar · balanced) y la que ya tiene de adulta.
+  final String? leaning, form;
+
+  /// Su evolución: (clave de etapa, fecha AAAA-MM-DD).
+  final List<(String, String)> history;
+
+  int of(PetNeed n) => hearts[n] ?? max;
+
+  /// Duerme (de noche) o hiberna: ojos cerrados.
+  bool get resting => asleep || hibernating;
+
+  static PetCare? tryParse(Object? json) {
+    if (json is! Map) return null;
+    final j = asMap(json), needs = asMap(j['needs']);
+    if (needs.isEmpty) return null;
+    final max = asInt(asMap(needs['food'])['max'], 4).clamp(1, 10);
+    String? text(Object? v) => v is String && v.isNotEmpty ? v : null;
+    return PetCare(
+      hearts: {for (final n in PetNeed.values) n: asInt(asMap(needs[n.name])['hearts'], max).clamp(0, max)},
+      max: max,
+      mood: asString(j['mood'], 'ok'),
+      asleep: j['asleep'] == true,
+      hibernating: j['hibernating'] == true,
+      sick: j['sick'] == true,
+      mess: asInt(j['mess']),
+      days: asInt(j['days']),
+      leaning: text(j['leaning']),
+      form: text(j['form']),
+      history: [for (final h in asMaps(j['history'])) (asString(h['stage']), asString(h['at']))],
+    );
+  }
+}
+
 /// El estado de la mascota (GET /api/pet). Lo calcula el servidor con lo que ya aprendiste.
 class PetState {
   const PetState({
@@ -39,6 +117,7 @@ class PetState {
     this.stageProgress = 0,
     this.nextAt,
     this.skills = const {},
+    this.care,
   });
 
   final String name;
@@ -53,6 +132,9 @@ class PetState {
   final int? nextAt;
 
   final Map<PetRegion, PetSkill> skills;
+
+  /// Sus cuidados; null con un servidor que aún no los tiene (entonces la mascota sale como antes, sin barras).
+  final PetCare? care;
 
   PetSkill skill(PetRegion r) => skills[r] ?? const PetSkill();
   double level(PetRegion r) => skill(r).level;
@@ -73,6 +155,7 @@ class PetState {
       stageProgress: asDouble(s['progress']).clamp(0, 1).toDouble(),
       nextAt: s['next'] == null ? null : asInt(s['next']),
       skills: {for (final r in PetRegion.values) r: PetSkill.fromJson(asMap(regions[r.name]))},
+      care: PetCare.tryParse(j['care']),
     );
   }
 }

@@ -31,6 +31,7 @@ class XpService
         if ($points <= 0) {
             return 0;
         }
+        $this->petCare($user, $source, $points);
         $day = $this->srs->today($user)->toDateString();
 
         return DB::transaction(function () use ($user, $source, $points, $day) {
@@ -54,6 +55,16 @@ class XpService
 
             return $give;
         });
+    }
+
+    /** Lo que da puntos también cuida a Brainy (aunque hoy ya no sume XP). Un fallo aquí nunca rompe los puntos. */
+    public function petCare(User $user, string $source, int $points = 0): void
+    {
+        try {
+            app(PetCare::class)->record($user, $source, $points);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** Puntos por hablar: 10 por minuto de tu voz (mínimo 2 si dijiste algo). */

@@ -55,6 +55,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: Routes.words, parentNavigatorKey: rootKey, builder: (_, __) => const WordsPage()),
       GoRoute(path: Routes.pet, parentNavigatorKey: rootKey, builder: (_, __) => const PetPage()),
+      GoRoute(path: Routes.classicToday, parentNavigatorKey: rootKey, builder: (_, __) => const ClassicTodayPage()),
       GoRoute(
         path: Routes.session,
         parentNavigatorKey: rootKey,

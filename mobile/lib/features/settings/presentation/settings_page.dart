@@ -7,6 +7,7 @@ import '../../../core/l10n/tr.dart';
 import '../../../core/services/airpods_service.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/reminder_service.dart';
+import '../../../core/services/brainy_mode_setting.dart';
 import '../../../core/services/word_drill_setting.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/user_profile.dart';
@@ -37,6 +38,8 @@ class SettingsPage extends ConsumerWidget {
       const _SpanishCard(),
       _h(tr('Pronunciación')),
       const _WordDrillCard(),
+      _h('Brainy'),
+      const _BrainyModeCard(),
       if (AirPodsService.supported) ...[
         _h(tr('AirPods')),
         const _AirPodsCard(),
@@ -400,6 +403,25 @@ class _WordDrillCard extends ConsumerWidget {
         subtitle: Text(tr('Si una palabra de la frase no se entiende, la practicas sola, luego en su trozo y vuelves a la frase.')),
         value: on,
         onChanged: (v) => ref.read(wordDrillSettingProvider.notifier).set(v),
+      ),
+    );
+  }
+}
+
+/// «Modo Brainy»: la pantalla principal pasa a ser la mascota. Apagado por defecto; no quita nada.
+class _BrainyModeCard extends ConsumerWidget {
+  const _BrainyModeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final on = ref.watch(brainyModeProvider).valueOrNull ?? false;
+    return Card(
+      child: SwitchListTile(
+        key: const ValueKey('brainy-mode-switch'),
+        title: Text(tr('Modo Brainy')),
+        subtitle: Text(tr('La pantalla principal es Brainy, tu mascota: cuidarla es estudiar. Tu sesión y todo lo demás siguen a un toque.')),
+        value: on,
+        onChanged: (v) => ref.read(brainyModeProvider.notifier).set(v),
       ),
     );
   }

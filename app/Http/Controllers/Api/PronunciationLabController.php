@@ -78,6 +78,9 @@ class PronunciationLabController extends Controller
         }
 
         app(\App\Services\XpService::class)->add($request->user(), 'pronunciation');
+        if (! empty($data['phoneme'])) {
+            app(\App\Services\XpService::class)->petCare($request->user(), 'workshop');   // el taller de un sonido es la medicina de Brainy
+        }
 
         return [
             'score' => $result['scores']['pron'],

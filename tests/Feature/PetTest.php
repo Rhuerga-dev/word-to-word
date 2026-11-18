@@ -134,15 +134,25 @@ class PetTest extends TestCase
         $this->getJson('/api/pet?user_id='.$other->id)->assertOk()->assertJsonPath('points', 0)->assertJsonPath('regions.words.count', 0);
     }
 
-    public function test_the_pet_only_reads_it_writes_nothing(): void
+    public function test_reading_the_pet_only_writes_its_own_care_row(): void
     {
         Sanctum::actingAs($this->user);
         $this->learn($this->user, 3);
-        DB::enableQueryLog();
-        $this->getJson('/api/pet')->assertOk();
-        $writes = collect(DB::getQueryLog())->pluck('query')
-            ->filter(fn ($q) => preg_match('/^\s*(insert|update|delete)/i', $q) && ! str_contains($q, 'cache') && ! str_contains($q, 'personal_access_tokens'));
+        $writes = function () {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            $this->getJson('/api/pet')->assertOk();
 
-        $this->assertSame([], $writes->values()->all());
+            return collect(DB::getQueryLog())->pluck('query')
+                ->filter(fn ($q) => preg_match('/^\s*(insert|update|delete)/i', $q) && ! str_contains($q, 'cache') && ! str_contains($q, 'personal_access_tokens'))
+                ->values();
+        };
+
+        // La primera vez nace su fila de cuidados (tabla pets); nada más se toca.
+        $first = $writes();
+        $this->assertNotEmpty($first);
+        $first->each(fn ($q) => $this->assertStringContainsString('"pets"', $q));
+        // Después, mirar a la mascota no escribe nada.
+        $this->assertSame([], $writes()->all());
     }
 }

@@ -45,6 +45,9 @@ class EarController extends Controller
         abort_unless($uw, 404, 'Esa palabra todavía no está en tus fichas.');
 
         $out = $this->ear->answer($user, $uw, $data['ok'], $data['ms']);
+        if (! $out['fast']) {
+            $xp->petCare($user, 'ear');      // jugar con Brainy cuenta aunque la respuesta no sea rápida
+        }
 
         return $out + ['xp_gained' => $out['fast'] ? $xp->add($user, 'ear') : 0, 'automatic_total' => $this->ear->automaticCount($user)];
     }
