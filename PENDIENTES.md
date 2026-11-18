@@ -3,18 +3,29 @@
 > Memoria del proyecto entre chats. **Léelo antes de empezar** y actualízalo al terminar.
 > Lo mantiene al día la bitácora nocturna y el cierre de cada sesión.
 
-_Última actualización: 2026-11-17_
+_Última actualización: 2026-11-18_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app).
-- Tests: servidor 204 ✓ (17/11), app 93 ✓ (+2 saltados), `flutter analyze` limpio (17/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) y **18** (18/11: Brainy, la mascota).
+- Tests: servidor 212 ✓ (18/11), app 112 ✓ (+2 saltados), `flutter analyze` limpio (18/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (18/11) **Brainy, la mascota que aprende lo que tú aprendes** (Paso 6a de `~/Code/brain/HANDOFF.md`; solo en la app, la web no la tiene).
+  **Servidor:** `GET /api/pet` (`PetController`, `PetService`, `config/pet.php`), solo lectura y **sin tablas nuevas**: calcula con lo que
+  ya hay. Puntos = palabras aprendidas ×1 + palabras bien recordadas ×2 (stability FSRS ≥ 21 días; las de antes de FSRS, por su nivel)
+  + unidades del Camino ×8 + racha (tope 30). Cinco etapas por puntos (0, 15, 60, 180, 450): Chispa, Brote, Aprendiz, Voz, Mente
+  brillante. Cada cosa enciende una zona del cerebro (palabras /300, memoria /150, Camino /12, hábito /30; «conexiones» = la media).
+  **App:** `features/pet/` — tarjeta en Hoy (debajo de «Tus palabras») y pantalla `/pet`. Dibujada con `CustomPainter` (`pet_figure.dart`;
+  el cerebro de neuronas es el del icono de Brainy portado a Dart, `pet_brain.dart`): **sin imágenes ni iconos nuevos**. Crece con la
+  etapa (ojos, brote, brazos, voz, brillo), respira, parpadea y laten sus neuronas; con «Reducir movimiento» se queda quieta. Se
+  refresca al terminar una sesión. Servidor viejo, error o sin datos → la tarjeta no sale y todo sigue igual; sin conexión enseña la
+  última vista. Textos es/en en `lang/en.json` y `strings_en.dart`. Commit `826aa7f`, **parche 18** (dry-run «No issues detected»), **iPhone Air reinstalado (18/11)**.
+  +8 tests servidor (`PetTest`), +19 app (`pet_test.dart`). Dibujo revisado en una imagen de las 5 etapas, **no en un teléfono real**.
 - (17/11) **Prueba de la unidad en la app** (la "charla con un vecino"; antes solo en la web): el paso `test` del Camino es una conversación hablada con la IA en el escenario de la unidad (`/speaking/sessions` + `/conversation`), con corrección de cada mensaje; al terminar califica toda la charla (`/path/units/{id}/test`, ≥5 respuestas, aprueba ≥6/10) y marca el paso. Con manos libres (di "stop"). `conversation_controller.dart`/`conversation_exercise.dart`, `SessionRepository.startConversation/converse/unitTest`, `ConversationStep`, `PathUnit.scenario`. **La unidad del Camino se completa entera en la app.** Sin iconos nuevos. Commit `9c973a7`, **parche 17**, **iPhone reinstalado**. +6 tests. (El servidor ya tenía todo; solo Dart.)
 - (17/11) **Manos libres aguanta un error suelto del servidor** (app, errores para repasar): si la nota falla por red o 5xx dice «Sorry, something went wrong. Try again.» y vuelve a escuchar; al 2.º seguido se pausa como antes; 401/422/429 no se reintentan. `HandsFreeController.server()` (sirve para otros ejercicios). Commit `8404a17`, +2 tests (app 93 ✓). **Parche**: no lo lancé yo; otra sesión estaba compilando uno a las 00:24 y probablemente lo incluye: comprobar el número y si salió después de `8404a17`.
 - (17/11) **Arreglado «database is locked» (error de servidor en errores para repasar)**: la app pide la nota y los consejos A LA VEZ; las dos peticiones subían el contador diario (`DemoGuard` → `Cache::increment`) y SQLite, con transacciones `DEFERRED`, fallaba al instante sin esperar. Ahora `transaction_mode = IMMEDIATE` (`DB_TRANSACTION_MODE` en .env lo cambia). El 500 pausaba el manos libres: la app dejaba de grabar/hablar y los AirPods salían del modo llamada (parecía que se desconectaban). Commit `21870da`, +1 test (reproduce el choque). Solo servidor: sin parche.
@@ -56,6 +67,8 @@ _Última actualización: 2026-11-17_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] Mirar a **Brainy** en la app: pestaña Hoy → tarjeta «Brainy · …» → tocarla. Ver que se mueve (respira, parpadea), que los números
+  cuadran con tu progreso y decir si te gusta el dibujo y los nombres de las etapas. Android: abrir la app 2 veces (parche 18); el iPhone Air ya está reinstalado.
 - [ ] Probar la **prueba de la unidad en la app** (la charla con un vecino): Camino → una unidad con palabras, sonido y shadowing hechos → «Continuar la unidad» abre la conversación. Hablar ≥5 veces, pulsar «Terminar y evaluar» y ver la nota /10. Parche 17 (abrir la app 2 veces en Android) e iPhone ya reinstalado. Con esto una unidad se completa **entera** en la app. No probado en teléfono real.
 - [ ] Volver a usar «errores para repasar» con manos libres y AirPods y confirmar que ya no sale el error de servidor (arreglo del 17/11, no probado en teléfono real).
 - [ ] Probar el **shadowing de la unidad en la app** (Camino → una unidad con palabras y sonido ya hechos → «Continuar la unidad» abre el paso shadow): escuchar, repetir, ver las palabras en verde/rojo y que al terminar marque el paso. Parche 16 (abrir la app 2 veces en Android) e iPhone ya reinstalado. No probado en teléfono real.
@@ -72,6 +85,9 @@ _Última actualización: 2026-11-17_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Brainy · decidir con Reynaldo: (1) que la etapa **nunca baje** — hoy puede bajar si se pierde la racha o al fallar palabras cerca de
+  un cambio de etapa; arreglarlo pide guardar el máximo alcanzado (una columna nueva = migración, con su OK); (2) los puntos y metas
+  de `config/pet.php` están puestos a ojo: ajustarlos con datos reales. Sigue el **Paso 6b** («Enséñale una palabra»).
 - [ ] (opcional) Usar `hf.server()` en los demás ejercicios de manos libres (Oído, Sonido, shadowing, narración) para que un error suelto tampoco los pause.
 - Mini-taller de palabra en la web (`speak.js`): solo está en la app.
 - Palabras nuevas que se añadan: escribir su contenido con Claude Code y `words:content` (si no, las rellena el API de noche como antes).
@@ -80,6 +96,8 @@ _Última actualización: 2026-11-17_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (18/11) Brainy (mascota): no guarda nada, solo lee el progreso; nunca muere, ni se pone triste, ni culpa (sin estados de ánimo en el
+  API, sin notificaciones nuevas). Diseño propio dibujado con código. Se calcula en el servidor para que web y app usen la misma regla.
 - (15/11) No usar Claude Code como IA en vivo para los alumnos (términos de uso, lentitud, seguridad). Sí para preparar contenido de antemano.
 - (16/11) Shadowing portado a la app **solo para la unidad del Camino** (lo que pidió Reynaldo). El shadowing de Practicar/Hoy sigue en la web por ahora.
 - (17/11) Prueba de la unidad (conversación) portada a la app: la unidad del Camino se completa entera en Flutter. La *Conversación* libre de Practicar y el *Describe la imagen* siguen en la web.
