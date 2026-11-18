@@ -6,6 +6,7 @@ import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/home/presentation/home_shell.dart';
 import '../../features/path/presentation/path_page.dart';
+import '../../features/pet/presentation/pet_page.dart';
 import '../../features/practice/presentation/practice_page.dart';
 import '../../features/progress/presentation/progress_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
@@ -53,6 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: Routes.words, parentNavigatorKey: rootKey, builder: (_, __) => const WordsPage()),
+      GoRoute(path: Routes.pet, parentNavigatorKey: rootKey, builder: (_, __) => const PetPage()),
       GoRoute(
         path: Routes.session,
         parentNavigatorKey: rootKey,

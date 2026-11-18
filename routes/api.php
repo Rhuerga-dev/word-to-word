@@ -78,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/conversation', [ConversationController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/progress', \App\Http\Controllers\Api\ProgressController::class);
+    Route::get('/pet', \App\Http\Controllers\Api\PetController::class)->middleware('throttle:60,1');
     Route::get('/achievements', [\App\Http\Controllers\Api\AchievementController::class, 'index']);
     Route::get('/league', [\App\Http\Controllers\Api\AchievementController::class, 'league']);
     Route::put('/league/visibility', [\App\Http\Controllers\Api\AchievementController::class, 'visibility']);

@@ -11,6 +11,9 @@ abstract class Routes {
   /// Tus palabras: el plan del día de fichas con repaso espaciado.
   static const words = '/words';
 
+  /// Brainy, la mascota que aprende lo que tú aprendes.
+  static const pet = '/pet';
+
   /// La sesión recibe su SessionPlan en `extra`.
   static const session = '/session';
 }

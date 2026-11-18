@@ -16,6 +16,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/profession_picker.dart';
 import '../../path/data/path_models.dart';
 import '../../path/presentation/path_providers.dart';
+import '../../pet/presentation/pet_card.dart';
 import '../../session/data/session_plan.dart';
 import '../data/today.dart';
 import 'today_providers.dart';
@@ -138,6 +139,8 @@ class _TodayBody extends ConsumerWidget {
             onTap: () => context.push(Routes.words),
           ),
         ),
+        // Brainy, la mascota (solo si el servidor la tiene; si no, no ocupa sitio).
+        const PetCard(),
         if (path != null && path!.units.isNotEmpty) ...[
           const SizedBox(height: 12),
           _PathCard(path: path!, onTap: () => context.go(Routes.path)),
