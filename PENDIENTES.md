@@ -7,14 +7,32 @@ _Última actualización: 2026-11-18_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
-- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) y **18** (18/11: Brainy, la mascota).
-- Tests: servidor 212 ✓ (18/11), app 112 ✓ (+2 saltados), `flutter analyze` limpio (18/11).
+- **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
+- Tests: servidor 230 ✓ (18/11), app 135 ✓ (+2 saltados), `flutter analyze` limpio (18/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (18/11) **Brainy: cuidados tipo mascota virtual + Modo Brainy** (Pasos 6a+ y 6a++ de `~/Code/brain/HANDOFF.md`; solo en la app).
+  **Servidor:** tabla nueva `pets` (migración solo aditiva, **aplicada el 18/11**; copia previa en
+  `~/Backups/w2w/database-2026-11-18-antes-mascota.sqlite`). `PetCare` lleva 4 barras de 0–4 corazones: **comida** (palabra nueva +1,
+  repaso +¼; pierde 1 cada 6 h despierta), **ánimo** (Oído, hablar, sonidos; pierde 1 cada 8 h), **limpieza** (no se guarda: son los
+  repasos y errores pendientes; 0 / ≤5 / ≤15 / ≤30 / más → 4…0) y **salud** (enferma tras un día con hambre a cero o con el desorden a
+  tope; se cura con el taller de un sonido o quitando la causa). De 22:00 a 07:00 duerme y no baja nada. **Nunca muere**: a los 5 días
+  sin cuidados hiberna y despierta con el primer ejercicio. Los cuidados suben **solo al estudiar de verdad** (gancho en
+  `XpService::add` → `petCare`), nunca por pulsar un botón. `GET /api/pet` añade el bloque `care`; `POST /api/pet/{feed|play|clean|medicine}`
+  (lista fija) dice qué ejercicio toca. **La etapa ya nunca baja** (`stage_max`), se guarda su historia y su forma adulta según lo que
+  más practicas (parlanchina / orejona / sabia / equilibrada, se fija al llegar a la última etapa). Reiniciar progreso o borrar la
+  cuenta borra la mascota. Si la tabla fallara, los puntos y la mascota siguen (sin barras). Todo ajustable en `config/pet.php` → `care`.
+  **App:** `pet_care_panel.dart` (barras de corazones dibujadas, botones Comer / Jugar / Limpiar / Medicina que abren los ejercicios de
+  siempre: palabras nuevas, Oído, repasos, un sonido), `pet_actions.dart`, caras según el ánimo, globo con inglés fácil y «gracias» al
+  volver, formas adultas e historia en la pantalla de Brainy. **Modo Brainy**: interruptor en Ajustes → Brainy, **apagado por defecto**,
+  guardado en el teléfono (`brainy_mode_setting.dart`); encendido, la pestaña Hoy es Brainy (`pet_home.dart`) y «Mi sesión de hoy» abre
+  la pantalla de siempre (`/today-classic`). Con servidor viejo o sin mascota sale Hoy normal. Sin imágenes ni iconos nuevos (los
+  botones usan emoji, que es texto). Commit `1f8598d`, **parche 19** (dry-run «No issues detected»), **iPhone Air reinstalado (18/11)**.
+  +18 tests servidor (`PetCareTest`), +23 app (`pet_care_test.dart`). Dibujo revisado en imágenes, **no en un teléfono real**.
 - (18/11) **Brainy, la mascota que aprende lo que tú aprendes** (Paso 6a de `~/Code/brain/HANDOFF.md`; solo en la app, la web no la tiene).
   **Servidor:** `GET /api/pet` (`PetController`, `PetService`, `config/pet.php`), solo lectura y **sin tablas nuevas**: calcula con lo que
   ya hay. Puntos = palabras aprendidas ×1 + palabras bien recordadas ×2 (stability FSRS ≥ 21 días; las de antes de FSRS, por su nivel)
@@ -67,8 +85,12 @@ _Última actualización: 2026-11-18_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
-- [ ] Mirar a **Brainy** en la app: pestaña Hoy → tarjeta «Brainy · …» → tocarla. Ver que se mueve (respira, parpadea), que los números
-  cuadran con tu progreso y decir si te gusta el dibujo y los nombres de las etapas. Android: abrir la app 2 veces (parche 18); el iPhone Air ya está reinstalado.
+- [ ] Probar a **Brainy con cuidados**: Hoy → tarjeta «Brainy» → ver las 4 barras de corazones y pulsar Comer / Jugar / Limpiar /
+  Medicina (cada uno abre un ejercicio; al terminarlo, Brainy da las gracias y sube la barra). Luego **Ajustes → Brainy → Modo Brainy**:
+  la pestaña Hoy pasa a ser Brainy y «Mi sesión de hoy» abre lo de siempre. Fijarse en: que los emoji de los botones se ven bien, que
+  las caras se entienden (hambre, desorden, dormida de noche) y si el ritmo de las barras es bueno o agobia. Android: abrir la app 2
+  veces (parche 19). Tienes ~49 repasos pendientes: Brainy nace «desordenada» y, si no bajan de 30 en un día, se pone malita (se cura
+  con Medicina o limpiando).
 - [ ] Probar la **prueba de la unidad en la app** (la charla con un vecino): Camino → una unidad con palabras, sonido y shadowing hechos → «Continuar la unidad» abre la conversación. Hablar ≥5 veces, pulsar «Terminar y evaluar» y ver la nota /10. Parche 17 (abrir la app 2 veces en Android) e iPhone ya reinstalado. Con esto una unidad se completa **entera** en la app. No probado en teléfono real.
 - [ ] Volver a usar «errores para repasar» con manos libres y AirPods y confirmar que ya no sale el error de servidor (arreglo del 17/11, no probado en teléfono real).
 - [ ] Probar el **shadowing de la unidad en la app** (Camino → una unidad con palabras y sonido ya hechos → «Continuar la unidad» abre el paso shadow): escuchar, repetir, ver las palabras en verde/rojo y que al terminar marque el paso. Parche 16 (abrir la app 2 veces en Android) e iPhone ya reinstalado. No probado en teléfono real.
@@ -85,9 +107,13 @@ _Última actualización: 2026-11-18_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
-- [ ] Brainy · decidir con Reynaldo: (1) que la etapa **nunca baje** — hoy puede bajar si se pierde la racha o al fallar palabras cerca de
-  un cambio de etapa; arreglarlo pide guardar el máximo alcanzado (una columna nueva = migración, con su OK); (2) los puntos y metas
-  de `config/pet.php` están puestos a ojo: ajustarlos con datos reales. Sigue el **Paso 6b** («Enséñale una palabra»).
+- [ ] Brainy · ajustar con datos reales: los puntos, metas y ritmos de `config/pet.php` están puestos a ojo (horas por corazón, cuánto
+  da cada cosa, topes de desorden). Sin hacer del diseño del HANDOFF: **avisos locales** de Brainy (máx. 2 al día, nunca de noche; no
+  añadí ninguno), frases con solo palabras ya aprendidas (hoy son 6 frases fijas de inglés muy fácil), árbol de evolución con dibujo
+  (hoy es una lista con fechas). Sigue el **Paso 6b** («Enséñale una palabra»).
+- [ ] Las rutas `/api/*` sin la cabecera `Accept: application/json` y sin sesión dan **500** («Route [login] not defined») en vez de
+  401. Viene de antes (pasa en `/api/progress` también); la app siempre manda la cabecera, así que no se nota. Arreglo fácil: que la
+  API responda siempre JSON.
 - [ ] (opcional) Usar `hf.server()` en los demás ejercicios de manos libres (Oído, Sonido, shadowing, narración) para que un error suelto tampoco los pause.
 - Mini-taller de palabra en la web (`speak.js`): solo está en la app.
 - Palabras nuevas que se añadan: escribir su contenido con Claude Code y `words:content` (si no, las rellena el API de noche como antes).
@@ -96,8 +122,9 @@ _Última actualización: 2026-11-18_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
-- (18/11) Brainy (mascota): no guarda nada, solo lee el progreso; nunca muere, ni se pone triste, ni culpa (sin estados de ánimo en el
-  API, sin notificaciones nuevas). Diseño propio dibujado con código. Se calcula en el servidor para que web y app usen la misma regla.
+- (18/11) Brainy (mascota): diseño propio dibujado con código; todo se calcula en el servidor. Con los cuidados (6a+) ya tiene estados
+  (hambre, desorden, malita, dormida), pero **nunca muere, no culpa ni dramatiza** y no manda avisos. Cuidarla = estudiar: los botones
+  no dan nada, lo da el ejercicio. La etapa nunca baja. Modo Brainy apagado por defecto y sin quitar nada de la app normal.
 - (15/11) No usar Claude Code como IA en vivo para los alumnos (términos de uso, lentitud, seguridad). Sí para preparar contenido de antemano.
 - (16/11) Shadowing portado a la app **solo para la unidad del Camino** (lo que pidió Reynaldo). El shadowing de Practicar/Hoy sigue en la web por ahora.
 - (17/11) Prueba de la unidad (conversación) portada a la app: la unidad del Camino se completa entera en Flutter. La *Conversación* libre de Practicar y el *Describe la imagen* siguen en la web.
