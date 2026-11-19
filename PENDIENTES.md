@@ -8,13 +8,21 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 259 ✓ (19/11), app 164 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **22** (19/11).
+- Tests: servidor 268 ✓ (19/11), app 165 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **23** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Ritmo de estudio** (tras revisar la metodología): (1) **Freno de palabras nuevas**: con MÁS de 20 repasos atrasados
+  (`vocab.new_pause_reviews`, `VOCAB_NEW_PAUSE_REVIEWS`; 0 = sin freno) `SrsService::queue` no ofrece palabras nuevas hasta ponerse al
+  día; `/api/today` y `/api/session/today` añaden `new_paused` y `reviews_due`. Brainy «Comer» manda a repasar. (2) **Reaprender el
+  mismo día**: «Olvidé» deja la palabra pendiente para HOY (al final de la cola) en vez de mañana (`vocab.relearn_same_day`,
+  `VOCAB_RELEARN_SAME_DAY=false` vuelve a mañana); acertarla el mismo día no sube la estabilidad FSRS. Web y app: el botón dice «hoy
+  otra vez» (`days(0)`); `app.js` v22, caché del SW **v48**. Commit `97fed3b`, **parche 23**, iPhone Air reinstalado (19/11).
+  +9 tests servidor (`StudyPacingTest`), +1 app. Efecto inmediato: la cuenta de Reynaldo (35 repasos atrasados) no recibe palabras
+  nuevas hasta bajar a 20. **No probado en un teléfono real.**
 - (19/11) **Android: opción «Micrófono de los audífonos»** (Ajustes → Audífonos), **apagada por defecto**. Encendida, la grabación
   usa el micrófono de los audífonos Bluetooth (`AndroidRecordConfig(manageBluetooth: true)`: los pone en modo llamada mientras grabas)
   para practicar con el teléfono guardado; a cambio la voz de la app suena con calidad de llamada y algunos audífonos quitan la
@@ -175,6 +183,11 @@ _Última actualización: 2026-11-19_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] **Metodología (revisión del 19/11):** el diseño es correcto (FSRS-4.5 bien implementado, recordar activo, Oído, shadowing, errores
+  propios espaciados) pero **no hay datos para decir que funciona**: solo un alumno activo (Reynaldo, 8 días; 85 % de aciertos en
+  repasos). Falta: (a) **decir en pantalla por qué hoy no hay palabras nuevas** (el servidor ya manda `new_paused`; ni la web ni la app
+  lo muestran); (b) **hablar apenas se usa** (1 minuto en 9 días con meta de 5 al día; 2 sesiones guiadas completas): replantear la
+  sesión para que hablar sea el centro y medir minutos reales — pensarlo con Reynaldo; (c) más alumnos antes de juzgar el método.
 - [ ] Experimento Brainy: el panel recibe `experiments.brainy` en `metrics.json` pero aún no lo pinta. Límites conocidos del informe:
   los repasos y ejercicios salen de los puntos del día (`xp_days.by_source`), que tienen tope diario (100 repasos buenos); «palabras bien
   recordadas» cuenta todas las del alumno, no solo las de después de entrar; solo cuentan alumnos cuya app informó (la web no tiene Brainy).
@@ -195,6 +208,7 @@ _Última actualización: 2026-11-19_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (19/11) Primero ponerse al día, luego palabras nuevas (freno a los 20 repasos atrasados). Lo que se olvida se reaprende el mismo día.
 - (19/11) Si Brainy gana protagonismo se decide con datos: experimento A/B con «práctica real» y «aprendizaje» como métricas
   principales, no los clics en Brainy. El alumno siempre puede cambiar el modo y su elección se respeta.
 - (19/11) Apoyo voluntario: se llama «apoyo», nunca «donación»; Zelle (EE. UU.) y PayPal (resto del mundo); **solo en la web**. En la
