@@ -24,8 +24,10 @@ class PetBirthPage extends ConsumerStatefulWidget {
   ConsumerState<PetBirthPage> createState() => _PetBirthPageState();
 }
 
-class _PetBirthPageState extends ConsumerState<PetBirthPage> with SingleTickerProviderStateMixin {
-  late final AnimationController _birth = AnimationController(vsync: this, duration: const Duration(milliseconds: 4200));
+class _PetBirthPageState extends ConsumerState<PetBirthPage> with TickerProviderStateMixin {
+  /// El nacimiento, de 0 a 1 (una vez). [_sky] da vueltas sin parar: el parpadeo de las estrellas y los destellos.
+  late final AnimationController _birth = AnimationController(vsync: this, duration: const Duration(milliseconds: 6200));
+  late final AnimationController _sky = AnimationController(vsync: this, duration: const Duration(seconds: 4));
   final _name = TextEditingController();
   bool _started = false, _busy = false;
   String _msg = '';
@@ -41,12 +43,14 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with SingleTickerPr
       _birth.value = 1;
     } else {
       _birth.forward();
+      _sky.repeat();
     }
   }
 
   @override
   void dispose() {
     _birth.dispose();
+    _sky.dispose();
     _name.dispose();
     super.dispose();
   }
@@ -104,16 +108,19 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with SingleTickerPr
           onTap: () {
             if (_birth.value < 1) _birth.value = 1; // tocar adelanta la animación
           },
-          child: SafeArea(
+          child: Stack(children: [
+            // El cielo: estrellas que parpadean detrás de todo, a pantalla completa.
+            Positioned.fill(child: RepaintBoundary(child: AnimatedBuilder(animation: _sky, builder: (_, __) => CustomPaint(painter: _SkyPainter(_sky.value))))),
+            SafeArea(
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
                 child: AnimatedBuilder(
-                  animation: _birth,
+                  animation: Listenable.merge([_birth, _sky]),
                   builder: (context, _) {
                     final t = _birth.value;
                     return Column(mainAxisSize: MainAxisSize.min, children: [
-                      SizedBox.square(dimension: side, child: _BirthScene(t: t, pet: widget.pet, size: side)),
+                      SizedBox.square(dimension: side, child: _BirthScene(t: t, sky: _sky.value, pet: widget.pet, size: side)),
                       const SizedBox(height: 18),
                       // La pregunta aparece cuando la mascota ya está formada.
                       IgnorePointer(
@@ -130,6 +137,7 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with SingleTickerPr
               ),
             ),
           ),
+          ]),
         ),
       ),
     );
@@ -193,64 +201,240 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with SingleTickerPr
   }
 }
 
-/// La escena del nacimiento según el tiempo [t] (0–1):
-/// 0 → 0,5 una chispa aparece y late · 0,5 → 0,7 un destello · 0,6 → 1 la mascota crece desde la chispa.
+/// La escena del nacimiento según el tiempo [t] (0–1). Todo dibujado con código:
+///   0,00 → 0,46  neuronas llegan volando en espiral y se juntan: con cada una, la chispa crece
+///   0,46 → 0,66  tres latidos fuertes, cada uno con un anillo que se expande
+///   0,66 → 0,76  estallido: destello, onda y chispas que salen disparadas
+///   0,70 → 1,00  la mascota aparece con un rebote; quedan destellos a su alrededor
+/// [sky] (0–1, en bucle) mueve lo que sigue vivo al terminar: el resplandor y los destellos.
 class _BirthScene extends StatelessWidget {
-  const _BirthScene({required this.t, required this.pet, required this.size});
-  final double t, size;
+  const _BirthScene({required this.t, required this.sky, required this.pet, required this.size});
+  final double t, sky, size;
   final PetState pet;
-
-  static double _range(double t, double from, double to) => ((t - from) / (to - from)).clamp(0.0, 1.0);
 
   @override
   Widget build(BuildContext context) {
-    final appear = Curves.easeOut.transform(_range(t, 0, 0.18));
-    final beat = 1 + 0.18 * math.sin(t * math.pi * 14); // late varias veces
-    final sparkFade = 1 - _range(t, 0.55, 0.72);
-    final flash = math.sin(_range(t, 0.48, 0.74) * math.pi); // sube y baja
-    final grow = Curves.elasticOut.transform(_range(t, 0.60, 1.0));
-    final petOpacity = _range(t, 0.60, 0.74);
-    final spark = size * 0.13 * appear * beat;
-    return Stack(alignment: Alignment.center, children: [
-      if (flash > 0)
-        Container(
-          width: size * (0.3 + 0.9 * flash),
-          height: size * (0.3 + 0.9 * flash),
-          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.30 * flash)),
-        ),
-      if (sparkFade > 0 && spark > 0)
-        Opacity(
-          opacity: sparkFade,
-          child: Container(
-            width: spark,
-            height: spark,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: W.yellow,
-              boxShadow: [BoxShadow(color: W.yellow.withValues(alpha: 0.75), blurRadius: spark * 1.6, spreadRadius: spark * 0.35)],
-            ),
-          ),
-        ),
-      // Un resplandor claro detrás: la mascota es azul oscuro y sin él no se distinguiría del fondo.
+    final grow = Curves.elasticOut.transform(_span(t, 0.70, 1.0));
+    final petOpacity = _span(t, 0.70, 0.80);
+    return Stack(alignment: Alignment.center, clipBehavior: Clip.none, children: [
+      // Chispa, neuronas, latidos, estallido y destellos: se dibujan más allá del cuadro de la mascota.
+      Positioned.fill(child: OverflowBox(maxWidth: size * 2.4, maxHeight: size * 2.4, child: CustomPaint(size: Size.square(size * 2.4), painter: _BirthPainter(t, sky, size)))),
       if (petOpacity > 0)
         Opacity(
           opacity: petOpacity,
-          child: Container(
-            width: size,
-            height: size,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [Color(0xE6DFE7FF), Color(0x99B9CBFF), Color(0x00B9CBFF)], stops: [0.0, 0.62, 1.0]),
-            ),
-          ),
-        ),
-      if (petOpacity > 0)
-        Opacity(
-          opacity: petOpacity,
-          child: Transform.scale(scale: 0.2 + 0.8 * grow, child: PetFigure(pet: pet, size: size * 0.86, fit: true)),
+          child: Transform.scale(scale: 0.15 + 0.85 * grow, child: PetFigure(pet: pet, size: size * 0.86, fit: true)),
         ),
     ]);
   }
+}
+
+double _span(double t, double from, double to) => ((t - from) / (to - from)).clamp(0.0, 1.0);
+
+/// Números «al azar» pero siempre los mismos (así la animación es igual en cada teléfono y en los tests).
+double _rnd(int i, int salt) {
+  final x = math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+  return x - x.floorToDouble();
+}
+
+/// Los colores de las neuronas: los de las zonas del cerebro de Brainy.
+const _neuronColors = [Color(0xFF7C9CFF), Color(0xFF4AC487), Color(0xFFE6A64A), Color(0xFFF07A9A), Color(0xFFB58CFF), Color(0xFFFFE45C)];
+
+class _BirthPainter extends CustomPainter {
+  _BirthPainter(this.t, this.sky, this.side);
+  final double t, sky, side;
+
+  static const _neurons = 34, _sparks = 26, _twinkles = 12;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final u = side; // unidad: el lado del cuadro de la mascota
+
+    // --- Resplandor claro detrás de la mascota (sin él, azul oscuro sobre azul oscuro no se vería) ---
+    final halo = _span(t, 0.70, 0.84);
+    if (halo > 0) {
+      final pulse = 1 + 0.04 * math.sin(sky * 2 * math.pi);
+      final r = u * 0.56 * pulse;
+      canvas.drawCircle(
+        c,
+        r,
+        Paint()
+          ..shader = RadialGradient(colors: [
+            const Color(0xFFDFE7FF).withValues(alpha: 0.92 * halo),
+            const Color(0xFFB9CBFF).withValues(alpha: 0.60 * halo),
+            const Color(0x00B9CBFF),
+          ], stops: const [0.0, 0.62, 1.0]).createShader(Rect.fromCircle(center: c, radius: r)),
+      );
+    }
+
+    // --- Neuronas que llegan en espiral y se funden con la chispa ---
+    final gather = _span(t, 0.0, 0.46);
+    var arrived = 0.0;
+    if (t < 0.50) {
+      for (var i = 0; i < _neurons; i++) {
+        final start = _rnd(i, 1) * 0.55; // cada una sale en su momento
+        final p = _span(gather, start, start + 0.45);
+        if (p <= 0) continue;
+        final e = Curves.easeInCubic.transform(p);
+        arrived += e;
+        if (p >= 1) continue;
+        final a0 = _rnd(i, 2) * 2 * math.pi;
+        final angle = a0 + (1 - e) * (2.2 + _rnd(i, 3) * 1.6) * (i.isEven ? 1 : -1);
+        final dist = u * (0.95 + _rnd(i, 4) * 0.25) * (1 - e);
+        final pos = c + Offset(math.cos(angle), math.sin(angle)) * dist;
+        final color = _neuronColors[i % _neuronColors.length];
+        final r = u * (0.012 + 0.012 * _rnd(i, 5));
+        // Estela: unas copias más tenues por donde acaba de pasar.
+        for (var k = 1; k <= 4; k++) {
+          final pe = Curves.easeInCubic.transform((p - k * 0.035).clamp(0.0, 1.0));
+          final ang = a0 + (1 - pe) * (2.2 + _rnd(i, 3) * 1.6) * (i.isEven ? 1 : -1);
+          final d = u * (0.95 + _rnd(i, 4) * 0.25) * (1 - pe);
+          canvas.drawCircle(c + Offset(math.cos(ang), math.sin(ang)) * d, r * (1 - k * 0.16), Paint()..color = color.withValues(alpha: 0.30 * (1 - k / 5) * math.min(1, p * 6)));
+        }
+        canvas.drawCircle(pos, r * 2.6, Paint()..color = color.withValues(alpha: 0.18 * math.min(1, p * 6)));
+        canvas.drawCircle(pos, r, Paint()..color = color.withValues(alpha: math.min(1, p * 6)));
+      }
+    } else {
+      arrived = _neurons.toDouble();
+    }
+    final fed = arrived / _neurons; // cuánto ha crecido la chispa (0–1)
+
+    // --- Latidos: tres golpes, cada uno suelta un anillo ---
+    final beats = _span(t, 0.46, 0.66);
+    var thump = 0.0;
+    if (beats > 0 && beats < 1) {
+      for (var b = 0; b < 3; b++) {
+        final p = _span(beats, b / 3, (b + 1) / 3);
+        if (p <= 0 || p >= 1) continue;
+        thump = math.max(thump, math.sin(math.min(1.0, p * 2.2) * math.pi)); // golpe rápido al principio
+        canvas.drawCircle(
+          c,
+          u * (0.10 + 0.50 * Curves.easeOut.transform(p)),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = u * 0.016 * (1 - p)
+            ..color = const Color(0xFFFFE45C).withValues(alpha: 0.75 * (1 - p)),
+        );
+      }
+    }
+
+    // --- La chispa: núcleo con resplandor y rayos que giran ---
+    final sparkOut = 1 - _span(t, 0.66, 0.74);
+    if (sparkOut > 0 && (fed > 0 || t < 0.5)) {
+      final appear = Curves.easeOut.transform(_span(t, 0.0, 0.08));
+      final r = u * (0.025 + 0.075 * fed) * appear * (1 + 0.45 * thump) * (1 + 0.06 * math.sin(t * math.pi * 40));
+      if (r > 0) {
+        canvas.drawCircle(
+          c,
+          r * 4.2,
+          Paint()
+            ..shader = RadialGradient(colors: [
+              const Color(0xFFFFE45C).withValues(alpha: 0.65 * sparkOut),
+              const Color(0xFFFFB84A).withValues(alpha: 0.22 * sparkOut),
+              const Color(0x00FFB84A),
+            ], stops: const [0.0, 0.45, 1.0]).createShader(Rect.fromCircle(center: c, radius: r * 4.2)),
+        );
+        final ray = Paint()
+          ..color = const Color(0xFFFFF3B0).withValues(alpha: 0.85 * sparkOut)
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = math.max(1.0, r * 0.16);
+        for (var k = 0; k < 8; k++) {
+          final a = t * 9 + k * math.pi / 4;
+          final len = r * (1.7 + (k.isEven ? 0.9 : 0.3) + 0.5 * thump);
+          canvas.drawLine(c + Offset(math.cos(a), math.sin(a)) * r * 1.15, c + Offset(math.cos(a), math.sin(a)) * len, ray);
+        }
+        canvas.drawCircle(c, r, Paint()..color = const Color(0xFFFFE45C).withValues(alpha: sparkOut));
+        canvas.drawCircle(c, r * 0.55, Paint()..color = Colors.white.withValues(alpha: 0.95 * sparkOut));
+      }
+    }
+
+    // --- Estallido: destello, onda y chispas disparadas ---
+    final burst = _span(t, 0.66, 0.86);
+    if (burst > 0 && burst < 1) {
+      final flash = math.sin(_span(burst, 0, 0.45) * math.pi);
+      if (flash > 0) {
+        final r = u * (0.25 + 0.85 * flash);
+        canvas.drawCircle(
+          c,
+          r,
+          Paint()..shader = RadialGradient(colors: [Colors.white.withValues(alpha: 0.95 * flash), const Color(0x00FFFFFF)]).createShader(Rect.fromCircle(center: c, radius: r)),
+        );
+      }
+      final wave = Curves.easeOut.transform(burst);
+      canvas.drawCircle(
+        c,
+        u * (0.12 + 0.95 * wave),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = u * 0.03 * (1 - burst)
+          ..color = Colors.white.withValues(alpha: 0.8 * (1 - burst)),
+      );
+      for (var i = 0; i < _sparks; i++) {
+        final a = i * 2 * math.pi / _sparks + _rnd(i, 7) * 0.5;
+        final speed = 0.55 + _rnd(i, 8) * 0.6;
+        final d = u * speed * Curves.easeOutCubic.transform(burst);
+        final dir = Offset(math.cos(a), math.sin(a));
+        final gravity = Offset(0, u * 0.22 * burst * burst); // caen un poco
+        final color = _neuronColors[i % _neuronColors.length];
+        final line = Paint()
+          ..color = color.withValues(alpha: 1 - burst)
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = u * 0.012 * (1 - burst * 0.6);
+        canvas.drawLine(c + dir * (d - u * 0.06 * (1 - burst)) + gravity, c + dir * d + gravity, line);
+      }
+    }
+
+    // --- Destellos que se quedan alrededor de la mascota ---
+    final after = _span(t, 0.82, 1.0);
+    if (after > 0) {
+      for (var i = 0; i < _twinkles; i++) {
+        final a = i * 2 * math.pi / _twinkles + _rnd(i, 11) * 0.6;
+        final d = u * (0.52 + 0.20 * _rnd(i, 12));
+        final blink = (0.5 + 0.5 * math.sin((sky + _rnd(i, 13)) * 2 * math.pi)).clamp(0.0, 1.0);
+        _star(canvas, c + Offset(math.cos(a), math.sin(a) * 0.86) * d, u * (0.016 + 0.018 * _rnd(i, 14)) * (0.5 + 0.5 * blink),
+            _neuronColors[i % _neuronColors.length].withValues(alpha: after * (0.35 + 0.65 * blink)));
+      }
+    }
+  }
+
+  /// Una estrellita de cuatro puntas.
+  static void _star(Canvas canvas, Offset c, double r, Color color) {
+    final path = Path();
+    for (var i = 0; i < 8; i++) {
+      final a = -math.pi / 2 + i * math.pi / 4;
+      final d = i.isEven ? r : r * 0.34;
+      final p = c + Offset(math.cos(a) * d, math.sin(a) * d);
+      i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(path..close(), Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_BirthPainter old) => old.t != t || old.sky != sky || old.side != side;
+}
+
+/// El cielo de fondo: estrellas pequeñas que parpadean despacio.
+class _SkyPainter extends CustomPainter {
+  _SkyPainter(this.phase);
+  final double phase;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()
+        ..shader = const RadialGradient(center: Alignment(0, -0.35), radius: 1.1, colors: [Color(0xFF1B3FAF), Color(0xFF0F2A86), Color(0xFF09195A)], stops: [0.0, 0.55, 1.0])
+            .createShader(Offset.zero & size),
+    );
+    for (var i = 0; i < 70; i++) {
+      final pos = Offset(_rnd(i, 21) * size.width, _rnd(i, 22) * size.height);
+      final blink = 0.5 + 0.5 * math.sin((phase + _rnd(i, 23)) * 2 * math.pi);
+      canvas.drawCircle(pos, 0.6 + 1.5 * _rnd(i, 24), Paint()..color = Colors.white.withValues(alpha: 0.12 + 0.55 * blink * _rnd(i, 25)));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SkyPainter old) => old.phase != phase;
 }
 
 /// Cambiar el nombre de la mascota más adelante (Ajustes → Brainy).

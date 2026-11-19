@@ -194,7 +194,7 @@ void main() {
 
     testWidgets('la animación entera corre sin errores y termina en la pregunta', (tester) async {
       await _open(tester, _Server(), reduceMotion: false);
-      for (var i = 0; i < 50; i++) {
+      for (var i = 0; i < 70; i++) {
         await tester.pump(const Duration(milliseconds: 100));
         expect(tester.takeException(), isNull);
       }
