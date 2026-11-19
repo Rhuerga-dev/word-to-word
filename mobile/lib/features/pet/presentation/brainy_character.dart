@@ -166,11 +166,19 @@ class BrainModel implements BrainGraph {
 /// ángulo de vista y las mismas tres capas de profundidad. Aquí no gira: la vista se calcula una sola vez.
 /// Lleva menos neuronas que el panel (el teléfono lo dibuja en un espacio mucho más pequeño).
 class Brain3D implements BrainGraph {
-  Brain3D._(this.count) {
+  Brain3D._(this.count, {this.yaw = -0.95, this.pitch = 0.22}) {
     _build();
   }
 
+  /// La vista del panel al abrirse (de tres cuartos).
   static final Brain3D instance = Brain3D._(1500);
+
+  /// Visto DE FRENTE, un poco desde arriba: los dos hemisferios con la cisura en medio.
+  /// Es el que hace de cabeza del personaje.
+  static final Brain3D front = Brain3D._(1700, yaw: 0, pitch: 0.16);
+
+  /// Giro horizontal e inclinación de la vista.
+  final double yaw, pitch;
 
   @override
   final int count;
@@ -275,7 +283,7 @@ class Brain3D implements BrainGraph {
     }
 
     // La vista del panel al abrirse: giro −0,95, inclinación 0,22. Lo cercano, más grande.
-    const yaw = -0.95, pitch = 0.22, dist = 3.4;
+    const dist = 3.4;
     final cy = math.cos(yaw), syw = math.sin(yaw), cp = math.cos(pitch), sp = math.sin(pitch);
     final n = xs.length;
     sx = Float32List(n);
@@ -412,10 +420,14 @@ enum BrainyPose { main, newborn }
 
 /// El personaje. [color] es el del cuerpo; [lit] (0–1) cuánto cerebro está encendido; [signals] las señales.
 class BrainyCharacterPainter extends CustomPainter {
-  BrainyCharacterPainter({required this.color, this.pose = BrainyPose.main, this.lit = 1, this.signals, this.blink = 0, this.brain3d = false, super.repaint});
+  BrainyCharacterPainter({required this.color, this.pose = BrainyPose.main, this.lit = 1, this.signals, this.blink = 0, this.brain3d = false, this.headBrain = false, super.repaint});
 
   /// true = el cerebro 3D del panel dentro de la cúpula; false = el cerebro dibujado con surcos.
   final bool brain3d;
+
+  /// true = el cerebro ES la cabeza: el cuerpo llega hasta encima de los ojos y, de ahí para arriba, el cerebro 3D
+  /// visto de frente dentro de un cráneo de cristal. (Las señales deben viajar por [Brain3D.front].)
+  final bool headBrain;
 
   final Color color;
   final BrainyPose pose;
@@ -448,20 +460,22 @@ class BrainyCharacterPainter extends CustomPainter {
     final light = _shade(color, 0.16), dark = _shade(color, -0.20), darker = _shade(color, -0.27);
     final limb = Paint()..shader = ui.Gradient.linear(const Offset(0, 150), const Offset(0, 320), [_shade(color, 0.04), dark]);
 
-    // Antena con la chispa de la que nació.
-    canvas.drawPath(
-      Path()
-        ..moveTo(200, 120)
-        ..cubicTo(200, 108, 196, 100, 200, 90),
-      Paint()
-        ..color = _shade(color, 0.28)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawCircle(const Offset(200, 78), 30, Paint()..shader = ui.Gradient.radial(const Offset(200, 78), 30, [const Color(0xE6FFE45C), const Color(0x00FFE45C)]));
-    canvas.drawCircle(const Offset(200, 78), newborn ? 15 : 11, Paint()..color = const Color(0xFFFFE45C));
-    canvas.drawCircle(const Offset(196, 74), 4, Paint()..color = const Color(0xE6FFFFFF));
+    if (!headBrain) {
+      // Antena con la chispa de la que nació.
+      canvas.drawPath(
+        Path()
+          ..moveTo(200, 120)
+          ..cubicTo(200, 108, 196, 100, 200, 90),
+        Paint()
+          ..color = _shade(color, 0.28)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round,
+      );
+      canvas.drawCircle(const Offset(200, 78), 30, Paint()..shader = ui.Gradient.radial(const Offset(200, 78), 30, [const Color(0xE6FFE45C), const Color(0x00FFE45C)]));
+      canvas.drawCircle(const Offset(200, 78), newborn ? 15 : 11, Paint()..color = const Color(0xFFFFE45C));
+      canvas.drawCircle(const Offset(196, 74), 4, Paint()..color = const Color(0xE6FFFFFF));
+    }
 
     if (!newborn) {
       // Pies y brazos.
@@ -477,47 +491,104 @@ class BrainyCharacterPainter extends CustomPainter {
       }
     }
 
-    // Cuerpo.
-    final body = RRect.fromRectAndRadius(const Rect.fromLTWH(86, 106, 228, 272), const Radius.circular(112));
-    canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(200, 100), const Offset(200, 380), [light, color, dark], const [0, 0.45, 1]));
-    canvas.drawOval(
-      Rect.fromCenter(center: const Offset(200, 318), width: 160, height: 116),
-      Paint()..shader = ui.Gradient.radial(const Offset(200, 318), 80, [Colors.white.withValues(alpha: 0.30), Colors.white.withValues(alpha: 0)]),
-    );
-
-    // Cúpula de cristal.
-    final dome = RRect.fromRectAndRadius(const Rect.fromLTWH(110, 120, 180, 118), const Radius.circular(59));
-    canvas.drawRRect(dome, Paint()..shader = ui.Gradient.radial(const Offset(200, 170), 110, [const Color(0xFF1B2760), const Color(0xFF070B24)]));
-    canvas.save();
-    canvas.clipRRect(dome.deflate(3));
-    if (brain3d) {
-      // Ampliado para llenar la cúpula de lado a lado: el tronco y parte del borde quedan fuera, recortados por el cristal.
-      _paintBrain3D(canvas, const Offset(203, 188), 93);
-    } else {
-      _paintBrain(canvas, const Offset(200, 180), 66);
-    }
-    canvas.restore();
-    canvas.drawRRect(
-      dome,
-      Paint()
+    final faceDy = headBrain ? -14.0 : 0.0; // en la versión «cerebro = cabeza» la cara sube un poco
+    if (headBrain) {
+      // La cabeza ES el cerebro: su contorno son los dos hemisferios (dos lóbulos redondos con la muesca en medio),
+      // como un cráneo de cristal que el cerebro llena entero. Va DETRÁS del cuerpo: el cuerpo tapa la mitad de
+      // abajo y el borde queda justo encima de los ojos.
+      final skull = Path.combine(
+        PathOperation.union,
+        Path()..addOval(Rect.fromCenter(center: const Offset(150, 228), width: 146, height: 212)),
+        Path()..addOval(Rect.fromCenter(center: const Offset(250, 228), width: 146, height: 212)),
+      );
+      canvas.drawPath(skull, Paint()..shader = ui.Gradient.radial(const Offset(200, 200), 150, [const Color(0xFF1E2B6A), const Color(0xFF080D2A)]));
+      canvas.save();
+      canvas.clipPath(skull);
+      _paintBrain3D(canvas, const Offset(200, 240), 150, Brain3D.front);
+      canvas.restore();
+      canvas.drawPath(
+        skull,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..strokeJoin = StrokeJoin.round
+          ..color = _shade(color, 0.34).withValues(alpha: 0.9),
+      );
+      final shine = Paint()
+        ..color = Colors.white.withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..color = _shade(color, 0.34).withValues(alpha: 0.85),
-    );
-    final shine = Paint()
-      ..color = Colors.white.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(
-      Path()
-        ..moveTo(128, 164)
-        ..cubicTo(132, 142, 150, 130, 172, 128),
-      shine,
-    );
-    canvas.drawCircle(const Offset(184, 128), 3, Paint()..color = Colors.white.withValues(alpha: 0.55));
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPath(
+        Path()
+          ..moveTo(90, 206)
+          ..cubicTo(92, 172, 108, 146, 134, 136),
+        shine,
+      );
+      canvas.drawCircle(const Offset(147, 132), 3, Paint()..color = Colors.white.withValues(alpha: 0.5));
+
+      // Cuerpo: empieza justo encima de los ojos.
+      final body = RRect.fromLTRBAndCorners(84, 232, 316, 378,
+          topLeft: const Radius.circular(34), topRight: const Radius.circular(34), bottomLeft: const Radius.elliptical(114, 112), bottomRight: const Radius.elliptical(114, 112));
+      canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(200, 232), const Offset(200, 380), [light, color, dark], const [0, 0.4, 1]));
+      // El borde donde el cráneo se apoya en el cuerpo.
+      canvas.drawLine(
+        const Offset(102, 236),
+        const Offset(298, 236),
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.35)
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(center: const Offset(200, 322), width: 160, height: 100),
+        Paint()..shader = ui.Gradient.radial(const Offset(200, 322), 80, [Colors.white.withValues(alpha: 0.26), Colors.white.withValues(alpha: 0)]),
+      );
+    } else {
+      // Cuerpo.
+      final body = RRect.fromRectAndRadius(const Rect.fromLTWH(86, 106, 228, 272), const Radius.circular(112));
+      canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(200, 100), const Offset(200, 380), [light, color, dark], const [0, 0.45, 1]));
+      canvas.drawOval(
+        Rect.fromCenter(center: const Offset(200, 318), width: 160, height: 116),
+        Paint()..shader = ui.Gradient.radial(const Offset(200, 318), 80, [Colors.white.withValues(alpha: 0.30), Colors.white.withValues(alpha: 0)]),
+      );
+
+      // Cúpula de cristal.
+      final dome = RRect.fromRectAndRadius(const Rect.fromLTWH(110, 120, 180, 118), const Radius.circular(59));
+      canvas.drawRRect(dome, Paint()..shader = ui.Gradient.radial(const Offset(200, 170), 110, [const Color(0xFF1B2760), const Color(0xFF070B24)]));
+      canvas.save();
+      canvas.clipRRect(dome.deflate(3));
+      if (brain3d) {
+        // Ampliado para llenar la cúpula de lado a lado: el tronco y parte del borde quedan fuera, recortados por el cristal.
+        _paintBrain3D(canvas, const Offset(203, 188), 93);
+      } else {
+        _paintBrain(canvas, const Offset(200, 180), 66);
+      }
+      canvas.restore();
+      canvas.drawRRect(
+        dome,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..color = _shade(color, 0.34).withValues(alpha: 0.85),
+      );
+      final shine = Paint()
+        ..color = Colors.white.withValues(alpha: 0.55)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPath(
+        Path()
+          ..moveTo(128, 164)
+          ..cubicTo(132, 142, 150, 130, 172, 128),
+        shine,
+      );
+      canvas.drawCircle(const Offset(184, 128), 3, Paint()..color = Colors.white.withValues(alpha: 0.55));
+    }
 
     // Cara.
+    canvas.save();
+    canvas.translate(0, faceDy);
     final cheek = Paint()..color = const Color(0x99FF8FB1);
     canvas.drawOval(Rect.fromCenter(center: const Offset(136, 306), width: 30, height: 20), cheek);
     canvas.drawOval(Rect.fromCenter(center: const Offset(264, 306), width: 30, height: 20), cheek);
@@ -561,6 +632,7 @@ class BrainyCharacterPainter extends CustomPainter {
         white,
       );
     }
+    canvas.restore(); // faceDy
     canvas.restore();
   }
 
@@ -657,8 +729,8 @@ class BrainyCharacterPainter extends CustomPainter {
   /// El cerebro 3D del panel, dibujado igual que allí: conexiones tenues por región, cada neurona con un halo
   /// suave y un centro vivo, más apagado cuanto más al fondo, y las luces se SUMAN donde se juntan.
   /// [r] = cuántas unidades de la hoja mide «1» del cerebro (su medio largo).
-  void _paintBrain3D(Canvas canvas, Offset c, double r) {
-    final m = Brain3D.instance;
+  void _paintBrain3D(Canvas canvas, Offset c, double r, [Brain3D? model]) {
+    final m = model ?? Brain3D.instance;
     canvas.save();
     canvas.translate(c.dx, c.dy);
     canvas.scale(r);
@@ -673,11 +745,12 @@ class BrainyCharacterPainter extends CustomPainter {
       ..blendMode = BlendMode.plus;
     for (var p = 0; p < 5; p++) {
       final base = brainRegionColors[p];
-      lines.color = base.withValues(alpha: 0.16);
+      lines.color = base.withValues(alpha: r > 120 ? 0.26 : 0.16);
       canvas.drawRawPoints(ui.PointMode.lines, m.linesByRegion[p], lines);
       for (var b = 0; b < 3; b++) {
         final pts = m.pointsByRegionBand[p][b];
-        final size = (0.62 + 0.10 * b) * unit; // lo cercano, un poco más grande
+        // Lo cercano, un poco más grande. Cuanto más ampliado va el cerebro, más gruesa cada neurona (si no, queda ralo).
+        final size = (0.62 + 0.10 * b) * unit * math.max(1.0, r / 92);
         dots
           ..color = base.withValues(alpha: halo[b])
           ..strokeWidth = size * 2.6 * 2;
