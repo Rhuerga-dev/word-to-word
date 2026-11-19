@@ -8,13 +8,18 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 276 ✓ (19/11), app 181 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **24** (19/11).
+- Tests: servidor 276 ✓ (19/11), app 181 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **25** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Nacimiento de Brainy, segunda versión** (a Reynaldo la primera le pareció «vaga»): cielo con estrellas que parpadean,
+  34 neuronas de colores que llegan en espiral y hacen crecer la chispa, tres latidos con anillos, estallido (destello, onda y chispas)
+  y la mascota aparece con un rebote y destellos alrededor. 6,2 s; `_BirthPainter` y `_SkyPainter` en `pet_birth.dart` (todo con
+  `CustomPainter`, números «al azar» fijos). Commit `ba72d6e`, **parche 25**, iPhone Air reinstalado. Revisada en un GIF hecho cuadro
+  a cuadro; **no vista en un teléfono real**. Si aún se queda corta: opción Lottie o Rive (ver Decisiones).
 - (19/11) **Brainy nace, le pones nombre y te avisa con su voz** (idea de Reynaldo; **para todos los alumnos**, no solo el grupo
   «brainy» del experimento). Commit `9c05cf1`, **parche 24** (dry-run «No issues detected»), iPhone Air reinstalado (19/11).
   **Servidor:** `pets.name` y `pets.welcomed_at` (migración solo aditiva, **aplicada el 19/11**; copia en
@@ -229,6 +234,10 @@ _Última actualización: 2026-11-19_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (19/11) Animaciones de Brainy: por ahora con código (sin archivos nuevos → parche). Para más calidad: **Lottie** (After Effects o
+  LottieFiles → JSON; el paquete `lottie` de Flutter parece ser solo Dart, **por comprobar**) o **Rive** (el mejor para mascotas
+  interactivas, pero su motor es nativo → versión nueva en Play). Un archivo de animación nuevo es un asset: no cabe en un parche
+  salvo que se baje del servidor.
 - (19/11) Cada alumno nombra a su mascota; «Brainy» sigue siendo la marca y el nombre por defecto. El nacimiento y los avisos con su
   voz son **para todos** (aunque eso acerque los dos grupos del experimento A/B: con tan pocos alumnos no iba a concluir pronto).
   El nombre solo lo ve su dueño (si algún día sale en la liga, habrá que filtrar palabras).
