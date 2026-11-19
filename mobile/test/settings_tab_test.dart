@@ -98,8 +98,13 @@ void main() {
     await settle();
     expect(find.text('Avisarme si no he estudiado'), findsOneWidget);
     expect(find.text('Salir'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Enviar sugerencia'), 300, scrollable: find.byType(Scrollable).last);
+    expect(find.byKey(const ValueKey('suggestion-tile')), findsOneWidget);
     await tester.scrollUntilVisible(find.text('Borrar mi cuenta'), 300, scrollable: find.byType(Scrollable).last);
     expect(find.text('Borrar mi cuenta'), findsOneWidget);
+    // «Acerca de»: la versión y huergalabs.dev, sin hablar de pagos.
+    await tester.scrollUntilVisible(find.textContaining('huergalabs.dev'), 300, scrollable: find.byType(Scrollable).last);
+    expect(find.textContaining('huergalabs.dev'), findsOneWidget);
 
     await tester.tap(find.descendant(of: nav, matching: find.text('Progreso')));
     await settle();

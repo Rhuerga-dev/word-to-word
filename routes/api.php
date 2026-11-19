@@ -77,6 +77,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tts', [\App\Http\Controllers\Api\TtsController::class, 'show'])->middleware('throttle:240,1');
 
     Route::post('/conversation', [ConversationController::class, 'store'])->middleware('throttle:30,1');
+    // Sugerencias de los alumnos: 5 cada 10 minutos, y además un tope diario por alumno (en el controlador).
+    Route::post('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'store'])->middleware('throttle:5,10');
     Route::get('/progress', \App\Http\Controllers\Api\ProgressController::class);
     Route::get('/pet', \App\Http\Controllers\Api\PetController::class)->middleware('throttle:60,1');
     Route::post('/pet/{action}', [\App\Http\Controllers\Api\PetController::class, 'act'])

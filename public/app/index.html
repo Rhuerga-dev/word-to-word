@@ -125,6 +125,7 @@ aside{display:grid;gap:16px}
 label.inl{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
 input[type=number]{width:72px;font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .confirm{display:grid;gap:8px;border:1px solid var(--bad);border-radius:6px;padding:10px;font-size:14px}
+.fb-box{display:grid;gap:8px;border:1px solid var(--line);border-radius:6px;padding:10px;font-size:14px}
 .sync{font-size:12px;color:var(--muted);font-family:var(--mono)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
@@ -838,6 +839,14 @@ body:not([data-nav="progress"]) .grid{max-width:none}
           <label class="inl" for="remTime">Hora del recordatorio <input type="time" id="remTime" value="19:00"></label>
           <p class="note" id="remMsg"></p>
           <button id="nextDay" type="button">Adelantar un día (para probar)</button>
+          <div class="row" id="fbRow"><button type="button" data-fb="open">💡 Enviar sugerencia</button></div>
+          <div id="fbBox" hidden class="fb-box">
+            <label class="inl" for="fbType">¿Qué es? <select id="fbType" style="width:auto"><option value="idea">Una idea</option><option value="bug">Algo no funciona</option><option value="other">Otra cosa</option></select></label>
+            <textarea id="fbText" maxlength="2000" rows="4" placeholder="Cuéntame tu idea o lo que no funciona…" aria-label="Tu sugerencia"></textarea>
+            <div class="row"><button type="button" class="primary" id="fbSend" data-fb="send">Enviar</button><button type="button" data-fb="cancel">Cancelar</button></div>
+            <p class="note" id="fbMsg" aria-live="polite"></p>
+          </div>
+          <p class="note" id="supportLink" hidden><a href="/apoyo" target="_blank" rel="noopener">☕ Apoya mi desarrollo con un café</a></p>
           <details class="advanced"><summary>Opciones avanzadas</summary>
           <button id="resetBtn" type="button">Reiniciar progreso</button>
           <div id="confirmBox" hidden class="confirm">
@@ -936,12 +945,13 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 </div>
 
 <script src="/app/i18n.js?v=5"></script>
-<script src="/app/app.js?v=20"></script>
+<script src="/app/app.js?v=21"></script>
 <script src="/app/handsfree.js?v=2"></script>
 <script src="/app/lab.js?v=1"></script>
 <script src="/app/speak.js?v=14"></script>
 <script src="/app/progress.js?v=5"></script>
 <script src="/app/today.js?v=7"></script>
 <script src="/app/mictest.js?v=3"></script>
+<script src="/app/feedback.js?v=1"></script>
 <script src="/app/boot.js?v=2"></script>
 </body></html>

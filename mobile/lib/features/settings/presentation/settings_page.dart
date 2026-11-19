@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/env.dart';
 import '../../../core/l10n/tr.dart';
 import '../../../core/services/airpods_service.dart';
 import '../../../core/services/audio_service.dart';
@@ -13,6 +14,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../auth/data/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/profession_picker.dart';
+import '../../feedback/presentation/suggestion_dialog.dart';
 import '../../progress/presentation/progress_providers.dart';
 import '../../spanish/data/spanish_repository.dart';
 
@@ -48,6 +50,18 @@ class SettingsPage extends ConsumerWidget {
         _h(tr('AirPods')),
         const _AirPodsMicCard(),
       ],
+      _h(tr('Tu opinión')),
+      Card(
+        child: ListTile(
+          key: const ValueKey('suggestion-tile'),
+          // Emoji (es texto) en vez de un icono nuevo: así cabe en un parche de Shorebird.
+          leading: const Text('💡', style: TextStyle(fontSize: 22)),
+          title: Text(tr('Enviar sugerencia')),
+          subtitle: Text(tr('Una idea, algo que no funciona o lo que quieras contarme.')),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => showDialog<void>(context: context, builder: (_) => const SuggestionDialog(screen: 'settings')),
+        ),
+      ),
       const SizedBox(height: 28),
       Center(
         child: TextButton.icon(
@@ -57,6 +71,9 @@ class SettingsPage extends ConsumerWidget {
           label: Text(tr('Borrar mi cuenta')),
         ),
       ),
+      const SizedBox(height: 12),
+      // Acerca de: solo la versión y quién hace la app.
+      Center(child: Text('W2W ${appVersion.split('+').first} · huergalabs.dev', style: const TextStyle(color: W.muted, fontSize: 13))),
     ]);
   }
 

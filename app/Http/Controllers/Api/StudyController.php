@@ -32,6 +32,8 @@ class StudyController extends Controller
             'pictures' => app(\App\Services\PictureService::class)->enabled(),
             // El formulario de registro pide el código de invitación.
             'invite_required' => (bool) config('vocab.invites_required'),
+            // La web enseña el enlace a /apoyo solo si hay Zelle o PayPal configurados.
+            'support' => \App\Http\Controllers\SupportController::enabled(),
         ];
     }
 

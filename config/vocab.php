@@ -140,6 +140,12 @@ return [
         'region' => env('AZURE_SPEECH_REGION') ?: 'eastus',
     ],
 
+    // Página /apoyo («Apoya mi desarrollo con un café»). Si faltan los dos, la página y su enlace no se muestran.
+    'support' => [
+        'zelle' => env('SUPPORT_ZELLE'),             // correo o teléfono de Zelle (EE. UU.)
+        'paypal_url' => env('SUPPORT_PAYPAL_URL'),   // https://paypal.me/… (resto del mundo)
+    ],
+
     // Escenas AID escritas de antemano (sin IA). Las palabras que no estén se piden a la IA.
     'aids_bank' => database_path('content/aids.json'),
 ];

@@ -19,3 +19,6 @@ button{margin-top:18px;width:100%;padding:14px;border:0;border-radius:12px;backg
 button[disabled]{opacity:.6;cursor:default}
 .msg{margin-top:14px;font-weight:600}
 .msg.bad{color:var(--bad)}.msg.ok{color:var(--good)}
+
+/* Página /apoyo: el dato de Zelle y el enlace de PayPal, bien visibles. */
+.pay{font-size:20px;font-weight:700;word-break:break-word}

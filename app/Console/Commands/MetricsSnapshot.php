@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Services\DemoService;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -66,14 +67,34 @@ class MetricsSnapshot extends Command
             'daily' => $daily,
             // Capa 2 (¿aprenden?): aciertos por habilidad, dónde se atascan y racha. Separado para no tocar lo de arriba.
             'learning' => $this->learning($demoIds, $today),
+            // Sugerencias de los alumnos (solo cifras). Bloque aparte: no toca nada de lo de arriba.
+            'suggestions' => $this->suggestions(),
         ];
+    }
+
+    /** Cuántas sugerencias hay sin mirar (el panel avisa) y cuántas llegaron. Si la tabla aún no existe: ceros. */
+    private function suggestions(): array
+    {
+        try {
+            $q = fn () => DB::table('suggestions');
+            $byType = $q()->where('status', 'new')->selectRaw('type, count(*) as n')->groupBy('type')->pluck('n', 'type');
+
+            return [
+                'new' => (int) $q()->where('status', 'new')->count(),
+                'new_by_type' => ['idea' => (int) ($byType['idea'] ?? 0), 'bug' => (int) ($byType['bug'] ?? 0), 'other' => (int) ($byType['other'] ?? 0)],
+                'last_7d' => (int) $q()->where('created_at', '>=', now()->subDays(7))->count(),
+                'total' => (int) $q()->count(),
+            ];
+        } catch (\Throwable) {
+            return ['new' => 0, 'new_by_type' => ['idea' => 0, 'bug' => 0, 'other' => 0], 'last_7d' => 0, 'total' => 0];
+        }
     }
 
     /**
      * Señales de aprendizaje (sin datos personales): aciertos de Oído/Vocabulario/Hablar,
      * las palabras que más se fallan y cómo va la racha. Los de la demo no cuentan.
      *
-     * @param  \Illuminate\Support\Collection<int, int>  $demoIds
+     * @param  Collection<int, int>  $demoIds
      */
     private function learning($demoIds, CarbonImmutable $today): array
     {
