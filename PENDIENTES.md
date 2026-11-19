@@ -8,13 +8,28 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 268 ✓ (19/11), app 165 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **23** (19/11).
+- Tests: servidor 276 ✓ (19/11), app 181 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **24** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Brainy nace, le pones nombre y te avisa con su voz** (idea de Reynaldo; **para todos los alumnos**, no solo el grupo
+  «brainy» del experimento). Commit `9c05cf1`, **parche 24** (dry-run «No issues detected»), iPhone Air reinstalado (19/11).
+  **Servidor:** `pets.name` y `pets.welcomed_at` (migración solo aditiva, **aplicada el 19/11**; copia en
+  `~/Backups/w2w/database-2026-11-19-antes-nombre-mascota.sqlite`). `GET /api/pet` añade `named` y `welcomed`; `PUT /api/pet/name`
+  (throttle 10/min) guarda el nombre (2–20 letras, números, espacios, `-` y `'`; `PetService::NAME_RULE`) o, con `null`, apunta «luego».
+  «Brainy» como nombre = volver al de siempre. Reiniciar progreso borra la mascota: vuelve a nacer.
+  **App:** `pet_birth.dart` → `PetBirthPage`, a pantalla completa y **una sola vez** (la lanza `home_shell.dart` cuando
+  `pet.welcomed == false`): una chispa aparece y late, un destello, y la mascota crece desde ella (4,2 s; tocar la adelanta; con
+  «Reducir movimiento» sale ya formada). Pregunta «¿Cómo me quieres llamar?»; con nombre dice «¡Me llamo X! Tengo hambre de palabras.
+  ¿Me enseñas la primera?» y «Empezar» cierra (vuelve a Hoy; **no abre el ejercicio directamente**). «Luego» = se queda como Brainy.
+  Alumnos de antes (mascota ya crecida): misma animación con «¡Hola! Soy tu mascota.». Ajustes → Brainy → «Nombre de tu mascota»
+  (`PetNameDialog`). Con servidor viejo no sale nada. **Avisos:** `ReminderService.messages(nombre)`: el recordatorio diario local lo
+  dice la mascota («Luna tiene hambre de palabras»…), 4 textos sin culpa (hay test); sigue siendo UN aviso al día a la hora elegida.
+  El aviso por web push (iPhone en la web) no cambió: la web no tiene Brainy. +8 tests servidor (`PetNameTest`), +16 app
+  (`pet_birth_test.dart`). Revisado en imágenes de 4 momentos de la animación; **no probado en un teléfono real**.
 - (19/11) **Ritmo de estudio** (tras revisar la metodología): (1) **Freno de palabras nuevas**: con MÁS de 20 repasos atrasados
   (`vocab.new_pause_reviews`, `VOCAB_NEW_PAUSE_REVIEWS`; 0 = sin freno) `SrsService::queue` no ofrece palabras nuevas hasta ponerse al
   día; `/api/today` y `/api/session/today` añaden `new_paused` y `reviews_due`. Brainy «Comer» manda a repasar. (2) **Reaprender el
@@ -139,6 +154,10 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Ver nacer a Brainy y ponerle nombre**: al abrir la app (Android: 2 veces, parche 24; iPhone ya reinstalado) debe salir la
+  animación una sola vez. Fijarse en: si la animación se ve fluida, si el teclado tapa el botón, y que mañana el recordatorio llegue
+  con el nombre que le pusiste. Para volver a verla: «Reiniciar progreso» la borra (¡borra también tu progreso!); mejor pedir a Claude
+  que ponga `welcomed_at` a null en tu fila de `pets`.
 - [ ] Android (parche 22, abrir la app 2 veces): con audífonos Bluetooth, **Ajustes → Audífonos → Micrófono de los audífonos**.
   Encenderlo, guardar el teléfono y hacer un ejercicio de hablar. Fijarse en: si te entiende desde el principio de la frase, cuánto
   baja la calidad de la voz y si se quita la cancelación de ruido. Si va mal, dejarlo apagado (así viene) y avisar.
@@ -183,6 +202,8 @@ _Última actualización: 2026-11-19_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Brainy en el flujo (siguiente de la idea de Reynaldo): que reaccione al terminar la sesión (resumen con ella) y, con cuidado de
+  no frenar el ritmo, tras cada ejercicio. Y que «Empezar» de la bienvenida abra directamente el primer ejercicio.
 - [ ] **Metodología (revisión del 19/11):** el diseño es correcto (FSRS-4.5 bien implementado, recordar activo, Oído, shadowing, errores
   propios espaciados) pero **no hay datos para decir que funciona**: solo un alumno activo (Reynaldo, 8 días; 85 % de aciertos en
   repasos). Falta: (a) **decir en pantalla por qué hoy no hay palabras nuevas** (el servidor ya manda `new_paused`; ni la web ni la app
@@ -208,6 +229,9 @@ _Última actualización: 2026-11-19_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (19/11) Cada alumno nombra a su mascota; «Brainy» sigue siendo la marca y el nombre por defecto. El nacimiento y los avisos con su
+  voz son **para todos** (aunque eso acerque los dos grupos del experimento A/B: con tan pocos alumnos no iba a concluir pronto).
+  El nombre solo lo ve su dueño (si algún día sale en la liga, habrá que filtrar palabras).
 - (19/11) Primero ponerse al día, luego palabras nuevas (freno a los 20 repasos atrasados). Lo que se olvida se reaprende el mismo día.
 - (19/11) Si Brainy gana protagonismo se decide con datos: experimento A/B con «práctica real» y «aprendizaje» como métricas
   principales, no los clics en Brainy. El alumno siempre puede cambiar el modo y su elección se respeta.
