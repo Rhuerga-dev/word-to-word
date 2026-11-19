@@ -16,6 +16,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/profession_picker.dart';
 import '../../feedback/presentation/suggestion_dialog.dart';
 import '../../pet/presentation/pet_birth.dart';
+import '../../pet/presentation/pet_cloud.dart';
 import '../../pet/presentation/pet_providers.dart';
 import '../../progress/presentation/progress_providers.dart';
 import '../../spanish/data/spanish_repository.dart';
@@ -45,6 +46,7 @@ class SettingsPage extends ConsumerWidget {
       _h('Brainy'),
       const _BrainyModeCard(),
       const _PetNameCard(),
+      const _PetColorCard(),
       if (Platform.isAndroid) ...[
         _h(tr('Audífonos')),
         const HeadsetMicCard(),
@@ -488,6 +490,27 @@ class _PetNameCard extends ConsumerWidget {
         subtitle: Text(pet.name),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => showDialog<void>(context: context, builder: (_) => PetNameDialog(pet: pet)),
+      ),
+    );
+  }
+}
+
+/// El color de la mascota (lo elige el alumno; nace de color neutro).
+class _PetColorCard extends ConsumerWidget {
+  const _PetColorCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pet = ref.watch(petProvider).valueOrNull;
+    if (pet == null) return const SizedBox.shrink();
+    return Card(
+      child: ListTile(
+        key: const ValueKey('pet-color-tile'),
+        title: Text(tr('Color de tu mascota')),
+        subtitle: Text(BrainyColors.nameOf(pet.color)),
+        leading: Container(width: 28, height: 28, decoration: BoxDecoration(shape: BoxShape.circle, color: BrainyColors.of(pet.color))),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => showDialog<void>(context: context, builder: (_) => PetColorDialog(pet: pet)),
       ),
     );
   }

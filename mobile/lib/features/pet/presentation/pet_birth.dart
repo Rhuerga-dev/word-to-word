@@ -7,6 +7,7 @@ import '../../../core/l10n/tr.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/pet.dart';
 import '../data/pet_repository.dart';
+import 'pet_cloud.dart';
 import 'pet_figure.dart';
 import 'pet_providers.dart';
 
@@ -31,7 +32,9 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with TickerProvider
   final _name = TextEditingController();
   bool _started = false, _busy = false;
   String _msg = '';
-  String? _savedName; // con nombre puesto: pantalla final («tiene hambre de palabras»)
+  String? _savedName; // el nombre que le puso (null = dijo «luego»)
+  bool _choosingColor = false; // segundo paso: elegir su color
+  late String? _color = widget.pet.color; // el color elegido (null = el neutro con el que nace)
 
   @override
   void didChangeDependencies() {
@@ -74,20 +77,34 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with TickerProvider
     try {
       final pet = await repo.rename(name);
       if (!mounted) return;
-      if (name == null) {
-        _close();
-      } else {
-        setState(() => _savedName = pet?.name ?? name);
-      }
+      setState(() {
+        _savedName = name == null ? null : (pet?.name ?? name);
+        _choosingColor = true;
+      });
     } catch (e) {
       if (!mounted) return;
       if (name == null) {
-        _close(); // «Luego» nunca se queda atascado: si no se pudo apuntar, se preguntará otro día
+        // «Luego» nunca se queda atascado: si no se pudo apuntar, se preguntará otro día. Sigue al color.
+        setState(() => _choosingColor = true);
       } else {
         setState(() => _msg = '$e');
       }
     }
     if (mounted) setState(() => _busy = false);
+  }
+
+  /// Elige un color: la mascota cambia al momento y se guarda en el servidor. Si falla, se dice y se puede reintentar.
+  Future<void> _pick(String? color) async {
+    final repo = ref.read(petRepositoryProvider);
+    setState(() {
+      _color = color;
+      _msg = '';
+    });
+    try {
+      await repo.recolor(color);
+    } catch (e) {
+      if (mounted) setState(() => _msg = '$e');
+    }
   }
 
   void _close() {
@@ -120,7 +137,7 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with TickerProvider
                   builder: (context, _) {
                     final t = _birth.value;
                     return Column(mainAxisSize: MainAxisSize.min, children: [
-                      SizedBox.square(dimension: side, child: _BirthScene(t: t, sky: _sky.value, pet: widget.pet, size: side)),
+                      SizedBox.square(dimension: side, child: _BirthScene(t: t, sky: _sky.value, pet: widget.pet.copyWith(color: _color, keepColor: false), size: side)),
                       const SizedBox(height: 18),
                       // La pregunta aparece cuando la mascota ya está formada.
                       IgnorePointer(
@@ -128,7 +145,7 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with TickerProvider
                         child: AnimatedOpacity(
                           opacity: t >= 1 ? 1 : 0,
                           duration: const Duration(milliseconds: 350),
-                          child: _savedName == null ? _question() : _hungry(_savedName!),
+                          child: _choosingColor ? _colorStep() : _question(),
                         ),
                       ),
                     ]);
@@ -184,19 +201,56 @@ class _PetBirthPageState extends ConsumerState<PetBirthPage> with TickerProvider
     ]);
   }
 
-  /// Ya tiene nombre: invita a empezar. La bienvenida termina en estudiar, no en mirar a la mascota.
-  Widget _hungry(String name) {
+  /// Segundo paso: elegir su color. Nace de color neutro; al tocar un color cambia al momento. Termina
+  /// invitando a empezar: la bienvenida acaba en estudiar, no en mirar a la mascota.
+  Widget _colorStep() {
     return Column(mainAxisSize: MainAxisSize.min, children: [
-      Text(tr('¡Me llamo {0}!', [name]), textAlign: TextAlign.center, style: W.display(24, color: Colors.white)),
+      Text(_savedName != null ? tr('¡Me llamo {0}!', [_savedName]) : tr('¡Hola! Soy Brainy.'), textAlign: TextAlign.center, style: W.display(24, color: Colors.white)),
       const SizedBox(height: 6),
-      Text(tr('Tengo hambre de palabras. ¿Me enseñas la primera?'), textAlign: TextAlign.center, style: const TextStyle(color: W.mist, fontSize: 17)),
-      const SizedBox(height: 18),
+      Text(tr('¿De qué color quieres que sea?'), textAlign: TextAlign.center, style: const TextStyle(color: W.mist, fontSize: 17)),
+      const SizedBox(height: 14),
+      PetColorPicker(selected: _color, onPick: _pick, ring: Colors.white),
+      if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_msg, textAlign: TextAlign.center, style: const TextStyle(color: W.yellow))),
+      const SizedBox(height: 14),
+      Text(tr('Tengo hambre de palabras. ¿Me enseñas la primera?'), textAlign: TextAlign.center, style: const TextStyle(color: W.mist, fontSize: 16)),
+      const SizedBox(height: 12),
       FilledButton(
         key: const ValueKey('pet-birth-start'),
         style: FilledButton.styleFrom(backgroundColor: W.yellow, foregroundColor: W.yellowInk, shape: const StadiumBorder(), minimumSize: const Size(220, 52)),
         onPressed: _close,
         child: Text(tr('Empezar')),
       ),
+    ]);
+  }
+}
+
+/// Los colores para elegir: una fila de círculos. El elegido lleva un aro ([ring]).
+class PetColorPicker extends StatelessWidget {
+  const PetColorPicker({super.key, required this.selected, required this.onPick, this.ring = W.ink});
+  final String? selected;
+  final void Function(String? color) onPick;
+  final Color ring;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(spacing: 6, runSpacing: 8, alignment: WrapAlignment.center, children: [
+      for (final (key, name, color) in BrainyColors.choices)
+        Semantics(
+          button: true,
+          selected: selected == key,
+          label: tr(name),
+          child: GestureDetector(
+            key: ValueKey('pet-color-$key'),
+            onTap: () => onPick(key),
+            child: Container(
+              width: 40,
+              height: 40,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: selected == key ? ring : Colors.transparent, width: 3)),
+              child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: color)),
+            ),
+          ),
+        ),
     ]);
   }
 }
@@ -501,6 +555,48 @@ class _PetNameDialogState extends ConsumerState<PetNameDialog> {
         TextButton(onPressed: _busy ? null : () => Navigator.pop(context), child: Text(tr('Cancelar'))),
         FilledButton(key: const ValueKey('pet-rename-save'), onPressed: _busy ? null : _save, child: Text(_busy ? tr('Guardando…') : tr('Guardar'))),
       ],
+    );
+  }
+}
+
+/// Cambiar el color de la mascota más adelante (Ajustes → Brainy).
+class PetColorDialog extends ConsumerStatefulWidget {
+  const PetColorDialog({super.key, required this.pet});
+  final PetState pet;
+
+  @override
+  ConsumerState<PetColorDialog> createState() => _PetColorDialogState();
+}
+
+class _PetColorDialogState extends ConsumerState<PetColorDialog> {
+  late String? _color = widget.pet.color;
+  String _msg = '';
+
+  Future<void> _pick(String? color) async {
+    final repo = ref.read(petRepositoryProvider);
+    setState(() {
+      _color = color;
+      _msg = '';
+    });
+    try {
+      await repo.recolor(color);
+      ref.invalidate(petProvider);
+    } catch (e) {
+      if (mounted) setState(() => _msg = '$e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(tr('Color de tu mascota')),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        PetFigure(pet: widget.pet.copyWith(color: _color, keepColor: false), size: 150, fit: true),
+        const SizedBox(height: 10),
+        PetColorPicker(selected: _color, onPick: _pick),
+        if (_msg.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_msg, style: const TextStyle(color: W.bad))),
+      ]),
+      actions: [FilledButton(key: const ValueKey('pet-color-done'), onPressed: () => Navigator.pop(context), child: Text(tr('Listo')))],
     );
   }
 }

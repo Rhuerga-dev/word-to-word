@@ -81,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'store'])->middleware('throttle:5,10');
     Route::get('/progress', \App\Http\Controllers\Api\ProgressController::class);
     Route::get('/pet', \App\Http\Controllers\Api\PetController::class)->middleware('throttle:60,1');
+    Route::put('/pet/color', [\App\Http\Controllers\Api\PetController::class, 'recolor'])->middleware('throttle:20,1');
     Route::put('/pet/name', [\App\Http\Controllers\Api\PetController::class, 'rename'])->middleware('throttle:10,1');
     Route::post('/pet/{action}', [\App\Http\Controllers\Api\PetController::class, 'act'])
         ->whereIn('action', ['feed', 'play', 'clean', 'medicine'])->middleware('throttle:30,1');

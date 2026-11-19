@@ -1113,5 +1113,16 @@
     "{0} quiere oírte hablar": "{0} wants to hear you speak",
     "{0} te está esperando": "{0} is waiting for you",
     "{0} quiere repasar contigo": "{0} wants to review with you",
-    "El nombre debe tener de 2 a 20 letras o números.": "The name must have 2 to 20 letters or numbers."
+    "El nombre debe tener de 2 a 20 letras o números.": "The name must have 2 to 20 letters or numbers.",
+    "¡Hola! Soy Brainy.": "Hi! I'm Brainy.",
+    "¿De qué color quieres que sea?": "What color do you want me to be?",
+    "Color de tu mascota": "Your pet's color",
+    "Neutro": "Neutral",
+    "Azul": "Blue",
+    "Morado": "Purple",
+    "Rosa": "Pink",
+    "Coral": "Coral",
+    "Naranja": "Orange",
+    "Verde": "Green",
+    "Turquesa": "Teal"
 }

@@ -13,6 +13,8 @@ import 'package:word_to_word/core/services/reminder_service.dart';
 import 'package:word_to_word/core/storage/offline_cache.dart';
 import 'package:word_to_word/features/pet/data/pet.dart';
 import 'package:word_to_word/features/pet/presentation/pet_birth.dart';
+import 'package:word_to_word/features/pet/presentation/pet_cloud.dart';
+import 'package:word_to_word/features/pet/presentation/pet_figure.dart';
 import 'package:word_to_word/features/pet/presentation/pet_providers.dart';
 
 import 'support/test_fonts.dart';
@@ -40,7 +42,14 @@ class _Server implements HttpClientAdapter {
     final data = Map<String, dynamic>.from(o.data as Map);
     sent.add(data);
     final name = data['name'] as String?;
-    final reply = status == 200 ? _petJson(name: name ?? 'Brainy', named: name != null, welcomed: true) : {'message': error};
+    final Map<String, dynamic> reply;
+    if (status != 200) {
+      reply = {'message': error};
+    } else if (o.uri.path.endsWith('/color')) {
+      reply = _petJson(welcomed: true)..['color'] = data['color'];
+    } else {
+      reply = _petJson(name: name ?? 'Brainy', named: name != null, welcomed: true);
+    }
     return ResponseBody.fromString(jsonEncode(reply), status, headers: {
       Headers.contentTypeHeader: ['application/json'],
     });
@@ -150,12 +159,53 @@ void main() {
       await _run(tester);
 
       expect(server.sent.single, {'name': null});
+      // Sigue al color (se llama Brainy) y de ahí se cierra con «Empezar».
+      expect(find.text('¡Hola! Soy Brainy.'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pet-birth-start')));
+      await _run(tester);
       expect(find.byType(PetBirthPage), findsNothing);
     });
 
     testWidgets('«Luego» cierra aunque el servidor falle (se preguntará otro día)', (tester) async {
       await _open(tester, _Server(status: 500, error: 'Error del servidor'));
       await tester.tap(find.byKey(const ValueKey('pet-name-later')));
+      await _run(tester);
+      await tester.tap(find.byKey(const ValueKey('pet-birth-start')));
+      await _run(tester);
+      expect(find.byType(PetBirthPage), findsNothing);
+    });
+
+    testWidgets('después del nombre eliges su color: cambia al momento y se guarda', (tester) async {
+      final server = _Server();
+      await _open(tester, server);
+      PetState shown() => tester.widget<PetFigure>(find.byType(PetFigure)).pet;
+      expect(shown().color, isNull, reason: 'nace de color neutro');
+
+      await tester.enterText(find.byKey(const ValueKey('pet-name-field')), 'Luna');
+      await tester.tap(find.byKey(const ValueKey('pet-name-save')));
+      await _run(tester);
+      expect(find.text('¿De qué color quieres que sea?'), findsOneWidget);
+      for (final key in ['blue', 'purple', 'pink', 'coral', 'orange', 'green', 'teal']) {
+        expect(find.byKey(ValueKey('pet-color-$key')), findsOneWidget);
+      }
+
+      await tester.tap(find.byKey(const ValueKey('pet-color-green')));
+      await _run(tester);
+      expect(shown().color, 'green');
+      expect(server.paths.last, 'PUT /api/pet/color');
+      expect(server.sent.last, {'color': 'green'});
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('si el color no se puede guardar, lo dice y la bienvenida sigue', (tester) async {
+      final server = _Server(status: 500, error: 'Error del servidor');
+      await _open(tester, server);
+      await tester.tap(find.byKey(const ValueKey('pet-name-later')));
+      await _run(tester);
+      await tester.tap(find.byKey(const ValueKey('pet-color-pink')));
+      await _run(tester);
+      expect(find.text('Error del servidor'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pet-birth-start')));
       await _run(tester);
       expect(find.byType(PetBirthPage), findsNothing);
     });
@@ -224,6 +274,81 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('pet-rename-save')));
       await _run(tester);
       expect(server.sent.single, {'name': 'Sol'});
+    });
+  });
+
+  group('Color y cerebro', () {
+    test('lee el color; sin color o con uno desconocido es neutra', () {
+      expect(PetState.tryParse(_petJson()..['color'] = 'teal')!.color, 'teal');
+      expect(PetState.tryParse(_petJson())!.color, isNull);
+      expect(PetState.tryParse(_petJson()..['color'] = 7)!.color, isNull);
+      expect(BrainyColors.of(null), BrainyColors.neutral);
+      expect(BrainyColors.of('inventado'), BrainyColors.neutral);
+      expect(BrainyColors.of('blue'), isNot(BrainyColors.neutral));
+      // La misma lista fija que valida el servidor (PetService::COLORS).
+      expect([for (final c in BrainyColors.choices) c.$1], ['blue', 'purple', 'pink', 'coral', 'orange', 'green', 'teal']);
+    });
+
+    test('copyWith cambia el color (también de vuelta a neutro) sin tocar lo demás', () {
+      final pet = PetState.tryParse(_petJson(name: 'Luna', named: true, stage: 2, points: 80)..['color'] = 'blue')!;
+      expect(pet.copyWith(color: 'pink').color, 'pink');
+      expect(pet.copyWith(color: null, keepColor: false).color, isNull);
+      expect(pet.copyWith().color, 'blue');
+      final other = pet.copyWith(color: 'pink');
+      expect((other.name, other.named, other.stage, other.points), ('Luna', true, 2, 80));
+    });
+
+    test('nace con todas las neuronas blancas y se encienden a medida que aprende', () {
+      final brain = BrainCloud.instance;
+      int lit(double level) => [for (var i = 0; i < brain.count; i++) brain.threshold[i] < level].where((on) => on).length;
+      expect(lit(0), 0, reason: 'recién nacida: ninguna encendida, todas blancas');
+      expect(lit(1.0001), brain.count, reason: 'con todo aprendido, todas encendidas');
+      expect(lit(0.3), lessThan(lit(0.6)));
+      expect(lit(0.6), lessThan(lit(0.9)));
+      // Las que ya se encendieron no se apagan al seguir aprendiendo.
+      for (var i = 0; i < brain.count; i++) {
+        if (brain.threshold[i] < 0.3) expect(brain.threshold[i] < 0.6, isTrue);
+      }
+    });
+
+    test('cada zona de lo que aprendes enciende una región distinta del cerebro', () {
+      expect(PetPainter.regionOf.toSet(), PetRegion.values.toSet());
+      expect(PetPainter.regionOf.length, 5);
+      final regions = {for (var i = 0; i < BrainCloud.instance.count; i++) BrainCloud.instance.region[i]};
+      expect(regions, {0, 1, 2, 3, 4});
+    });
+
+    test('las señales viajan de neurona en neurona por las conexiones', () {
+      final brain = BrainCloud.instance, signals = BrainSignals(count: 8, seed: 1);
+      for (var step = 0; step < 200; step++) {
+        signals.step(0.05);
+        for (var i = 0; i < signals.length; i++) {
+          expect(signals.edge(i), inInclusiveRange(0, brain.edgeA.length - 1));
+          expect(signals.t(i), inInclusiveRange(0.0, 1.0));
+        }
+      }
+      expect(signals.glow.any((g) => g > 0), isTrue, reason: 'al llegar, la neurona destella');
+    });
+
+    testWidgets('el cuadro de Ajustes cambia el color', (tester) async {
+      final server = _Server();
+      final api = Api(dio: Dio(BaseOptions(baseUrl: 'https://test/api'))..httpClientAdapter = server);
+      final dir = Directory.systemTemp.createTempSync('w2w-color');
+      final pet = PetState.tryParse(_petJson(name: 'Luna', named: true, welcomed: true, stage: 2, points: 80)..['color'] = 'blue')!;
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          apiProvider.overrideWithValue(api),
+          offlineCacheProvider.overrideWithValue(OfflineCache(api, dir: () async => dir)),
+          petProvider.overrideWith((ref) async => pet),
+        ],
+        child: MaterialApp(home: Scaffold(body: SingleChildScrollView(child: PetColorDialog(pet: pet)))),
+      ));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('pet-color-coral')));
+      await _run(tester);
+      expect(server.sent.single, {'color': 'coral'});
+      expect(tester.widget<PetFigure>(find.byType(PetFigure)).pet.color, 'coral');
+      expect(tester.takeException(), isNull);
     });
   });
 

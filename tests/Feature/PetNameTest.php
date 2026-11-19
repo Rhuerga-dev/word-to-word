@@ -93,4 +93,47 @@ class PetNameTest extends TestCase
         $this->postJson('/api/pet/feed')->assertOk()->assertJsonPath('pet.name', 'Luna');
         $this->postJson('/api/pet/name')->assertStatus(405);   // «name» no es un botón de cuidado
     }
+
+    // ---------- Color ----------
+
+    public function test_nace_de_color_neutro_y_el_alumno_elige_el_suyo(): void
+    {
+        $this->getJson('/api/pet')->assertOk()->assertJsonPath('color', null);
+
+        foreach (\App\Services\PetService::COLORS as $color) {
+            $this->putJson('/api/pet/color', ['color' => $color])->assertOk()->assertJsonPath('color', $color);
+        }
+        $this->getJson('/api/pet')->assertJsonPath('color', 'teal');
+
+        // Volver al neutro.
+        $this->putJson('/api/pet/color', ['color' => null])->assertOk()->assertJsonPath('color', null);
+    }
+
+    public function test_solo_valen_los_colores_de_la_lista_fija(): void
+    {
+        $this->putJson('/api/pet/color', ['color' => 'blue'])->assertOk();
+        foreach ([[], ['color' => 'negro'], ['color' => '#ff0000'], ['color' => ['blue']], ['color' => 'BLUE'], ['color' => '<b>']] as $bad) {
+            $this->putJson('/api/pet/color', $bad)->assertStatus(422);
+        }
+        $this->getJson('/api/pet')->assertJsonPath('color', 'blue');
+    }
+
+    public function test_un_color_raro_guardado_en_la_base_sale_como_neutro(): void
+    {
+        $this->getJson('/api/pet')->assertOk();
+        DB::table('pets')->where('user_id', $this->user->id)->update(['color' => 'inventado']);
+        $this->getJson('/api/pet')->assertJsonPath('color', null);
+    }
+
+    public function test_el_color_es_de_cada_alumno_y_no_toca_el_nombre(): void
+    {
+        $this->putJson('/api/pet/name', ['name' => 'Luna'])->assertOk();
+        $this->putJson('/api/pet/color', ['color' => 'green', 'user_id' => 999])->assertOk()->assertJsonPath('name', 'Luna')->assertJsonPath('color', 'green');
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->getJson('/api/pet')->assertJsonPath('color', null)->assertJsonPath('name', 'Brainy');
+
+        $this->app['auth']->forgetGuards();
+        $this->putJson('/api/pet/color', ['color' => 'blue'])->assertUnauthorized();
+    }
 }

@@ -37,4 +37,12 @@ class PetController extends Controller
 
         return $pet->rename($request->user(), $data['name'] ?: null);
     }
+
+    /** PUT /pet/color: elegir el color de la mascota (lista fija). null = el color neutro con el que nace. */
+    public function recolor(Request $request, PetService $pet)
+    {
+        $data = $request->validate(['color' => ['present', 'nullable', 'string', \Illuminate\Validation\Rule::in(PetService::COLORS)]]);
+
+        return $pet->recolor($request->user(), $data['color']);
+    }
 }

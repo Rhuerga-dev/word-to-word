@@ -34,6 +34,14 @@ class PetRepository {
     return pet;
   }
 
+  /// Cambia el color de la mascota ([color] = clave de la lista fija; null = volver al neutro).
+  Future<PetState?> recolor(String? color) async {
+    final json = await _api.put('/pet/color', {'color': color});
+    final pet = PetState.tryParse(json);
+    if (pet != null) unawaited(_cache.write('pet', json).catchError((Object _) {}));
+    return pet;
+  }
+
   /// Un botón de cuidado: el servidor dice qué ejercicio toca (new · reviews · ear · mistakes · sound) o '' si
   /// ahora no hay nada que hacer. null = no se pudo preguntar (sin conexión, servidor viejo): decide la app.
   Future<String?> act(PetAction action) async {

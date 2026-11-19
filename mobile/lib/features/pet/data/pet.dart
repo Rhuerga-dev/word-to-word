@@ -112,6 +112,7 @@ class PetState {
     this.name = 'Brainy',
     this.named = false,
     this.welcomed = true,
+    this.color,
     this.points = 0,
     this.stage = 0,
     this.stageKey = 'spark',
@@ -130,6 +131,9 @@ class PetState {
   /// ¿Ya vio su nacimiento y respondió a «¿cómo me quieres llamar?»? Con un servidor viejo (no lo dice) vale true:
   /// así nunca se enseña la bienvenida donde no se podría guardar el nombre.
   final bool welcomed;
+
+  /// El color que eligió el alumno (clave de la lista fija: blue, purple…). null = el neutro con el que nace.
+  final String? color;
   final int points;
 
   /// Etapa actual (0 = recién nacida) de [stages] etapas.
@@ -145,6 +149,22 @@ class PetState {
   /// Sus cuidados; null con un servidor que aún no los tiene (entonces la mascota sale como antes, sin barras).
   final PetCare? care;
 
+  /// La misma mascota con otro nombre o color (para verla cambiar al momento, antes de que responda el servidor).
+  PetState copyWith({String? name, bool? named, String? color, bool keepColor = true}) => PetState(
+        name: name ?? this.name,
+        named: named ?? this.named,
+        welcomed: welcomed,
+        color: keepColor && color == null ? this.color : color,
+        points: points,
+        stage: stage,
+        stageKey: stageKey,
+        stages: stages,
+        stageProgress: stageProgress,
+        nextAt: nextAt,
+        skills: skills,
+        care: care,
+      );
+
   PetSkill skill(PetRegion r) => skills[r] ?? const PetSkill();
   double level(PetRegion r) => skill(r).level;
   int get pointsToNext => nextAt == null ? 0 : (nextAt! - points).clamp(0, 1 << 30);
@@ -159,6 +179,7 @@ class PetState {
       name: asString(j['name'], 'Brainy'),
       named: j['named'] == true,
       welcomed: j['welcomed'] != false,
+      color: j['color'] is String ? j['color'] as String : null,
       points: asInt(j['points']),
       stage: asInt(s['index']).clamp(0, count - 1),
       stageKey: asString(s['key'], 'spark'),

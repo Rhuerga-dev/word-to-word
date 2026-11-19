@@ -22,10 +22,22 @@ class PetService
 {
     public const DEFAULT_NAME = 'Brainy';
 
+    /** Colores que puede elegir el alumno (lista fija). Sin elegir (null), la mascota es del color neutro con el que nace. */
+    public const COLORS = ['blue', 'purple', 'pink', 'coral', 'orange', 'green', 'teal'];
+
     /** Nombre de mascota válido: de 2 a 20 letras, números o espacios (también - y '), empezando por letra o número. */
     public const NAME_RULE = "/^[\\p{L}\\p{N}][\\p{L}\\p{N} '\\-]{1,19}$/u";
 
     public function __construct(private SrsService $srs, private PetCare $care, private EarService $ear) {}
+
+    /** El alumno elige el color de su mascota (una clave de COLORS) o vuelve al neutro con null. Devuelve la mascota. */
+    public function recolor(User $user, ?string $color): array
+    {
+        $row = $this->care->row($user);
+        DB::table('pets')->where('id', $row->id)->update(['color' => in_array($color, self::COLORS, true) ? $color : null, 'updated_at' => now()]);
+
+        return $this->state($user);
+    }
 
     /**
      * El alumno le pone nombre (o dice «luego» con null). En los dos casos queda apuntado que ya la conoció,
@@ -66,7 +78,7 @@ class PetService
         // Las conexiones: se encienden a medida que se enciende todo lo demás.
         $regions['links'] = ['level' => round(array_sum(array_column($regions, 'level')) / count($regions), 3)];
 
-        $state = ['name' => self::DEFAULT_NAME, 'named' => false, 'welcomed' => true,
+        $state = ['name' => self::DEFAULT_NAME, 'named' => false, 'welcomed' => true, 'color' => null,
             'points' => $points, 'stage' => $this->stage($points), 'regions' => $regions];
         // Su nombre (lo elige el alumno) y si ya vio su nacimiento. Si falla (columna sin crear): «Brainy», sin bienvenida.
         try {
@@ -75,6 +87,8 @@ class PetService
             $state['name'] = $name !== '' ? $name : self::DEFAULT_NAME;
             $state['named'] = $name !== '';
             $state['welcomed'] = ($row->welcomed_at ?? null) !== null;
+            $color = $row->color ?? null;
+            $state['color'] = in_array($color, self::COLORS, true) ? $color : null;
         } catch (Throwable $e) {
             report($e);
         }
