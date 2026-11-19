@@ -8,13 +8,29 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 245 ✓ (19/11), app 142 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **20** (19/11).
+- Tests: servidor 259 ✓ (19/11), app 155 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **21** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Experimento A/B del Modo Brainy** — hecho y **APAGADO** (lo enciende Reynaldo en el `.env`). Commit `3d7cb3e`, **parche 21**
+  (dry-run «No issues detected»). Tabla nueva `experiment_participants` (migración solo aditiva, **aplicada el 19/11**; copia previa en
+  `~/Backups/w2w/database-2026-11-19-antes-experimento.sqlite`).
+  **Grupos:** `BrainyExperiment::groupOf(id)` = `crc32("brainy-ab:" . id) % 2` → 1 = `brainy` (Modo Brainy encendido por defecto),
+  0 = `control` (apagado, como hoy). En marcha solo si `BRAINY_AB_ENABLED=true` y `BRAINY_AB_START=AAAA-MM-DD` ya llegó
+  (`config/experiments.php`). No entran la demo ni los ids de `BRAINY_AB_EXCLUDE_IDS` (por defecto `1`, la cuenta de Reynaldo).
+  `GET /api/me` añade `brainy_default`: `true` / `false`, o `null` si no hay experimento. Con los usuarios de hoy: 5, 7 y 10 → brainy;
+  2 y 40 → control; 1 excluido.
+  **App:** `brainy_mode_setting.dart` — si el alumno nunca tocó el interruptor vale `brainy_default`; si lo tocó, manda su elección
+  para siempre (en el teléfono solo hay algo guardado cuando lo tocó: eso es «lo cambió a mano»). `features/experiments/data/
+  brainy_experiment.dart` informa con `POST /api/experiments/brainy` (`mode`, `changed`, `opened`; throttle 30/min) al entrar, al
+  cambiar el modo y al abrir Brainy; si falla se ignora. Sin experimento (`null`) la app no envía nada y queda como antes.
+  **Servidor:** guarda por alumno grupo, modo real, si lo cambió y cuándo, aperturas y botones de cuidado (`POST /api/pet/{acción}`).
+  **Informe:** `php artisan experiments:report brainy` (`--json`) y bloque `experiments.brainy` en `metrics:snapshot`.
+  +14 tests servidor (`BrainyExperimentTest`), +13 app (`brainy_experiment_test.dart`). **No probado en un teléfono real** ni con el
+  experimento encendido en producción. iPhone nativo **sin reinstalar** (con la versión vieja el Modo Brainy nace apagado y no informa).
 - (19/11) **Sugerencias de usuarios** (servidor + web + app) y **página de apoyo voluntario** (solo web). Commit `e48c5bb`, **parche 20**
   (dry-run «No issues detected»).
   **Sugerencias:** tabla nueva `suggestions` (migración solo aditiva, **aplicada el 19/11**; copia previa en
@@ -102,6 +118,19 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Encender el experimento del Modo Brainy** cuando quieras empezar: añadir al `.env` de W2W
+  `BRAINY_AB_ENABLED=true` y `BRAINY_AB_START=AAAA-MM-DD` (el día que empieza). Opcional: `BRAINY_AB_EXCLUDE_IDS=1,2` para dejar
+  fuera también la cuenta de pruebas (id 2). No hace falta reiniciar. Para pararlo: `BRAINY_AB_ENABLED=false` (quien ya eligió a mano
+  conserva su elección; el resto vuelve a apagado). Ojo: al encenderlo, la mitad de los alumnos que nunca tocaron el interruptor verán
+  a Brainy como pantalla principal en la app Android (parche 21).
+- [ ] **Revisar el informe a las 2–3 semanas de encenderlo** (no antes de 14 días): `cd ~/Code/word-to-word && php artisan
+  experiments:report brainy`. Cómo leerlo: (1) mira primero el aviso de arriba; si dice «muy pocos alumnos» (menos de 20 por grupo,
+  `BRAINY_AB_MIN_USERS`) las diferencias pueden ser casualidad y **no se decide nada**. (2) Las métricas que mandan son **PRÁCTICA
+  REAL** (sesiones, ejercicios, palabras nuevas, repasos, Oído, minutos hablando; todo por alumno y semana) y **APRENDIZAJE** (aciertos
+  y palabras bien recordadas). (3) Retención: «activos el día 7» = de los que ya cumplieron 7 días dentro, cuántos practicaron ese día.
+  (4) «Uso de Brainy» es solo contexto: el grupo Brainy la ve al abrir la app, así que siempre tendrá más aperturas. (5) Si muchos del
+  grupo Brainy lo apagaron a mano, es señal en contra aunque practiquen igual. **Hoy hay 6 usuarios (5 cuentan): el aviso de «muy
+  pocos» va a salir seguro**; el experimento sirve de verdad cuando haya más alumnos con la app.
 - [ ] **Apoyo:** poner en el `.env` de W2W `SUPPORT_ZELLE=` (tu correo o teléfono de Zelle) y `SUPPORT_PAYPAL_URL=` (p. ej.
   `https://paypal.me/tuusuario`). Sin eso `/apoyo` da 404 y el enlace no aparece en Ajustes de la web. No hace falta reiniciar.
 - [ ] Probar **«Enviar sugerencia»**: en la web (Ajustes) y en la app Android (abrirla 2 veces para bajar el **parche 20**; Ajustes →
@@ -129,6 +158,9 @@ _Última actualización: 2026-11-19_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Experimento Brainy: el panel recibe `experiments.brainy` en `metrics.json` pero aún no lo pinta. Límites conocidos del informe:
+  los repasos y ejercicios salen de los puntos del día (`xp_days.by_source`), que tienen tope diario (100 repasos buenos); «palabras bien
+  recordadas» cuenta todas las del alumno, no solo las de después de entrar; solo cuentan alumnos cuya app informó (la web no tiene Brainy).
 - [ ] Sugerencias: **verlas y cambiar su estado** (new → reviewing → done / dismissed). Hoy solo se guardan; el panel recibe el conteo
   en `metrics.json` (bloque `suggestions`) pero aún no lo pinta ni hay pantalla para leerlas. Sin capturas de pantalla (decidido).
 - [ ] Brainy · ajustar con datos reales: los puntos, metas y ritmos de `config/pet.php` están puestos a ojo (horas por corazón, cuánto
@@ -146,6 +178,8 @@ _Última actualización: 2026-11-19_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (19/11) Si Brainy gana protagonismo se decide con datos: experimento A/B con «práctica real» y «aprendizaje» como métricas
+  principales, no los clics en Brainy. El alumno siempre puede cambiar el modo y su elección se respeta.
 - (19/11) Apoyo voluntario: se llama «apoyo», nunca «donación»; Zelle (EE. UU.) y PayPal (resto del mundo); **solo en la web**. En la
   app Android no se enlaza ni se mencionan pagos (política de Google Play); como mucho, el texto neutro «huergalabs.dev».
 - (19/11) Sugerencias sin capturas de pantalla por ahora.
