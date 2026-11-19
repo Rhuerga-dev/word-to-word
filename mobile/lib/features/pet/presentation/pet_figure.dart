@@ -19,9 +19,12 @@ import 'pet_texts.dart';
 /// - Con cuidados (pet.care) su cara cambia: duerme, tiene hambre, quiere jugar, hay desorden o está malita.
 /// - De adulta toma una forma según lo que más practicas (orejas, voz doble, gafas o una estrella).
 class PetFigure extends StatefulWidget {
-  const PetFigure({super.key, required this.pet, this.size = 220, this.fit = false});
+  const PetFigure({super.key, required this.pet, this.size = 220, this.fit = false, this.birth});
   final PetState pet;
   final double size;
+
+  /// Solo en la bienvenida: cuánto de la mascota ha aparecido ya (null = entera, lo normal).
+  final PetBirthPose? birth;
 
   /// true = siempre al tamaño máximo que cabe (para sitios pequeños, como la tarjeta de Hoy).
   /// false = su tamaño depende de la etapa: se la ve crecer.
@@ -74,7 +77,7 @@ class _PetFigureState extends State<PetFigure> with SingleTickerProviderStateMix
           dimension: widget.size,
           child: AnimatedBuilder(
             animation: _clock,
-            builder: (_, __) => CustomPaint(painter: PetPainter(p, _clock.isAnimating ? _clock.value : null, fit: widget.fit, signals: _clock.isAnimating ? _signals : null)),
+            builder: (_, __) => CustomPaint(painter: PetPainter(p, _clock.isAnimating ? _clock.value : null, fit: widget.fit, signals: _clock.isAnimating ? _signals : null, birth: widget.birth)),
           ),
         ),
       ),
@@ -82,14 +85,38 @@ class _PetFigureState extends State<PetFigure> with SingleTickerProviderStateMix
   }
 }
 
+/// Cómo va la mascota mientras nace (la bienvenida). Cada parte va de 0 (aún no está) a 1 (ya está):
+/// primero la cúpula con el cerebro, luego el cuerpo sale de detrás de ella, crece la antena y se enciende
+/// la chispa. [eyes]: 0 = cerrados, 1 = abiertos (null = los de su etapa). [lift] = cuánto ha saltado (en la
+/// hoja) y [squash] = cuánto se aplasta al caer.
+class PetBirthPose {
+  const PetBirthPose({this.dome = 1, this.body = 1, this.antenna = 1, this.spark = 1, this.eyes, this.lift = 0, this.squash = 0});
+  final double dome, body, antenna, spark, lift, squash;
+  final double? eyes;
+}
+
 /// Dibuja la mascota. [time] va de 0 a 1 en bucle; null = quieta.
 ///
 /// Está pensada en una hoja de 400 × 420 (los pies en y = 392) que se escala al tamaño pedido.
 class PetPainter extends CustomPainter {
-  PetPainter(this.pet, this.time, {this.fit = false, this.signals});
+  PetPainter(this.pet, this.time, {this.fit = false, this.signals, this.birth});
   final PetState pet;
   final double? time;
   final bool fit;
+
+  /// La pose del nacimiento (null = entera).
+  final PetBirthPose? birth;
+
+  /// Dónde está el cerebro en la hoja: su centro y cuánto mide «1» de la nube de neuronas.
+  static const brainCenter = Offset(200, 181);
+  static const brainRadius = 73.0;
+
+  /// De la hoja de 400 × 420 a un cuadro de [size]: la escala y dónde cae la esquina de la hoja.
+  /// (Lo usa también la bienvenida, para que sus neuronas vuelen justo a su sitio.)
+  static (double scale, Offset origin) sheet(Size size) {
+    final s = size.shortestSide / 452;
+    return (s, Offset((size.width - 400 * s) / 2, (size.height - 420 * s) / 2 + 6 * s));
+  }
 
   /// Las señales del cerebro (null = quieta: se dibuja sin ellas).
   final BrainSignals? signals;
@@ -118,116 +145,154 @@ class PetPainter extends CustomPainter {
     final color = BrainyColors.of(pet.color);
 
     // De la hoja de 400 × 420 al cuadro pedido (con un poco de aire para el brillo, las zetas y la estrella).
-    final s = size.shortestSide / 452;
+    final (s, origin) = sheet(size);
     canvas.save();
-    canvas.translate((size.width - 400 * s) / 2, (size.height - 420 * s) / 2 + 6 * s);
+    canvas.translate(origin.dx, origin.dy);
     canvas.scale(s);
 
+    // Naciendo: cada parte aparece a su tiempo. Lo normal (pose == null): todo entero.
+    final pose = birth;
+    final bodyIn = pose?.body ?? 1.0, domeIn = pose?.dome ?? 1.0, antennaIn = pose?.antenna ?? 1.0, sparkIn = pose?.spark ?? 1.0;
+    final lift = pose?.lift ?? 0.0;
+
     final k = fit ? 1.0 : stageScale[stage];
-    final breath = moving ? 1 + 0.012 * math.sin(t * 2 * math.pi * 2) : 1.0;
-    if (stage >= 4) _glow(canvas, k, t, moving);
-    canvas.drawOval(Rect.fromCenter(center: const Offset(200, 396), width: 192 * k, height: 22 * k), Paint()..color = const Color(0x40050A2A));
+    final breath = moving && pose == null ? 1 + 0.012 * math.sin(t * 2 * math.pi * 2) : 1.0;
+    if (stage >= 4 && pose == null) _glow(canvas, k, t, moving);
+    // La sombra del suelo: aparece con el cuerpo y se encoge cuando salta.
+    final ground = bodyIn.clamp(0.0, 1.0) * (1 - lift / 90).clamp(0.4, 1.0);
+    if (ground > 0) {
+      canvas.drawOval(Rect.fromCenter(center: const Offset(200, 396), width: 192 * k * ground, height: 22 * k * ground), Paint()..color = const Color(0x40050A2A).withValues(alpha: 0.25 * ground));
+    }
 
     // Todo lo demás crece desde los pies.
-    canvas.translate(200, 392);
+    canvas.translate(200, 392 - lift);
     canvas.scale(k * breath);
+    if (pose != null && pose.squash != 0) canvas.scale(1 + 0.6 * pose.squash, 1 - pose.squash);
     canvas.translate(-200, -392);
 
     final light = _shade(color, 0.16), dark = _shade(color, -0.20), darker = _shade(color, -0.27);
 
-    // Forma «orejona»: dos orejas grandes a los lados de la cabeza (detrás del cuerpo).
-    if (form == 'listener') {
-      for (final side in [-1.0, 1.0]) {
-        final ear = Rect.fromCenter(center: Offset(200 + side * 118, 176), width: 50, height: 78);
-        canvas.drawOval(ear, Paint()..color = dark);
-        canvas.drawOval(ear.deflate(11), Paint()..color = const Color(0x88FF8FB1));
+    // Antena con la chispa de la que nació. (Al nacer crece desde la cúpula y luego se enciende la chispa.)
+    if (antennaIn > 0) {
+      canvas.save();
+      canvas.translate(200, 120);
+      canvas.scale(antennaIn);
+      canvas.translate(-200, -120);
+      canvas.drawPath(
+        Path()
+          ..moveTo(200, 120)
+          ..cubicTo(200, 108, 196, 100, 200, 90),
+        Paint()
+          ..color = _shade(color, 0.28)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round,
+      );
+      if (sparkIn > 0) {
+        final pulse = moving ? 0.5 + 0.5 * math.sin(t * 2 * math.pi * 3) : 0.5;
+        final sparkGlow = (26 + 6 * pulse) * sparkIn;
+        canvas.drawCircle(const Offset(200, 78), sparkGlow, Paint()..shader = ui.Gradient.radial(const Offset(200, 78), sparkGlow, [const Color(0xE6FFE45C), const Color(0x00FFE45C)]));
+        canvas.drawCircle(const Offset(200, 78), (stage == 0 ? 15 : 11) * sparkIn, Paint()..color = const Color(0xFFFFE45C));
+        canvas.drawCircle(const Offset(196, 74), 4 * sparkIn, Paint()..color = const Color(0xE6FFFFFF));
       }
+      canvas.restore();
     }
-
-    // Antena con la chispa de la que nació.
-    canvas.drawPath(
-      Path()
-        ..moveTo(200, 120)
-        ..cubicTo(200, 108, 196, 100, 200, 90),
-      Paint()
-        ..color = _shade(color, 0.28)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round,
-    );
-    final pulse = moving ? 0.5 + 0.5 * math.sin(t * 2 * math.pi * 3) : 0.5;
-    final sparkGlow = 26 + 6 * pulse;
-    canvas.drawCircle(const Offset(200, 78), sparkGlow, Paint()..shader = ui.Gradient.radial(const Offset(200, 78), sparkGlow, [const Color(0xE6FFE45C), const Color(0x00FFE45C)]));
-    canvas.drawCircle(const Offset(200, 78), stage == 0 ? 15 : 11, Paint()..color = const Color(0xFFFFE45C));
-    canvas.drawCircle(const Offset(196, 74), 4, Paint()..color = const Color(0xE6FFFFFF));
     // Forma «equilibrada»: una estrella sobre la chispa.
-    if (form == 'balanced') _star(canvas, const Offset(200, 36), 15, t, moving);
+    if (form == 'balanced' && pose == null) _star(canvas, const Offset(200, 36), 15, t, moving);
 
-    // Pies y brazos (desde «Aprendiz»).
-    if (stage >= 2) {
-      final foot = Paint()..color = darker;
-      canvas.drawOval(Rect.fromCenter(center: const Offset(160, 378), width: 60, height: 30), foot);
-      canvas.drawOval(Rect.fromCenter(center: const Offset(240, 378), width: 60, height: 30), foot);
-      final limb = Paint()..shader = ui.Gradient.linear(const Offset(0, -36), const Offset(0, 36), [_shade(color, 0.04), dark]);
-      final wave = moving && !resting ? 0.10 * math.sin(t * 2 * math.pi * 3) : 0.0;
-      for (final side in [-1.0, 1.0]) {
-        canvas.save();
-        canvas.translate(200 + side * 112, 272);
-        canvas.rotate(-side * (18 * math.pi / 180 + wave));
-        canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 38, height: 72), limb);
-        canvas.restore();
+    // El cuerpo entero (orejas, pies, brazos, cuerpo y cara). Al nacer sale de detrás de la cúpula:
+    // empieza tan pequeño que ella lo tapa y crece hasta su tamaño.
+    if (bodyIn > 0) {
+      canvas.save();
+      if (bodyIn != 1) {
+        canvas.translate(200, 170);
+        canvas.scale(0.3 + 0.7 * bodyIn);
+        canvas.translate(-200, -170);
       }
-    }
-    // Desorden: unas motas de polvo junto a los pies.
-    if (mood == 'messy') {
-      final dust = Paint()..color = const Color(0x99A0855B);
-      for (final (x, y, r) in const [(92.0, 372.0, 9.0), (112.0, 388.0, 6.0), (306.0, 376.0, 8.0), (286.0, 390.0, 5.0), (326.0, 390.0, 4.5)]) {
-        canvas.drawCircle(Offset(x, y), r, dust);
+      // Forma «orejona»: dos orejas grandes a los lados de la cabeza (detrás del cuerpo).
+      if (form == 'listener') {
+        for (final side in [-1.0, 1.0]) {
+          final ear = Rect.fromCenter(center: Offset(200 + side * 118, 176), width: 50, height: 78);
+          canvas.drawOval(ear, Paint()..color = dark);
+          canvas.drawOval(ear.deflate(11), Paint()..color = const Color(0x88FF8FB1));
+        }
       }
-    }
 
-    // Cuerpo.
-    final body = RRect.fromRectAndRadius(const Rect.fromLTWH(86, 106, 228, 272), const Radius.circular(112));
-    canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(200, 100), const Offset(200, 380), [light, color, dark], const [0, 0.45, 1]));
-    canvas.drawOval(
-      Rect.fromCenter(center: const Offset(200, 318), width: 160, height: 116),
-      Paint()..shader = ui.Gradient.radial(const Offset(200, 318), 80, [Colors.white.withValues(alpha: 0.30), Colors.white.withValues(alpha: 0)]),
-    );
+      // Pies y brazos (desde «Aprendiz»).
+      if (stage >= 2) {
+        final foot = Paint()..color = darker;
+        canvas.drawOval(Rect.fromCenter(center: const Offset(160, 378), width: 60, height: 30), foot);
+        canvas.drawOval(Rect.fromCenter(center: const Offset(240, 378), width: 60, height: 30), foot);
+        final limb = Paint()..shader = ui.Gradient.linear(const Offset(0, -36), const Offset(0, 36), [_shade(color, 0.04), dark]);
+        final wave = moving && !resting ? 0.10 * math.sin(t * 2 * math.pi * 3) : 0.0;
+        for (final side in [-1.0, 1.0]) {
+          canvas.save();
+          canvas.translate(200 + side * 112, 272);
+          canvas.rotate(-side * (18 * math.pi / 180 + wave));
+          canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 38, height: 72), limb);
+          canvas.restore();
+        }
+      }
+      // Desorden: unas motas de polvo junto a los pies.
+      if (mood == 'messy') {
+        final dust = Paint()..color = const Color(0x99A0855B);
+        for (final (x, y, r) in const [(92.0, 372.0, 9.0), (112.0, 388.0, 6.0), (306.0, 376.0, 8.0), (286.0, 390.0, 5.0), (326.0, 390.0, 4.5)]) {
+          canvas.drawCircle(Offset(x, y), r, dust);
+        }
+      }
+
+      // Cuerpo.
+      final body = RRect.fromRectAndRadius(const Rect.fromLTWH(86, 106, 228, 272), const Radius.circular(112));
+      canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(200, 100), const Offset(200, 380), [light, color, dark], const [0, 0.45, 1]));
+      canvas.drawOval(
+        Rect.fromCenter(center: const Offset(200, 318), width: 160, height: 116),
+        Paint()..shader = ui.Gradient.radial(const Offset(200, 318), 80, [Colors.white.withValues(alpha: 0.30), Colors.white.withValues(alpha: 0)]),
+      );
+
+      _face(canvas, t, moving, stage, mood, resting, form == 'scholar', pose?.eyes);
+      canvas.restore();
+    }
 
     // Cúpula de cristal con el cerebro dentro.
     final dome = RRect.fromRectAndRadius(const Rect.fromLTWH(110, 120, 180, 118), const Radius.circular(59));
-    canvas.drawRRect(dome, Paint()..shader = ui.Gradient.radial(const Offset(200, 170), 110, [const Color(0xFF1B2760), const Color(0xFF070B24)]));
-    canvas.save();
-    canvas.clipRRect(dome.deflate(3));
-    _brain(canvas, const Offset(200, 181), 73);
-    canvas.restore();
-    canvas.drawRRect(
-      dome,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..color = _shade(color, 0.34).withValues(alpha: 0.85),
-    );
-    canvas.drawPath(
-      Path()
-        ..moveTo(128, 164)
-        ..cubicTo(132, 142, 150, 130, 172, 128),
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.55)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawCircle(const Offset(184, 128), 3, Paint()..color = Colors.white.withValues(alpha: 0.55));
-
-    _face(canvas, t, moving, stage, mood, resting, form == 'scholar');
+    final glass = domeIn.clamp(0.0, 1.0);
+    if (glass > 0) {
+      canvas.drawRRect(
+        dome,
+        Paint()
+          ..color = Colors.black.withValues(alpha: glass) // con degradado, del color solo cuenta la transparencia
+          ..shader = ui.Gradient.radial(const Offset(200, 170), 110, [const Color(0xFF1B2760), const Color(0xFF070B24)]),
+      );
+      canvas.save();
+      canvas.clipRRect(dome.deflate(3));
+      _brain(canvas, brainCenter, brainRadius);
+      canvas.restore();
+      canvas.drawRRect(
+        dome,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..color = _shade(color, 0.34).withValues(alpha: 0.85 * glass),
+      );
+      canvas.drawPath(
+        Path()
+          ..moveTo(128, 164)
+          ..cubicTo(132, 142, 150, 130, 172, 128),
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.55 * glass)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round,
+      );
+      canvas.drawCircle(const Offset(184, 128), 3, Paint()..color = Colors.white.withValues(alpha: 0.55 * glass));
+    }
 
     // Voz (desde «Voz»): ondas junto a la boca. Dormida no habla. La «parlanchina» habla por los dos lados.
-    if (stage >= 3 && !resting) {
+    if (stage >= 3 && !resting && pose == null) {
       _voice(canvas, const Offset(322, 322), t, moving, color);
       if (form == 'talker') _voice(canvas, const Offset(78, 322), t, moving, color, left: true);
     }
-    if (resting) _zzz(canvas, const Offset(302, 112), t, moving);
+    if (resting && pose == null) _zzz(canvas, const Offset(302, 112), t, moving);
     canvas.restore();
   }
 
@@ -317,7 +382,7 @@ class PetPainter extends CustomPainter {
     canvas.restore();
   }
 
-  void _face(Canvas canvas, double t, bool moving, int stage, String mood, bool resting, bool glasses) {
+  void _face(Canvas canvas, double t, bool moving, int stage, String mood, bool resting, bool glasses, [double? eyes]) {
     final white = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
@@ -332,7 +397,17 @@ class PetPainter extends CustomPainter {
     final blink = moving && (t * 6) % 3 > 2.9;
     final lookUp = mood == 'hungry' ? -5.0 : 0.0; // con hambre mira hacia arriba, pensando en comida
     for (final cx in [164.0, 236.0]) {
-      if (resting) {
+      if (eyes != null && eyes > 0.08) {
+        // Naciendo: los abre poco a poco (y parpadea).
+        canvas.save();
+        canvas.translate(cx, 284);
+        canvas.scale(1, eyes);
+        canvas.translate(-cx, -284);
+        canvas.drawOval(Rect.fromCenter(center: Offset(cx, 284), width: 34, height: 40), Paint()..color = Colors.white);
+        canvas.drawCircle(Offset(cx, 288), 11, Paint()..color = _ink);
+        canvas.drawCircle(Offset(cx + 4, 283), 4.2, Paint()..color = Colors.white);
+        canvas.restore();
+      } else if (resting || eyes != null) {
         canvas.drawPath(
           Path()
             ..moveTo(cx - 15, 282)
@@ -464,5 +539,5 @@ class PetPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant PetPainter old) => old.time != time || old.pet != pet || old.fit != fit;
+  bool shouldRepaint(covariant PetPainter old) => old.time != time || old.pet != pet || old.fit != fit || old.birth != birth;
 }

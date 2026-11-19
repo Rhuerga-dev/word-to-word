@@ -1,10 +1,10 @@
 // La bienvenida de la mascota (nace y le pones nombre), cambiarle el nombre y los avisos con su voz.
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -244,12 +244,70 @@ void main() {
 
     testWidgets('la animación entera corre sin errores y termina en la pregunta', (tester) async {
       await _open(tester, _Server(), reduceMotion: false);
-      for (var i = 0; i < 70; i++) {
+      for (var i = 0; i < 80; i++) {
         await tester.pump(const Duration(milliseconds: 100));
         expect(tester.takeException(), isNull);
       }
       final question = tester.widget<AnimatedOpacity>(find.ancestor(of: find.text('¿Cómo me quieres llamar?'), matching: find.byType(AnimatedOpacity)).first);
       expect(question.opacity, 1);
+      expect(tester.widget<PetFigure>(find.byType(PetFigure)).birth, isNull, reason: 'al terminar queda la mascota normal, entera');
+    });
+
+    test('nace por partes y en orden: cerebro en su cúpula, cuerpo, antena, chispa, ojos y saltito', () {
+      PetBirthPose at(double t) => BirthTimeline.pose(t, newborn: true);
+      // Mientras las neuronas vuelan y laten, de la mascota aún no hay nada.
+      for (final t in [0.0, 0.3, 0.6]) {
+        final p = at(t);
+        expect((p.dome, p.body, p.antenna, p.spark), (0, 0, 0, 0), reason: 't = $t');
+      }
+      // El cuerpo no empieza hasta que la cúpula está entera (sale de detrás de ella).
+      expect(at(BirthTimeline.domed).dome, 1);
+      expect(at(BirthTimeline.domed).body, 0);
+      expect(at(0.80).body, greaterThan(0.5));
+      expect(at(0.80).antenna, 0);
+      expect(at(0.87).antenna, greaterThan(0.5));
+      expect(at(0.87).spark, 0, reason: 'la chispa se enciende después de crecer la antena');
+      expect(at(0.88).eyes, 0, reason: 'nace con los ojos cerrados');
+      expect(at(0.92).eyes, greaterThan(0.9), reason: 'y los abre');
+      expect(at(0.958).lift, greaterThan(20), reason: 'da un saltito');
+      expect(at(0.99).lift, 0, reason: 'y vuelve al suelo');
+      // Al final todo está en su sitio: no hay salto al pasar a la mascota normal.
+      final end = at(0.9999);
+      expect(end.dome, 1);
+      expect(end.body, closeTo(1, 0.001));
+      expect(end.antenna, closeTo(1, 0.001));
+      expect(end.spark, closeTo(1, 0.01));
+      expect(end.squash, closeTo(0, 0.001));
+      expect(end.eyes, lessThan(0.08), reason: 'la recién nacida acaba con su cara de bebé (ojos cerrados)');
+      expect(BirthTimeline.pose(0.9999, newborn: false).eyes, closeTo(1, 0.01), reason: 'una ya crecida los deja abiertos');
+    });
+
+    testWidgets('el teléfono vibra en los golpes del nacimiento; si se salta o hay «Reducir movimiento», no', (tester) async {
+      final taps = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'HapticFeedback.vibrate') taps.add('${call.arguments}');
+        return null;
+      });
+      addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+
+      await _open(tester, _Server()); // «Reducir movimiento»
+      expect(taps, isEmpty);
+
+      await tester.pumpWidget(const SizedBox());
+      await _open(tester, _Server(), reduceMotion: false);
+      taps.clear(); // lo que haya vibrado hasta aquí no cuenta: se mide el salto
+      await tester.tapAt(const Offset(40, 40)); // la adelanta
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(taps, isEmpty, reason: 'saltarla no vibra');
+
+      await tester.pumpWidget(const SizedBox());
+      taps.clear();
+      await _open(tester, _Server(), reduceMotion: false);
+      for (var i = 0; i < 160; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(taps.length, BirthTimeline.taps.length, reason: 'una vez por golpe: $taps');
+      expect(taps.where((t) => t.contains('heavy')).length, 1, reason: 'solo el estallido es fuerte');
     });
   });
 
