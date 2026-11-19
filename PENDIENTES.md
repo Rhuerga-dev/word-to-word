@@ -8,13 +8,34 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 276 ✓ (19/11), app 181 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **25** (19/11).
+- Tests: servidor 280 ✓ (19/11), app 189 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **26** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Brainy: personaje nuevo** (elegido por Reynaldo tras muchas pruebas; para todos los alumnos). Commit `462b5b0`, **parche 26**
+  (dry-run «No issues detected»), iPhone Air reinstalado (19/11).
+  **Dibujo** (`pet_figure.dart`, misma API `PetFigure`/`PetPainter`: la tarjeta de Hoy, la pantalla de Brainy, el Modo Brainy y el
+  nacimiento lo usan sin cambios): cuerpo del color elegido con degradado, ojos grandes con brillo, brazos, pies, antena con la chispa
+  y una cúpula de cristal con el cerebro. Pensado en una hoja de 400 × 420 y escalado. Conserva TODO lo de antes: 5 etapas (nace
+  pequeña y con ojos cerrados; brazos y pies desde «Aprendiz»; voz desde «Voz»; aura en la última), estados (hambre, aburrida,
+  desorden, malita, dormida) y formas adultas (orejas, voz doble, gafas, estrella). Ya no tiene el brote verde.
+  **Cerebro** (`pet_cloud.dart` → `BrainCloud`): nube de 680 neuronas en 3D vista desde un ángulo fijo (la receta del cerebro del
+  panel, misma semilla) con sus conexiones. **Nace con todas las neuronas BLANCAS**; cada una tiene un umbral fijo y se enciende
+  con el color de su zona cuando el nivel de esa zona lo supera (`PetPainter.regionOf`: camino, memoria, hábito, palabras, conexiones
+  → regiones 0–4; niveles de `GET /api/pet`, sin cambios en el servidor). `BrainSignals`: 30 señales (12 en figuras pequeñas) que
+  viajan de neurona en neurona; no gira. Se dibuja con `drawRawPoints` (pocas llamadas por cuadro). Con «Reducir movimiento», quieta.
+  **Color:** `pets.color` (migración solo aditiva, **aplicada el 19/11**; copia en
+  `~/Backups/w2w/database-2026-11-19-antes-color-mascota.sqlite`), lista fija `PetService::COLORS` = blue, purple, pink, coral, orange,
+  green, teal (la misma en `BrainyColors.choices`; un test de la app la compara). `PUT /api/pet/color` (throttle 20/min; `null` = neutro).
+  Sin elegir, la mascota es **gris neutro** (también las de alumnos de antes). Se elige en el nacimiento (paso 2, tras el nombre:
+  `PetColorPicker`, cambia al momento) y en Ajustes → Brainy → «Color de tu mascota» (`PetColorDialog`).
+  +4 tests servidor, +8 app. Revisado en una hoja con todos los estados y en capturas del nacimiento
+  (`~/Desktop/Brainy-pruebas/15…` y `16…`); **no probado en un teléfono real** (fluidez, batería).
+  Descartado en el camino (está en el historial de git, archivo `brainy_character.dart`): cerebro dibujado con surcos, cerebro 3D
+  fiel al panel, cerebro como cabeza, personaje que gira 360° y las dos piezas separadas.
 - (19/11) **Nacimiento de Brainy, segunda versión** (a Reynaldo la primera le pareció «vaga»): cielo con estrellas que parpadean,
   34 neuronas de colores que llegan en espiral y hacen crecer la chispa, tres latidos con anillos, estallido (destello, onda y chispas)
   y la mascota aparece con un rebote y destellos alrededor. 6,2 s; `_BirthPainter` y `_SkyPainter` en `pet_birth.dart` (todo con
@@ -159,6 +180,9 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Mirar la Brainy nueva en el teléfono** (Android: abrir 2 veces, parche 26; iPhone ya reinstalado). Al entrar sale el nacimiento
+  (tu cuenta aún no lo ha visto): nombre y luego color. Fijarse en: si va fluida (el cerebro tiene 680 neuronas animadas), si calienta
+  o gasta batería, si en la tarjeta de Hoy se distingue, y si las neuronas encendidas corresponden a lo que llevas aprendido.
 - [ ] **Ver nacer a Brainy y ponerle nombre**: al abrir la app (Android: 2 veces, parche 24; iPhone ya reinstalado) debe salir la
   animación una sola vez. Fijarse en: si la animación se ve fluida, si el teclado tapa el botón, y que mañana el recordatorio llegue
   con el nombre que le pusiste. Para volver a verla: «Reiniciar progreso» la borra (¡borra también tu progreso!); mejor pedir a Claude
@@ -207,6 +231,8 @@ _Última actualización: 2026-11-19_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Brainy nueva: medir en teléfono real y, si va justa, bajar neuronas (`BrainCloud._(680)`) o señales. Diseño de Figma de
+  referencia: https://www.figma.com/design/e7DC7WFNKeuX5obmXOZ1ze (hoja «Brainy · personaje nuevo»).
 - [ ] Brainy en el flujo (siguiente de la idea de Reynaldo): que reaccione al terminar la sesión (resumen con ella) y, con cuidado de
   no frenar el ritmo, tras cada ejercicio. Y que «Empezar» de la bienvenida abra directamente el primer ejercicio.
 - [ ] **Metodología (revisión del 19/11):** el diseño es correcto (FSRS-4.5 bien implementado, recordar activo, Oído, shadowing, errores
@@ -234,6 +260,9 @@ _Última actualización: 2026-11-19_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (19/11) Brainy es el personaje con cúpula y cerebro de neuronas dentro (no un cerebro con patas, ni cabeza-cerebro, ni 3D que gira).
+  Nace neutra y con las neuronas blancas; el color lo elige cada alumno y las neuronas se encienden al aprender. Rive quedó
+  descartado por ahora (su MCP pide plan de pago y el motor obliga a versión nueva en Play).
 - (19/11) Animaciones de Brainy: por ahora con código (sin archivos nuevos → parche). Para más calidad: **Lottie** (After Effects o
   LottieFiles → JSON; el paquete `lottie` de Flutter parece ser solo Dart, **por comprobar**) o **Rive** (el mejor para mascotas
   interactivas, pero su motor es nativo → versión nueva en Play). Un archivo de animación nuevo es un asset: no cabe en un parche
