@@ -880,6 +880,9 @@ class FoldSignals {
   }
 }
 
+/// Las dos piezas del personaje.
+enum BrainyPart { doll, brain, both }
+
 /// PRUEBA: el personaje como objeto 3D que se puede girar los 360° y se ve coherente desde cualquier lado.
 ///
 /// Cómo se consigue sin un motor 3D:
@@ -891,7 +894,10 @@ class FoldSignals {
 ///   gira dentro de la cúpula.
 /// [yaw] = giro en radianes (0 = de frente).
 class Brainy3DPainter extends CustomPainter {
-  Brainy3DPainter({required this.color, this.yaw = 0, this.signals, this.blink = 0, this.foldSignals, this.solidBrain = true});
+  Brainy3DPainter({required this.color, this.yaw = 0, this.signals, this.blink = 0, this.foldSignals, this.solidBrain = true, this.part = BrainyPart.both});
+
+  /// Qué se dibuja: el mono solo, el cerebro solo, o los dos unidos. Son dos piezas independientes.
+  final BrainyPart part;
 
   /// true = la cabeza es un cerebro SÓLIDO con surcos (se reconoce a cualquier tamaño y sobre cualquier fondo);
   /// false = el cerebro de puntos de luz del panel.
@@ -913,15 +919,30 @@ class Brainy3DPainter extends CustomPainter {
     canvas.save();
     canvas.translate((size.width - 400 * s) / 2, (size.height - 420 * s) / 2);
     canvas.scale(s);
+    switch (part) {
+      case BrainyPart.doll:
+        _paintDoll(canvas, front: false);
+        _paintDoll(canvas, front: true);
+      case BrainyPart.brain:
+        canvas.drawOval(Rect.fromCenter(center: const Offset(_cx, 330), width: 190, height: 20), Paint()..color = const Color(0x40050A2A));
+        _paintBrainPart(canvas, const Offset(_cx, 222));
+      case BrainyPart.both:
+        // La unión: primero lo que queda detrás del mono, luego el cerebro apoyado encima, y por último el mono
+        // (su parte de arriba tapa la base del cerebro: el cerebro descansa sobre él, no va metido dentro).
+        _paintDoll(canvas, front: false, onlyBack: true);
+        _paintBrainPart(canvas, const Offset(_cx, 196));
+        _paintDoll(canvas, front: false, skipBack: true, brainOnTop: true);
+        _paintDoll(canvas, front: true);
+    }
+    canvas.restore();
+  }
 
+  /// PIEZA 1 · El mono: cuerpo redondo, cara, brazos y pies. Se dibuja en dos pasadas: lo de detrás y el cuerpo
+  /// ([front] = false) y luego lo que queda por delante ([front] = true).
+  void _paintDoll(Canvas canvas, {required bool front, bool onlyBack = false, bool skipBack = false, bool brainOnTop = false}) {
     final light = BrainyCharacterPainter._shade(color, 0.16), dark = BrainyCharacterPainter._shade(color, -0.20), darker = BrainyCharacterPainter._shade(color, -0.27);
     final cs = math.cos(yaw);
-    // Un punto a [radius] del eje vertical y a [angle] del frente → (x en pantalla, profundidad: + delante).
     (double, double) around(double radius, double angle) => (_cx + radius * math.sin(yaw + angle), radius * math.cos(yaw + angle));
-
-    canvas.drawOval(Rect.fromCenter(center: const Offset(_cx, 396), width: 200, height: 22), Paint()..color = const Color(0x59050A2A));
-
-    // --- Pies y brazos: primero los que quedan DETRÁS del cuerpo ---
     final limb = Paint()..shader = ui.Gradient.linear(const Offset(0, 240), const Offset(0, 330), [BrainyCharacterPainter._shade(color, 0.04), dark]);
     void foot(double angle) {
       final (x, _) = around(46, angle);
@@ -930,69 +951,56 @@ class Brainy3DPainter extends CustomPainter {
 
     void arm(double angle) {
       final (x, z) = around(118, angle);
-      final side = (x - _cx) / 118; // −1 … 1: cuánto se asoma hacia cada lado
+      final side = (x - _cx) / 118;
       canvas.save();
-      canvas.translate(x, 290);
+      canvas.translate(x, 294);
       canvas.rotate(-side * 18 * math.pi / 180);
       canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 38 * (0.75 + 0.25 * (z / 118).abs() + 0.25 * side.abs()).clamp(0.75, 1.0), height: 72), limb);
       canvas.restore();
     }
 
-    final feet = [0.45, -0.45], arms = [math.pi / 2, -math.pi / 2];
-    for (final a in feet) {
-      if (around(46, a).$2 < 0) foot(a);
+    const feet = [0.45, -0.45], arms = [math.pi / 2, -math.pi / 2];
+    if (front) {
+      for (final a in feet) {
+        if (around(46, a).$2 >= 0) foot(a);
+      }
+      for (final a in arms) {
+        if (around(118, a).$2 >= 0) arm(a);
+      }
+      return;
     }
-    for (final a in arms) {
-      if (around(118, a).$2 < 0) arm(a);
+    if (!skipBack) {
+      canvas.drawOval(Rect.fromCenter(center: const Offset(_cx, 396), width: 200, height: 22), Paint()..color = const Color(0x59050A2A));
+      for (final a in feet) {
+        if (around(46, a).$2 < 0) foot(a);
+      }
+      for (final a in arms) {
+        if (around(118, a).$2 < 0) arm(a);
+      }
     }
+    if (onlyBack) return;
 
-    // --- UNA sola figura: el contorno del muñeco sube y se cierra por arriba. La parte alta de ese mismo contorno
-    // es el cerebro (recortado por el contorno, aunque no se vea entero); la piel empieza justo encima de los
-    // ojos, en una curva suave. Sin borde, sin brillo y sin corte recto: el cerebro no está «metido» en nada.
-    final figure = RRect.fromLTRBAndCorners(84, 114, 316, 378,
-        topLeft: const Radius.elliptical(116, 124), topRight: const Radius.elliptical(116, 124), bottomLeft: const Radius.elliptical(114, 112), bottomRight: const Radius.elliptical(114, 112));
-    final outline = Path()..addRRect(figure);
-    // Donde termina la piel: el borde de delante de un corte redondo, visto un poco desde arriba (baja en el centro).
-    final skinEdge = Path()
-      ..moveTo(60, 224)
-      ..lineTo(84, 224)
-      ..arcToPoint(const Offset(316, 224), radius: const Radius.elliptical(116, 14), clockwise: false)
-      ..lineTo(340, 224)
-      ..lineTo(340, 400)
-      ..lineTo(60, 400)
-      ..close();
-    final skin = Path.combine(PathOperation.intersect, outline, skinEdge);
+    // El cuerpo: redondo por abajo y con «hombros» redondeados por arriba (ahí se apoya el cerebro).
+    final body = RRect.fromLTRBAndCorners(84, 214, 316, 378,
+        topLeft: const Radius.elliptical(96, 58), topRight: const Radius.elliptical(96, 58), bottomLeft: const Radius.elliptical(114, 112), bottomRight: const Radius.elliptical(114, 112));
+    canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(_cx, 214), const Offset(_cx, 380), [light, color, dark], const [0, 0.42, 1]));
 
-    if (solidBrain) {
-      canvas.save();
-      canvas.clipPath(outline);
-      _paintSolidBrain(canvas);
-      canvas.restore();
-    } else {
-      final deep = BrainyCharacterPainter._shade(color, -0.36, -0.10), deeper = BrainyCharacterPainter._shade(color, -0.46, -0.15);
-      canvas.drawPath(outline, Paint()..shader = ui.Gradient.radial(const Offset(_cx - 30, 160), 190, [deep, deeper]));
-      canvas.save();
-      canvas.clipPath(outline);
-      _paintBrain(canvas, const Offset(_cx, 232), 134);
-      canvas.restore();
-    }
-
-    // La piel (cuerpo y cara), con el mismo contorno.
-    final body = figure;
-    canvas.drawPath(skin, Paint()..shader = ui.Gradient.linear(const Offset(_cx, 224), const Offset(_cx, 380), [light, color, dark], const [0, 0.4, 1]));
-
-    // Lo que va pegado a la superficie del cuerpo: se dibuja recortado al cuerpo.
     canvas.save();
     canvas.clipRRect(body);
-    // La barriga clara, solo por delante.
+    if (brainOnTop) {
+      // Sombra suave que el cerebro deja sobre el mono: se nota que está apoyado encima.
+      canvas.drawOval(
+        Rect.fromCenter(center: const Offset(_cx, 212), width: 236, height: 64),
+        Paint()..shader = ui.Gradient.radial(const Offset(_cx, 212), 118, [const Color(0x55081040), const Color(0x00081040)], const [0.55, 1.0]),
+      );
+    }
     if (cs > 0) {
       final (bx, _) = around(70, 0);
       canvas.drawOval(
-        Rect.fromCenter(center: Offset(bx, 322), width: 160 * (0.35 + 0.65 * cs), height: 100),
-        Paint()..shader = ui.Gradient.radial(Offset(bx, 322), 80, [Colors.white.withValues(alpha: 0.26 * cs), Colors.white.withValues(alpha: 0)]),
+        Rect.fromCenter(center: Offset(bx, 326), width: 160 * (0.35 + 0.65 * cs), height: 96),
+        Paint()..shader = ui.Gradient.radial(Offset(bx, 326), 80, [Colors.white.withValues(alpha: 0.26 * cs), Colors.white.withValues(alpha: 0)]),
       );
     }
-    // Una pieza de la cara a [angle] del frente: devuelve (x, cuánto se ve de frente 0–1) o null si queda detrás.
     (double, double)? face(double angle) {
       final (x, z) = around(112, angle);
       final facing = z / 112;
@@ -1002,7 +1010,7 @@ class Brainy3DPainter extends CustomPainter {
     final cheek = Paint()..color = const Color(0x99FF8FB1);
     for (final a in [0.60, -0.60]) {
       final f = face(a);
-      if (f != null) canvas.drawOval(Rect.fromCenter(center: Offset(f.$1, 292), width: 30 * f.$2, height: 20), cheek);
+      if (f != null) canvas.drawOval(Rect.fromCenter(center: Offset(f.$1, 296), width: 30 * f.$2, height: 20), cheek);
     }
     final white = Paint()
       ..color = Colors.white
@@ -1016,20 +1024,19 @@ class Brainy3DPainter extends CustomPainter {
       if (blink > 0.85) {
         canvas.drawPath(
           Path()
-            ..moveTo(x - 15 * w, 270)
-            ..quadraticBezierTo(x, 284, x + 15 * w, 270),
+            ..moveTo(x - 15 * w, 274)
+            ..quadraticBezierTo(x, 288, x + 15 * w, 274),
           white,
         );
         continue;
       }
-      final eye = Rect.fromCenter(center: Offset(x, 270), width: 34 * w, height: 40 * (1 - blink));
+      final eye = Rect.fromCenter(center: Offset(x, 274), width: 34 * w, height: 40 * (1 - blink));
       canvas.drawOval(eye, Paint()..color = Colors.white);
       canvas.save();
       canvas.clipPath(Path()..addOval(eye));
-      // La pupila mira un poco hacia donde va el giro (hacia el centro de la pantalla).
       final look = (_cx - x) * 0.05;
-      canvas.drawOval(Rect.fromCenter(center: Offset(x + look, 274), width: 22 * w, height: 22), Paint()..color = const Color(0xFF0B1238));
-      canvas.drawOval(Rect.fromCenter(center: Offset(x + look + 4 * w, 269), width: 8.4 * w, height: 8.4), Paint()..color = Colors.white);
+      canvas.drawOval(Rect.fromCenter(center: Offset(x + look, 278), width: 22 * w, height: 22), Paint()..color = const Color(0xFF0B1238));
+      canvas.drawOval(Rect.fromCenter(center: Offset(x + look + 4 * w, 273), width: 8.4 * w, height: 8.4), Paint()..color = Colors.white);
       canvas.restore();
     }
     final mouth = face(0);
@@ -1037,72 +1044,109 @@ class Brainy3DPainter extends CustomPainter {
       final (x, w) = mouth;
       canvas.drawPath(
         Path()
-          ..moveTo(x - 18 * w, 300)
-          ..quadraticBezierTo(x, 320, x + 18 * w, 300),
+          ..moveTo(x - 18 * w, 304)
+          ..quadraticBezierTo(x, 324, x + 18 * w, 304),
         white,
       );
     }
     canvas.restore();
-
-    // --- Pies y brazos que quedan DELANTE ---
-    for (final a in feet) {
-      if (around(46, a).$2 >= 0) foot(a);
-    }
-    for (final a in arms) {
-      if (around(118, a).$2 >= 0) arm(a);
-    }
-    canvas.restore();
   }
 
-  /// La cabeza como cerebro sólido: una superficie clara (tono del color elegido) con los surcos dibujados
-  /// encima. Los surcos están en 3D sobre la cabeza: al girar se desplazan, se afinan cerca del borde y los
-  /// de detrás no se ven. Las señales son luces que recorren esos surcos.
-  void _paintSolidBrain(Canvas canvas) {
-    const cxh = _cx, cyh = 236.0, rx = 118.0, ry = 124.0, pitch = 0.20;
-    final cp = math.cos(pitch), sp = math.sin(pitch);
-    final surface = BrainyCharacterPainter._shade(color, 0.24, -0.06), surfaceDark = BrainyCharacterPainter._shade(color, 0.06);
-    final groove = BrainyCharacterPainter._shade(color, -0.14, 0.04);
-    // La superficie, con luz desde arriba a la izquierda (no gira: la luz está quieta).
-    canvas.drawRect(const Rect.fromLTWH(60, 100, 280, 160), Paint()..shader = ui.Gradient.radial(const Offset(160, 150), 190, [surface, surfaceDark]));
+  /// PIEZA 2 · El cerebro, como objeto propio con centro en [c]: más ancho que alto, más largo de delante a
+  /// atrás que de lado a lado (por eso su contorno cambia al girar), borde con bultos, base más plana y oscura,
+  /// surcos en 3D, los dos hemisferios y las señales.
+  void _paintBrainPart(Canvas canvas, Offset c) {
+    const rx = 124.0, rz = 138.0, ryTop = 100.0, ryLow = 50.0, pitch = 0.20;
+    final cy0 = math.cos(yaw), sy0 = math.sin(yaw), cp = math.cos(pitch), sp = math.sin(pitch);
+    // Medio ancho de la silueta a este ángulo.
+    final w = math.sqrt(rx * rx * cy0 * cy0 + rz * rz * sy0 * sy0);
+    final surface = BrainyCharacterPainter._shade(color, 0.26, -0.06), surfaceDark = BrainyCharacterPainter._shade(color, 0.07);
+    final groove = BrainyCharacterPainter._shade(color, -0.14, 0.04), under = BrainyCharacterPainter._shade(color, -0.10);
 
-    // (longitud, latitud) → (punto en pantalla, cuánto mira hacia nosotros).
+    // Contorno: por arriba, una fila de bultos (las circunvoluciones del borde); por abajo, la base, más plana.
+    const bumps = 8;
+    final outline = Path()..moveTo(c.dx - w, c.dy);
+    var prev = Offset(c.dx - w, c.dy);
+    for (var k = 1; k <= bumps; k++) {
+      final a = math.pi - k * math.pi / bumps;
+      final p = Offset(c.dx + w * math.cos(a), c.dy - ryTop * math.sin(a));
+      outline.arcToPoint(p, radius: Radius.circular((p - prev).distance * 0.62));
+      prev = p;
+    }
+    outline
+      ..arcToPoint(Offset(c.dx - w, c.dy), radius: Radius.elliptical(w, ryLow))
+      ..close();
+
+    canvas.save();
+    canvas.clipPath(outline);
+    canvas.drawRect(Rect.fromLTRB(c.dx - w - 20, c.dy - ryTop - 30, c.dx + w + 20, c.dy + ryLow + 10),
+        Paint()..shader = ui.Gradient.radial(Offset(c.dx - 40, c.dy - 50), 190, [surface, surfaceDark]));
+    // La base, en sombra.
+    canvas.drawRect(Rect.fromLTRB(c.dx - w - 20, c.dy + 4, c.dx + w + 20, c.dy + ryLow + 10),
+        Paint()..shader = ui.Gradient.linear(Offset(c.dx, c.dy + 4), Offset(c.dx, c.dy + ryLow), [under.withValues(alpha: 0), under.withValues(alpha: 0.85)]));
+
     (Offset, double) project(double lon, double lat) {
-      final a = lon + yaw, cl = math.cos(lat);
-      final x = cl * math.sin(a), y = math.sin(lat), z = cl * math.cos(a);
-      final y2 = y * cp - z * sp, z2 = y * sp + z * cp;
-      return (Offset(cxh + rx * x, cyh - ry * y2), z2);
+      final cl = math.cos(lat);
+      final x = rx * cl * math.sin(lon), y = ryTop * math.sin(lat), z = rz * cl * math.cos(lon);
+      final x1 = x * cy0 + z * sy0, z1 = -x * sy0 + z * cy0;
+      final y2 = y * cp - z1 * sp * 0.55, depth = (y / ryTop) * sp + (z1 / rz) * cp;
+      return (Offset(c.dx + x1, c.dy - y2), depth);
     }
 
     final folds = BrainFolds.instance;
-    final pen = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final shine = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..color = Colors.white.withValues(alpha: 0.28);
     for (var f = 0; f < folds.lines.length; f++) {
       final line = folds.lines[f];
-      final thick = f == folds.fissureIndex ? 8.5 : 6.5;
-      var (prev, prevZ) = project(line[0].$1, line[0].$2);
-      for (var k = 1; k < line.length; k++) {
-        final (p, z) = project(line[k].$1, line[k].$2);
-        if (z > 0.04 && prevZ > 0.04) {
-          final facing = ((z + prevZ) / 2).clamp(0.0, 1.0);
-          // El surco y, justo encima, un filo de luz: da el relieve de «pliegue».
-          pen
-            ..color = groove.withValues(alpha: 0.55 + 0.35 * facing)
-            ..strokeWidth = thick * (0.35 + 0.65 * facing);
-          canvas.drawLine(prev, p, pen);
-          shine.strokeWidth = 2.2 * (0.35 + 0.65 * facing);
-          canvas.drawLine(prev.translate(0, -thick * 0.62 * facing), p.translate(0, -thick * 0.62 * facing), shine);
-        }
-        prev = p;
-        prevZ = z;
+      final thick = f == folds.fissureIndex ? 9.0 : 6.5;
+      // Cada tramo visible del surco es un trazo seguido (así sale liso, no dentado).
+      Path? path, glint;
+      var widthSum = 0.0, count = 0;
+      void flush() {
+        if (path == null || count == 0) return;
+        final facing = widthSum / count;
+        canvas.drawPath(
+          path!,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..color = groove.withValues(alpha: 0.6 + 0.3 * facing)
+            ..strokeWidth = thick * (0.4 + 0.6 * facing),
+        );
+        canvas.drawPath(
+          glint!,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..color = Colors.white.withValues(alpha: 0.30)
+            ..strokeWidth = 2.2 * (0.4 + 0.6 * facing),
+        );
+        path = null;
+        glint = null;
+        widthSum = 0;
+        count = 0;
       }
+
+      for (var k = 0; k < line.length; k++) {
+        final (p, z) = project(line[k].$1, line[k].$2);
+        if (z <= 0.05) {
+          flush();
+          continue;
+        }
+        final lift = thick * 0.62 * z.clamp(0.0, 1.0);
+        if (path == null) {
+          path = Path()..moveTo(p.dx, p.dy);
+          glint = Path()..moveTo(p.dx, p.dy - lift);
+        } else {
+          path!.lineTo(p.dx, p.dy);
+          glint!.lineTo(p.dx, p.dy - lift);
+        }
+        widthSum += z.clamp(0.0, 1.0);
+        count++;
+      }
+      flush();
     }
 
-    // Señales: una luz con estela, recorriendo cada surco.
     final sig = foldSignals;
     if (sig != null) {
       final glow = Paint()..color = const Color(0xFFFFE45C).withValues(alpha: 0.45);
@@ -1123,106 +1167,23 @@ class Brainy3DPainter extends CustomPainter {
           if (za < 0.08 || zb < 0.08) continue;
           trail
             ..color = const Color(0xFFFFF3B0).withValues(alpha: 0.85 * (1 - j / 6))
-            ..strokeWidth = 4.2 * z;
+            ..strokeWidth = 4.2 * z.clamp(0.0, 1.0);
           canvas.drawLine(a, b, trail);
         }
-        canvas.drawCircle(p, 8.5 * z, glow);
-        canvas.drawCircle(p, 3.6 * z, head);
-      }
-    }
-  }
-
-  /// El cerebro 3D girado [yaw] (más la pequeña inclinación de siempre), proyectado en este cuadro.
-  /// Es un poco más ancho que el real (×1,3) para que llene la cúpula igual de frente que de lado.
-  void _paintBrain(Canvas canvas, Offset c, double r) {
-    final m = Brain3D.front;
-    const pitch = 0.16, dist = 3.4, widen = 1.3;
-    final cy = math.cos(yaw), sy0 = math.sin(yaw), cp = math.cos(pitch), sp = math.sin(pitch);
-    final n = m.count;
-    final px = Float32List(n), py = Float32List(n);
-    final band = Uint8List(n);
-    final counts = List.generate(5, (_) => List.filled(3, 0));
-    for (var i = 0; i < n; i++) {
-      final x = m.x3[i] * widen, y = m.y3[i] + 0.14, z = m.z3[i];
-      final x1 = x * cy + z * sy0, z1 = -x * sy0 + z * cy;
-      final y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
-      final k = dist / (dist - z2);
-      px[i] = x1 * k;
-      py[i] = -y2 * k;
-      final b = z2 < -0.3 ? 0 : (z2 < 0.3 ? 1 : 2);
-      band[i] = b;
-      counts[m.region[i]][b]++;
-    }
-    final lists = List.generate(5, (p) => List.generate(3, (b) => Float32List(counts[p][b] * 2)));
-    final fill = List.generate(5, (_) => List.filled(3, 0));
-    for (var i = 0; i < n; i++) {
-      final p = m.region[i], b = band[i], at = fill[p][b];
-      lists[p][b][at] = px[i];
-      lists[p][b][at + 1] = py[i];
-      fill[p][b] = at + 2;
-    }
-
-    canvas.save();
-    canvas.translate(c.dx, c.dy);
-    canvas.scale(r);
-    final unit = 1 / r;
-    const halo = [0.035, 0.055, 0.08], core = [0.34, 0.55, 0.85];
-    final lines = Paint()
-      ..strokeWidth = 0.45 * unit
-      ..blendMode = BlendMode.plus;
-    final dots = Paint()
-      ..strokeCap = StrokeCap.round
-      ..blendMode = BlendMode.plus;
-    final edges = List.generate(5, (_) => <double>[]);
-    for (var e = 0; e < m.edgeA.length; e++) {
-      edges[m.edgeRegion[e]]..add(px[m.edgeA[e]])..add(py[m.edgeA[e]])..add(px[m.edgeB[e]])..add(py[m.edgeB[e]]);
-    }
-    for (var p = 0; p < 5; p++) {
-      final base = brainRegionColors[p];
-      lines.color = base.withValues(alpha: 0.20);
-      canvas.drawRawPoints(ui.PointMode.lines, Float32List.fromList(edges[p]), lines);
-      for (var b = 0; b < 3; b++) {
-        final sizePt = (0.62 + 0.10 * b) * unit * math.max(1.0, r / 92);
-        dots
-          ..color = base.withValues(alpha: halo[b])
-          ..strokeWidth = sizePt * 2.6 * 2;
-        canvas.drawRawPoints(ui.PointMode.points, lists[p][b], dots);
-        dots
-          ..color = base.withValues(alpha: core[b])
-          ..strokeWidth = sizePt * 1.25 * 2;
-        canvas.drawRawPoints(ui.PointMode.points, lists[p][b], dots);
-      }
-    }
-    final sig = signals;
-    if (sig != null && identical(sig.graph, m)) {
-      final flash = Paint()..blendMode = BlendMode.plus;
-      for (var i = 0; i < n; i++) {
-        final g = sig.glow[i];
-        if (g <= 0.02) continue;
-        flash.color = Colors.white.withValues(alpha: 0.45 * g);
-        canvas.drawCircle(Offset(px[i], py[i]), (0.9 + 1.1 * g) * unit, flash);
-      }
-      final trail = Paint()
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 0.9 * unit;
-      final head = Paint()..color = Colors.white;
-      final glow = Paint()
-        ..color = const Color(0xFFFFE45C).withValues(alpha: 0.45)
-        ..blendMode = BlendMode.plus;
-      for (var i = 0; i < sig.length; i++) {
-        final e = sig.edge(i);
-        final ia = sig.forward(i) ? m.edgeA[e] : m.edgeB[e], ib = sig.forward(i) ? m.edgeB[e] : m.edgeA[e];
-        final from = Offset(px[ia], py[ia]), to = Offset(px[ib], py[ib]);
-        final p = Offset.lerp(from, to, sig.t(i))!, tail = Offset.lerp(from, to, math.max(0, sig.t(i) - 0.8))!;
-        if ((p - tail).distance > 0.2 * unit) {
-          trail.shader = ui.Gradient.linear(tail, p, [const Color(0x00FFE45C), const Color(0xF2FFF3B0)]);
-          canvas.drawLine(tail, p, trail);
-        }
-        canvas.drawCircle(p, 1.9 * unit, glow);
-        canvas.drawCircle(p, 0.85 * unit, head);
+        canvas.drawCircle(p, 8.5 * z.clamp(0.0, 1.0), glow);
+        canvas.drawCircle(p, 3.6 * z.clamp(0.0, 1.0), head);
       }
     }
     canvas.restore();
+    // Un borde fino del tono del surco, para que el contorno con bultos se lea bien sobre cualquier fondo.
+    canvas.drawPath(
+      outline,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..strokeJoin = StrokeJoin.round
+        ..color = groove.withValues(alpha: 0.55),
+    );
   }
 
   @override
