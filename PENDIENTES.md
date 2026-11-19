@@ -15,6 +15,7 @@ _Última actualización: 2026-11-19_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Brainy: nacimiento nuevo** (pedido por Reynaldo: «en HD»). Commit `395a38f`, **parche 27**, iPhone reinstalado. Las 680 neuronas llegan en remolino cada una a su sitio del cerebro, se conectan y laten; tras el estallido el cuerpo sale de detrás de la cúpula, crece la antena, se enciende la chispa, abre los ojos y da un saltito. Vibración suave en cada golpe (no si se salta ni con «Reducir movimiento»). Dura 7 s; tocar la adelanta. Los tiempos están en `BirthTimeline` (pet_birth.dart) y la pose en `PetBirthPose` (pet_figure.dart). Decidido: se mejora en código, no con video ni Blender (un video sería archivo nuevo = versión de Play, y no encajaría con la mascota real). Sin sonido por ahora (exige versión nueva). Video de muestra: `~/Desktop/Brainy-pruebas/17-nacimiento-nuevo-HD.mp4`. App 191 tests. **No probado en teléfono real** (fluidez y vibración).
 - (19/11) **Brainy: personaje nuevo** (elegido por Reynaldo tras muchas pruebas; para todos los alumnos). Commit `462b5b0`, **parche 26**
   (dry-run «No issues detected»), iPhone Air reinstalado (19/11).
   **Dibujo** (`pet_figure.dart`, misma API `PetFigure`/`PetPainter`: la tarjeta de Hoy, la pantalla de Brainy, el Modo Brainy y el
@@ -180,7 +181,7 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
-- [ ] **Mirar la Brainy nueva en el teléfono** (Android: abrir 2 veces, parche 26; iPhone ya reinstalado). Al entrar sale el nacimiento
+- [ ] **Mirar la Brainy nueva en el teléfono** (Android: abrir 2 veces, parches 26 y 27; iPhone ya reinstalado). Al entrar sale el nacimiento Fijarse también en el **nacimiento nuevo**: si va fluido y si la vibración se nota bien.
   (tu cuenta aún no lo ha visto): nombre y luego color. Fijarse en: si va fluida (el cerebro tiene 680 neuronas animadas), si calienta
   o gasta batería, si en la tarjeta de Hoy se distingue, y si las neuronas encendidas corresponden a lo que llevas aprendido.
 - [ ] **Ver nacer a Brainy y ponerle nombre**: al abrir la app (Android: 2 veces, parche 24; iPhone ya reinstalado) debe salir la
