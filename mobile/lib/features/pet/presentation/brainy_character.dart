@@ -491,7 +491,8 @@ class BrainyCharacterPainter extends CustomPainter {
     canvas.save();
     canvas.clipRRect(dome.deflate(3));
     if (brain3d) {
-      _paintBrain3D(canvas, const Offset(204, 179), 67);
+      // Ampliado para llenar la cúpula de lado a lado: el tronco y parte del borde quedan fuera, recortados por el cristal.
+      _paintBrain3D(canvas, const Offset(203, 188), 93);
     } else {
       _paintBrain(canvas, const Offset(200, 180), 66);
     }
