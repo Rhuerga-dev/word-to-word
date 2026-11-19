@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
@@ -18,6 +20,18 @@ class PetRepository {
     } on ApiException {
       return null;
     }
+  }
+
+  /// Le pone nombre a la mascota ([name] null = «luego»: se queda como Brainy, pero ya presentada).
+  /// Devuelve la mascota como quedó. Si el nombre no vale, lanza [ApiException] con el mensaje del servidor.
+  Future<PetState?> rename(String? name) async {
+    final json = await _api.put('/pet/name', {'name': name});
+    final pet = PetState.tryParse(json);
+    if (pet != null) {
+      // Lo guardado sin conexión ya lleva el nombre nuevo. No se espera: guardar en disco no debe frenar la pantalla.
+      unawaited(_cache.write('pet', json).catchError((Object _) {}));
+    }
+    return pet;
   }
 
   /// Un botón de cuidado: el servidor dice qué ejercicio toca (new · reviews · ear · mistakes · sound) o '' si

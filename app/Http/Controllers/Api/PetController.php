@@ -26,4 +26,15 @@ class PetController extends Controller
 
         return $pet->act($request->user(), $action);
     }
+
+    /** PUT /pet/name: ponerle nombre a la mascota. Sin nombre (null) = «luego»: se queda como Brainy. */
+    public function rename(Request $request, PetService $pet)
+    {
+        $request->merge(['name' => is_string($request->input('name')) ? preg_replace('/\s+/u', ' ', trim($request->input('name'))) : $request->input('name')]);
+        $data = $request->validate(['name' => ['present', 'nullable', 'string', 'regex:'.PetService::NAME_RULE]], [
+            'name.regex' => 'El nombre debe tener de 2 a 20 letras o números.',
+        ]);
+
+        return $pet->rename($request->user(), $data['name'] ?: null);
+    }
 }

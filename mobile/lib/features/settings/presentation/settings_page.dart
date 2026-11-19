@@ -15,6 +15,8 @@ import '../../auth/data/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/profession_picker.dart';
 import '../../feedback/presentation/suggestion_dialog.dart';
+import '../../pet/presentation/pet_birth.dart';
+import '../../pet/presentation/pet_providers.dart';
 import '../../progress/presentation/progress_providers.dart';
 import '../../spanish/data/spanish_repository.dart';
 
@@ -42,6 +44,7 @@ class SettingsPage extends ConsumerWidget {
       const _WordDrillCard(),
       _h('Brainy'),
       const _BrainyModeCard(),
+      const _PetNameCard(),
       if (Platform.isAndroid) ...[
         _h(tr('Audífonos')),
         const HeadsetMicCard(),
@@ -465,6 +468,26 @@ class _WordDrillCard extends ConsumerWidget {
         subtitle: Text(tr('Si una palabra de la frase no se entiende, la practicas sola, luego en su trozo y vuelves a la frase.')),
         value: on,
         onChanged: (v) => ref.read(wordDrillSettingProvider.notifier).set(v),
+      ),
+    );
+  }
+}
+
+/// El nombre de la mascota (lo elige el alumno). No sale si la mascota no está disponible.
+class _PetNameCard extends ConsumerWidget {
+  const _PetNameCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pet = ref.watch(petProvider).valueOrNull;
+    if (pet == null) return const SizedBox.shrink();
+    return Card(
+      child: ListTile(
+        key: const ValueKey('pet-name-tile'),
+        title: Text(tr('Nombre de tu mascota')),
+        subtitle: Text(pet.name),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => showDialog<void>(context: context, builder: (_) => PetNameDialog(pet: pet)),
       ),
     );
   }

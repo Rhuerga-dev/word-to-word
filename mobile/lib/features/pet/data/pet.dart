@@ -110,6 +110,8 @@ class PetCare {
 class PetState {
   const PetState({
     this.name = 'Brainy',
+    this.named = false,
+    this.welcomed = true,
     this.points = 0,
     this.stage = 0,
     this.stageKey = 'spark',
@@ -121,6 +123,13 @@ class PetState {
   });
 
   final String name;
+
+  /// ¿El alumno le puso nombre? (false = se llama «Brainy», el nombre de siempre.)
+  final bool named;
+
+  /// ¿Ya vio su nacimiento y respondió a «¿cómo me quieres llamar?»? Con un servidor viejo (no lo dice) vale true:
+  /// así nunca se enseña la bienvenida donde no se podría guardar el nombre.
+  final bool welcomed;
   final int points;
 
   /// Etapa actual (0 = recién nacida) de [stages] etapas.
@@ -148,6 +157,8 @@ class PetState {
     final count = asInt(s['count'], 5).clamp(1, 12);
     return PetState(
       name: asString(j['name'], 'Brainy'),
+      named: j['named'] == true,
+      welcomed: j['welcomed'] != false,
       points: asInt(j['points']),
       stage: asInt(s['index']).clamp(0, count - 1),
       stageKey: asString(s['key'], 'spark'),

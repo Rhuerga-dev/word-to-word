@@ -20,7 +20,29 @@ use Throwable;
  */
 class PetService
 {
+    public const DEFAULT_NAME = 'Brainy';
+
+    /** Nombre de mascota válido: de 2 a 20 letras, números o espacios (también - y '), empezando por letra o número. */
+    public const NAME_RULE = "/^[\\p{L}\\p{N}][\\p{L}\\p{N} '\\-]{1,19}$/u";
+
     public function __construct(private SrsService $srs, private PetCare $care, private EarService $ear) {}
+
+    /**
+     * El alumno le pone nombre (o dice «luego» con null). En los dos casos queda apuntado que ya la conoció,
+     * para no volver a enseñar el nacimiento. Devuelve la mascota.
+     */
+    public function rename(User $user, ?string $name): array
+    {
+        $row = $this->care->row($user);
+        $name = $name === null ? null : preg_replace('/\s+/u', ' ', trim($name));
+        $values = ['welcomed_at' => $row->welcomed_at ?? now(), 'updated_at' => now()];
+        if ($name !== null && $name !== '') {
+            $values['name'] = $name === self::DEFAULT_NAME ? null : $name;
+        }
+        DB::table('pets')->where('id', $row->id)->update($values);
+
+        return $this->state($user);
+    }
 
     public function state(User $user): array
     {
@@ -44,7 +66,18 @@ class PetService
         // Las conexiones: se encienden a medida que se enciende todo lo demás.
         $regions['links'] = ['level' => round(array_sum(array_column($regions, 'level')) / count($regions), 3)];
 
-        $state = ['name' => 'Brainy', 'points' => $points, 'stage' => $this->stage($points), 'regions' => $regions];
+        $state = ['name' => self::DEFAULT_NAME, 'named' => false, 'welcomed' => true,
+            'points' => $points, 'stage' => $this->stage($points), 'regions' => $regions];
+        // Su nombre (lo elige el alumno) y si ya vio su nacimiento. Si falla (columna sin crear): «Brainy», sin bienvenida.
+        try {
+            $row = $this->care->row($user);
+            $name = trim((string) ($row->name ?? ''));
+            $state['name'] = $name !== '' ? $name : self::DEFAULT_NAME;
+            $state['named'] = $name !== '';
+            $state['welcomed'] = ($row->welcomed_at ?? null) !== null;
+        } catch (Throwable $e) {
+            report($e);
+        }
         // Los cuidados. Si fallan (p. ej. falta la tabla), la mascota sigue saliendo como antes, sin barras.
         try {
             $care = $this->care->state($user, $state['stage']['index'], array_keys(config('pet.stages')));

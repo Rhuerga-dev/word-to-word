@@ -8,6 +8,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/tr.dart';
 import '../../../core/widgets/w2w_loader.dart';
 import '../../experiments/data/brainy_experiment.dart';
+import '../../pet/data/pet.dart';
+import '../../pet/presentation/pet_birth.dart';
+import '../../pet/presentation/pet_providers.dart';
+import '../../../core/services/reminder_service.dart';
 
 /// Las 5 pestañas con la barra de abajo. Cada pestaña guarda su posición al cambiar.
 class HomeShell extends ConsumerStatefulWidget {
@@ -26,9 +30,27 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) => ref.read(appUpdateProvider.notifier).check());
   }
 
+  bool _birthShown = false;
+
+  /// La bienvenida de la mascota (nacimiento y nombre), una sola vez. Encima de todo, a pantalla completa.
+  void _welcome(PetState pet) {
+    if (_birthShown) return;
+    _birthShown = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).push(MaterialPageRoute<void>(fullscreenDialog: true, builder: (_) => PetBirthPage(pet: pet)));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final shell = widget.shell;
+    final pet = ref.watch(petProvider).valueOrNull;
+    if (pet != null) {
+      if (!pet.welcomed) _welcome(pet);
+      // Los recordatorios hablan con la voz de la mascota: en cuanto se sabe su nombre, se reprograman.
+      ref.read(reminderServiceProvider).setPetName(pet.name);
+    }
     final offline = ref.watch(offlineProvider);
     final update = ref.watch(appUpdateProvider);
     ref.watch(brainyExperimentReporterProvider); // experimento A/B: informa del Modo Brainy en uso (si lo hay)

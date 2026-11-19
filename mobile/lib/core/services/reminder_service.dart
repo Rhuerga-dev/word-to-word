@@ -20,12 +20,37 @@ class ReminderService {
     priority: Priority.high,
     icon: 'ic_stat_mic',
   );
-  static List<(String, String)> get _messages => [
-    (tr('Tu sesión de hoy te espera'), tr('Son unos 10 minutos: tus fichas, un sonido y un minuto hablando.')),
-    (tr('¿Un minuto de inglés?'), tr('Abre la app y habla un minuto sin parar. Todo suma a tu racha.')),
-    (tr('No pierdas la racha'), tr('Todavía no has practicado hoy. Una sesión corta basta.')),
-    (tr('Hora de hablar inglés'), tr('Repasa tus fichas y di bien tus errores de ayer.')),
-  ];
+  /// Los avisos (título, texto). Con mascota, habla ella con su nombre y sin culpar: nunca «te vas a perder…».
+  /// Sin mascota (servidor viejo o aún no cargó), los de siempre.
+  static List<(String, String)> messages([String? petName]) {
+    final pet = (petName ?? '').trim();
+    if (pet.isEmpty) {
+      return [
+        (tr('Tu sesión de hoy te espera'), tr('Son unos 10 minutos: tus fichas, un sonido y un minuto hablando.')),
+        (tr('¿Un minuto de inglés?'), tr('Abre la app y habla un minuto sin parar. Todo suma a tu racha.')),
+        (tr('No pierdas la racha'), tr('Todavía no has practicado hoy. Una sesión corta basta.')),
+        (tr('Hora de hablar inglés'), tr('Repasa tus fichas y di bien tus errores de ayer.')),
+      ];
+    }
+    return [
+      (tr('{0} tiene hambre de palabras', [pet]), tr('¿Le das 10 minutos? Tus fichas, un sonido y un minuto hablando.')),
+      (tr('{0} quiere oírte hablar', [pet]), tr('Abre la app y habla un minuto sin parar. Todo suma a tu racha.')),
+      (tr('{0} te está esperando', [pet]), tr('Todavía no has practicado hoy. Una sesión corta basta.')),
+      (tr('{0} quiere repasar contigo', [pet]), tr('Repasa tus fichas y di bien tus errores de ayer.')),
+    ];
+  }
+
+  String? _petName;
+  ({bool enabled, String? time, bool studiedToday})? _last;
+
+  /// El nombre de la mascota del alumno. Si cambia y ya había avisos programados, se reprograman con su voz.
+  void setPetName(String? name) {
+    final clean = (name ?? '').trim();
+    if (clean == (_petName ?? '')) return;
+    _petName = clean.isEmpty ? null : clean;
+    final last = _last;
+    if (last != null) sync(enabled: last.enabled, time: last.time, studiedToday: last.studiedToday);
+  }
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _ready = false;
@@ -62,12 +87,14 @@ class ReminderService {
 
   /// Reprograma los avisos según el ajuste del perfil y si hoy ya estudiaste.
   Future<void> sync({required bool enabled, required String? time, required bool studiedToday}) async {
+    _last = (enabled: enabled, time: time, studiedToday: studiedToday);
     try {
       await _init();
       await _plugin.cancelAll();
       if (!enabled) return;
+      final texts = messages(_petName);
       for (final (i, at) in nextTimes(DateTime.now(), time ?? '19:00', studiedToday).indexed) {
-        final (title, body) = _messages[at.day % _messages.length];
+        final (title, body) = texts[at.day % texts.length];
         await _plugin.zonedSchedule(
           100 + i,
           title,
