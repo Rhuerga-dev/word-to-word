@@ -29,11 +29,19 @@ class BrainyColors {
 /// Los colores de las cinco regiones del cerebro (los mismos del panel).
 const brainRegionColors = [Color(0xFF7C9CFF), Color(0xFF4AC487), Color(0xFFE6A64A), Color(0xFFF07A9A), Color(0xFFB58CFF)];
 
+/// Lo que necesitan las señales para viajar: neuronas y conexiones entre ellas.
+abstract class BrainGraph {
+  int get count;
+  Uint16List get edgeA;
+  Uint16List get edgeB;
+  List<List<int>> get edgesOf;
+}
+
 /// El cerebro que se ve dentro de la cúpula: una silueta con sus surcos bien marcados (visto de frente, con
 /// los dos hemisferios). Cada surco pertenece a una región y lleva sus neuronas; las neuronas vecinas están
 /// conectadas, también de un surco a otro, para que las señales puedan recorrer todo el cerebro.
 /// Coordenadas en una hoja propia: centro (0, 0), ancho ≈ 244, alto ≈ 200. Se construye una sola vez.
-class BrainModel {
+class BrainModel implements BrainGraph {
   BrainModel._() {
     _build();
   }
@@ -46,10 +54,15 @@ class BrainModel {
   late final Path outline; // la silueta, con sus «bultos»
   late final List<Path> folds; // los surcos
   late final List<int> foldRegion; // región (0…4) de cada surco
+  @override
   late final int count; // neuronas
   late final Float32List x, y;
   late final Uint8List region;
-  late final Uint16List edgeA, edgeB;
+  @override
+  late final Uint16List edgeA;
+  @override
+  late final Uint16List edgeB;
+  @override
   late final List<List<int>> edgesOf; // conexiones que tocan cada neurona
 
   /// Los surcos del hemisferio izquierdo (el derecho es su espejo): puntos de curvas Bézier y su región.
@@ -148,22 +161,218 @@ class BrainModel {
   }
 }
 
+/// El cerebro 3D del panel de Huerga Labs (public/js/brain.js en huergalabs-admin), portado tal cual:
+/// la misma semilla, la misma forma (corteza con surcos, lóbulos temporales, cerebelo y tronco), el mismo
+/// ángulo de vista y las mismas tres capas de profundidad. Aquí no gira: la vista se calcula una sola vez.
+/// Lleva menos neuronas que el panel (el teléfono lo dibuja en un espacio mucho más pequeño).
+class Brain3D implements BrainGraph {
+  Brain3D._(this.count) {
+    _build();
+  }
+
+  static final Brain3D instance = Brain3D._(1500);
+
+  @override
+  final int count;
+  late final Float32List sx, sy, scale; // posición en pantalla (unidades del cerebro) y tamaño por cercanía
+  late final Uint8List region, band; // región 0…4; capa 0 = fondo, 1 = medio, 2 = frente
+  @override
+  late final Uint16List edgeA;
+  @override
+  late final Uint16List edgeB;
+  @override
+  late final List<List<int>> edgesOf;
+  late final Uint8List edgeRegion;
+
+  /// Para dibujar deprisa: los índices de las neuronas de cada (región, capa) y las conexiones de cada región.
+  late final List<List<Float32List>> pointsByRegionBand;
+  late final List<Float32List> linesByRegion;
+
+  static int _imul(int a, int b) {
+    // Multiplicación de 32 bits como Math.imul de JavaScript (sin perder precisión).
+    final al = a & 0xFFFF, ah = (a >>> 16) & 0xFFFF;
+    return ((al * (b & 0xFFFFFFFF)) + (((ah * (b & 0xFFFFFFFF)) & 0xFFFF) << 16)) & 0xFFFFFFFF;
+  }
+
+  /// Azar con semilla, idéntico al del panel: el cerebro sale igual.
+  static double Function() _seeded(int seed) {
+    var s = seed & 0xFFFFFFFF;
+    return () {
+      s = (s + 0x6D2B79F5) & 0xFFFFFFFF;
+      var t = _imul(s ^ (s >>> 15), 1 | s);
+      t = ((t + _imul(t ^ (t >>> 7), 61 | t)) & 0xFFFFFFFF) ^ t;
+      return ((t ^ (t >>> 14)) & 0xFFFFFFFF) / 4294967296;
+    };
+  }
+
+  void _build() {
+    final rand = _seeded(20261117);
+    final xs = <double>[], ys = <double>[], zs = <double>[], ph = <int>[];
+    void add(double x, double y, double z, int p) {
+      xs.add(x);
+      ys.add(y);
+      zs.add(z);
+      ph.add(p);
+    }
+
+    List<double> direction() {
+      final u = rand() * 2 - 1, a = rand() * math.pi * 2, s = math.sqrt(1 - u * u);
+      return [s * math.cos(a), u, s * math.sin(a)];
+    }
+
+    double groove(double x, double y, double z) {
+      final n = math.sin(11 * x + 3 * math.sin(4 * z)) + math.sin(9 * z + 2.5 * math.sin(5 * y)) + math.sin(10 * y + 2 * math.sin(6 * x));
+      return math.exp(-math.pow(n / 0.35, 2).toDouble());
+    }
+
+    // Ejes: x = izquierda/derecha, y = arriba, z = delante (+) / atrás (−).
+    while (xs.length < count * 0.74) {
+      final d = direction();
+      final deep = rand() < 0.2;
+      final r = deep ? 0.25 + 0.6 * rand() : 0.93 + 0.07 * rand();
+      var x = d[0] * 0.74 * r, y = d[1] * 0.62 * r, z = d[2] * r;
+      if (!deep) {
+        final g = groove(x, y, z);
+        if (g > 0.55 && rand() < 0.75) continue; // el surco se ve porque ahí hay menos neuronas
+        final k = 1 - 0.07 * g;
+        x *= k;
+        y *= k;
+        z *= k;
+      }
+      if (y < 0) y *= 0.72; // base más plana
+      x *= 1 - 0.13 * z; // más estrecho delante
+      final ax = x.abs();
+      if (y > -0.1) y -= 0.16 * math.exp(-math.pow(ax / 0.1, 2).toDouble()); // la cisura hunde el centro
+      x = (x < 0 ? -1 : 1) * (ax * 0.93 + 0.045); // y separa los hemisferios
+      final int p;
+      if (deep && r < 0.6) {
+        p = 4;
+      } else if (z < -0.42) {
+        p = 0;
+      } else if (y < -0.1 && ax > 0.28 && z < 0.5) {
+        p = 2;
+      } else if (z > 0.18) {
+        p = 3;
+      } else {
+        p = 1;
+      }
+      add(x, y, z, p);
+    }
+    while (xs.length < count * 0.83) {
+      final d = direction();
+      final r = 0.85 + 0.15 * rand(), side = rand() < 0.5 ? -1 : 1;
+      add(side * 0.5 + d[0] * 0.17 * r, -0.3 + d[1] * 0.15 * r, 0.12 + d[2] * 0.42 * r, 2);
+    }
+    while (xs.length < count * 0.96) {
+      final d = direction();
+      final r = rand() < 0.25 ? 0.4 + 0.5 * rand() : 0.94 + 0.06 * rand();
+      final y = (d[1] * 0.2 * r * 26).round() / 26; // láminas del cerebelo
+      add(d[0] * 0.46 * r, -0.5 + y, -0.6 + d[2] * 0.27 * r, 4);
+    }
+    while (xs.length < count) {
+      final t = rand(), a = rand() * math.pi * 2, r = (0.1 - 0.035 * t) * math.sqrt(rand());
+      add(math.cos(a) * r, -0.42 - 0.56 * t, -0.28 - 0.12 * t + math.sin(a) * r, 4);
+    }
+
+    // La vista del panel al abrirse: giro −0,95, inclinación 0,22. Lo cercano, más grande.
+    const yaw = -0.95, pitch = 0.22, dist = 3.4;
+    final cy = math.cos(yaw), syw = math.sin(yaw), cp = math.cos(pitch), sp = math.sin(pitch);
+    final n = xs.length;
+    sx = Float32List(n);
+    sy = Float32List(n);
+    scale = Float32List(n);
+    region = Uint8List.fromList(ph);
+    band = Uint8List(n);
+    for (var i = 0; i < n; i++) {
+      final x = xs[i], y = ys[i] + 0.14, z = zs[i];
+      final x1 = x * cy + z * syw, z1 = -x * syw + z * cy;
+      final y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+      final k = dist / (dist - z2);
+      sx[i] = x1 * k;
+      sy[i] = -y2 * k;
+      scale[i] = k;
+      band[i] = z2 < -0.3 ? 0 : (z2 < 0.3 ? 1 : 2);
+    }
+
+    // Conexiones: cada neurona con sus 2 vecinas más cercanas (en 3D), como en el panel.
+    final a = <int>[], b = <int>[], er = <int>[];
+    final seen = <int>{};
+    for (var i = 0; i < n; i++) {
+      var b1 = -1, b2 = -1;
+      var d1 = double.infinity, d2 = double.infinity;
+      for (var j = 0; j < n; j++) {
+        if (j == i) continue;
+        final dx = xs[i] - xs[j], dy = ys[i] - ys[j], dz = zs[i] - zs[j];
+        final d = dx * dx + dy * dy + dz * dz;
+        if (d < d1) {
+          b2 = b1;
+          d2 = d1;
+          b1 = j;
+          d1 = d;
+        } else if (d < d2) {
+          b2 = j;
+          d2 = d;
+        }
+      }
+      for (final j in [b1, b2]) {
+        if (j < 0) continue;
+        if (seen.add(i < j ? i * n + j : j * n + i)) {
+          a.add(i);
+          b.add(j);
+          er.add(ph[i]);
+        }
+      }
+    }
+    edgeA = Uint16List.fromList(a);
+    edgeB = Uint16List.fromList(b);
+    edgeRegion = Uint8List.fromList(er);
+    edgesOf = List.generate(n, (_) => <int>[]);
+    for (var e = 0; e < a.length; e++) {
+      edgesOf[a[e]].add(e);
+      edgesOf[b[e]].add(e);
+    }
+
+    pointsByRegionBand = List.generate(5, (p) {
+      return List.generate(3, (bd) {
+        final out = <double>[];
+        for (var i = 0; i < n; i++) {
+          if (ph[i] == p && band[i] == bd) out..add(sx[i])..add(sy[i]);
+        }
+        return Float32List.fromList(out);
+      });
+    });
+    linesByRegion = List.generate(5, (p) {
+      final out = <double>[];
+      for (var e = 0; e < a.length; e++) {
+        if (er[e] == p) out..add(sx[a[e]])..add(sy[a[e]])..add(sx[b[e]])..add(sy[b[e]]);
+      }
+      return Float32List.fromList(out);
+    });
+  }
+}
+
 /// Las señales que viajan por el cerebro. Cada una recorre una conexión y, al llegar a la neurona,
 /// la enciende un instante y sigue por otra conexión de esa misma neurona: así se ven «caminos».
 class BrainSignals {
-  BrainSignals({this.count = 16, int seed = 7}) : _rand = math.Random(seed) {
-    final m = BrainModel.instance;
+  BrainSignals({this.count = 16, int seed = 7, BrainGraph? graph, this.minSpeed = 3.2, this.maxSpeed = 6.2})
+      : graph = graph ?? BrainModel.instance,
+        _rand = math.Random(seed) {
+    final m = this.graph;
     glow = Float32List(m.count);
     for (var i = 0; i < count; i++) {
       final e = _rand.nextInt(m.edgeA.length);
       _edge.add(e);
       _forward.add(_rand.nextBool());
       _t.add(_rand.nextDouble());
-      _speed.add(3.2 + _rand.nextDouble() * 3.0); // conexiones cortas: unas 3–6 por segundo
+      _speed.add(minSpeed + _rand.nextDouble() * (maxSpeed - minSpeed)); // conexiones por segundo
     }
   }
 
   final int count;
+
+  /// El cerebro por el que viajan.
+  final BrainGraph graph;
+  final double minSpeed, maxSpeed;
   final math.Random _rand;
   final _edge = <int>[], _forward = <bool>[], _t = <double>[], _speed = <double>[];
 
@@ -177,7 +386,7 @@ class BrainSignals {
 
   /// Avanza [dt] segundos.
   void step(double dt) {
-    final m = BrainModel.instance;
+    final m = graph;
     for (var i = 0; i < glow.length; i++) {
       if (glow[i] > 0) glow[i] = math.max(0, glow[i] - dt * 2.2);
     }
@@ -203,7 +412,10 @@ enum BrainyPose { main, newborn }
 
 /// El personaje. [color] es el del cuerpo; [lit] (0–1) cuánto cerebro está encendido; [signals] las señales.
 class BrainyCharacterPainter extends CustomPainter {
-  BrainyCharacterPainter({required this.color, this.pose = BrainyPose.main, this.lit = 1, this.signals, this.blink = 0, super.repaint});
+  BrainyCharacterPainter({required this.color, this.pose = BrainyPose.main, this.lit = 1, this.signals, this.blink = 0, this.brain3d = false, super.repaint});
+
+  /// true = el cerebro 3D del panel dentro de la cúpula; false = el cerebro dibujado con surcos.
+  final bool brain3d;
 
   final Color color;
   final BrainyPose pose;
@@ -278,7 +490,11 @@ class BrainyCharacterPainter extends CustomPainter {
     canvas.drawRRect(dome, Paint()..shader = ui.Gradient.radial(const Offset(200, 170), 110, [const Color(0xFF1B2760), const Color(0xFF070B24)]));
     canvas.save();
     canvas.clipRRect(dome.deflate(3));
-    _paintBrain(canvas, const Offset(200, 180), 66);
+    if (brain3d) {
+      _paintBrain3D(canvas, const Offset(204, 179), 67);
+    } else {
+      _paintBrain(canvas, const Offset(200, 180), 66);
+    }
     canvas.restore();
     canvas.drawRRect(
       dome,
@@ -432,6 +648,73 @@ class BrainyCharacterPainter extends CustomPainter {
         }
         canvas.drawCircle(p, 8, halo);
         canvas.drawCircle(p, 3.6, head);
+      }
+    }
+    canvas.restore();
+  }
+
+  /// El cerebro 3D del panel, dibujado igual que allí: conexiones tenues por región, cada neurona con un halo
+  /// suave y un centro vivo, más apagado cuanto más al fondo, y las luces se SUMAN donde se juntan.
+  /// [r] = cuántas unidades de la hoja mide «1» del cerebro (su medio largo).
+  void _paintBrain3D(Canvas canvas, Offset c, double r) {
+    final m = Brain3D.instance;
+    canvas.save();
+    canvas.translate(c.dx, c.dy);
+    canvas.scale(r);
+    final unit = 1 / r; // 1 unidad de la hoja, en unidades del cerebro
+    // Más suave que en el panel: aquí el cerebro es mucho más pequeño y las luces se amontonan (se quemaría en blanco).
+    const halo = [0.035, 0.055, 0.08], core = [0.34, 0.55, 0.85];
+    final lines = Paint()
+      ..strokeWidth = 0.45 * unit
+      ..blendMode = BlendMode.plus;
+    final dots = Paint()
+      ..strokeCap = StrokeCap.round
+      ..blendMode = BlendMode.plus;
+    for (var p = 0; p < 5; p++) {
+      final base = brainRegionColors[p];
+      lines.color = base.withValues(alpha: 0.16);
+      canvas.drawRawPoints(ui.PointMode.lines, m.linesByRegion[p], lines);
+      for (var b = 0; b < 3; b++) {
+        final pts = m.pointsByRegionBand[p][b];
+        final size = (0.62 + 0.10 * b) * unit; // lo cercano, un poco más grande
+        dots
+          ..color = base.withValues(alpha: halo[b])
+          ..strokeWidth = size * 2.6 * 2;
+        canvas.drawRawPoints(ui.PointMode.points, pts, dots);
+        dots
+          ..color = base.withValues(alpha: core[b])
+          ..strokeWidth = size * 1.25 * 2;
+        canvas.drawRawPoints(ui.PointMode.points, pts, dots);
+      }
+    }
+    // Señales que viajan por las conexiones y encienden la neurona a la que llegan.
+    final sig = signals;
+    if (sig != null && identical(sig.graph, m)) {
+      final flash = Paint()..blendMode = BlendMode.plus;
+      for (var i = 0; i < m.count; i++) {
+        final g = sig.glow[i];
+        if (g <= 0.02) continue;
+        flash.color = Colors.white.withValues(alpha: 0.45 * g);
+        canvas.drawCircle(Offset(m.sx[i], m.sy[i]), (0.9 + 1.1 * g) * unit, flash);
+      }
+      final trail = Paint()
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 0.9 * unit;
+      final head = Paint()..color = Colors.white;
+      final glow = Paint()
+        ..color = const Color(0xFFFFE45C).withValues(alpha: 0.45)
+        ..blendMode = BlendMode.plus;
+      for (var i = 0; i < sig.length; i++) {
+        final e = sig.edge(i);
+        final ia = sig.forward(i) ? m.edgeA[e] : m.edgeB[e], ib = sig.forward(i) ? m.edgeB[e] : m.edgeA[e];
+        final from = Offset(m.sx[ia], m.sy[ia]), to = Offset(m.sx[ib], m.sy[ib]);
+        final p = Offset.lerp(from, to, sig.t(i))!, tail = Offset.lerp(from, to, math.max(0, sig.t(i) - 0.8))!;
+        if ((p - tail).distance > 0.2 * unit) {
+          trail.shader = ui.Gradient.linear(tail, p, [const Color(0x00FFE45C), const Color(0xF2FFF3B0)]);
+          canvas.drawLine(tail, p, trail);
+        }
+        canvas.drawCircle(p, 1.9 * unit, glow);
+        canvas.drawCircle(p, 0.85 * unit, head);
       }
     }
     canvas.restore();
