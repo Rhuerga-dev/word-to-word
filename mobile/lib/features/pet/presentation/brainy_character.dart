@@ -806,6 +806,80 @@ class BrainyCharacterPainter extends CustomPainter {
 }
 
 
+/// Los surcos del cerebro colocados sobre la cabeza, en 3D: cada surco es una línea ondulada dibujada sobre
+/// una esfera, dada por (longitud, latitud). Longitud 0 = el frente; +π/2 = un lado; π = la espalda.
+/// Los dos hemisferios son espejo uno del otro, y entre ellos va la cisura central, de delante a atrás por arriba.
+class BrainFolds {
+  BrainFolds._() {
+    // Hemisferio derecho: surcos que van del frente a la espalda pasando por el lado, a distintas alturas.
+    const bands = <(double lat, double amp, double freq, double phase, double from, double to)>[
+      (0.20, 0.085, 3.0, 0.0, 0.16, 2.98),
+      (0.46, 0.090, 2.6, 1.3, 0.20, 2.94),
+      (0.72, 0.085, 2.2, 2.4, 0.26, 2.88),
+      (0.98, 0.070, 1.8, 0.7, 0.36, 2.78),
+      (1.22, 0.050, 1.2, 1.9, 0.60, 2.54),
+    ];
+    for (final side in [1.0, -1.0]) {
+      for (final (lat, amp, freq, phase, from, to) in bands) {
+        final line = <(double, double)>[];
+        const steps = 44;
+        for (var k = 0; k <= steps; k++) {
+          final t = k / steps;
+          line.add((side * (from + (to - from) * t), lat + amp * math.sin(freq * t * 2 * math.pi + phase)));
+        }
+        lines.add(line);
+      }
+      // Ramitas cortas entre surcos, para que no parezcan rayas paralelas.
+      for (final (lon, lat0, lat1) in const [(0.55, 0.26, 0.40), (1.25, 0.52, 0.66), (2.0, 0.26, 0.40), (0.9, 0.78, 0.92), (1.9, 0.78, 0.92), (2.55, 0.52, 0.66)]) {
+        lines.add([for (var k = 0; k <= 6; k++) (side * (lon + 0.05 * math.sin(k * 1.1)), lat0 + (lat1 - lat0) * k / 6)]);
+      }
+    }
+    // La cisura central: sube por el frente, pasa por arriba y baja por la espalda.
+    final fissure = <(double, double)>[];
+    for (var k = 0; k <= 30; k++) {
+      fissure.add((0.0, 0.06 + (math.pi / 2 - 0.06) * k / 30));
+    }
+    for (var k = 1; k <= 30; k++) {
+      fissure.add((math.pi, math.pi / 2 - (math.pi / 2 - 0.06) * k / 30));
+    }
+    fissureIndex = lines.length;
+    lines.add(fissure);
+  }
+
+  static final BrainFolds instance = BrainFolds._();
+
+  final lines = <List<(double, double)>>[];
+  late final int fissureIndex;
+}
+
+/// Señales que viajan por los surcos: cada una recorre un surco de punta a punta y luego salta a otro.
+class FoldSignals {
+  FoldSignals({int count = 9, int seed = 5}) : _rand = math.Random(seed) {
+    final n = BrainFolds.instance.lines.length;
+    for (var i = 0; i < count; i++) {
+      fold.add(_rand.nextInt(n));
+      t.add(_rand.nextDouble());
+      _speed.add(0.22 + _rand.nextDouble() * 0.25);
+      _dir.add(_rand.nextBool() ? 1 : -1);
+    }
+  }
+
+  final math.Random _rand;
+  final fold = <int>[], t = <double>[], _speed = <double>[], _dir = <int>[];
+
+  void step(double dt) {
+    final n = BrainFolds.instance.lines.length;
+    for (var i = 0; i < fold.length; i++) {
+      t[i] += dt * _speed[i] * _dir[i];
+      if (t[i] > 1 || t[i] < 0) {
+        fold[i] = _rand.nextInt(n);
+        _dir[i] = _rand.nextBool() ? 1 : -1;
+        t[i] = _dir[i] > 0 ? 0 : 1;
+      }
+    }
+  }
+}
+
 /// PRUEBA: el personaje como objeto 3D que se puede girar los 360° y se ve coherente desde cualquier lado.
 ///
 /// Cómo se consigue sin un motor 3D:
@@ -817,7 +891,14 @@ class BrainyCharacterPainter extends CustomPainter {
 ///   gira dentro de la cúpula.
 /// [yaw] = giro en radianes (0 = de frente).
 class Brainy3DPainter extends CustomPainter {
-  Brainy3DPainter({required this.color, this.yaw = 0, this.signals, this.blink = 0});
+  Brainy3DPainter({required this.color, this.yaw = 0, this.signals, this.blink = 0, this.foldSignals, this.solidBrain = true});
+
+  /// true = la cabeza es un cerebro SÓLIDO con surcos (se reconoce a cualquier tamaño y sobre cualquier fondo);
+  /// false = el cerebro de puntos de luz del panel.
+  final bool solidBrain;
+
+  /// Las luces que recorren los surcos (solo con [solidBrain]).
+  final FoldSignals? foldSignals;
 
   final Color color;
   final double yaw;
@@ -882,12 +963,19 @@ class Brainy3DPainter extends CustomPainter {
       ..close();
     final skin = Path.combine(PathOperation.intersect, outline, skinEdge);
 
-    final deep = BrainyCharacterPainter._shade(color, -0.36, -0.10), deeper = BrainyCharacterPainter._shade(color, -0.46, -0.15);
-    canvas.drawPath(outline, Paint()..shader = ui.Gradient.radial(const Offset(_cx - 30, 160), 190, [deep, deeper]));
-    canvas.save();
-    canvas.clipPath(outline);
-    _paintBrain(canvas, const Offset(_cx, 232), 134);
-    canvas.restore();
+    if (solidBrain) {
+      canvas.save();
+      canvas.clipPath(outline);
+      _paintSolidBrain(canvas);
+      canvas.restore();
+    } else {
+      final deep = BrainyCharacterPainter._shade(color, -0.36, -0.10), deeper = BrainyCharacterPainter._shade(color, -0.46, -0.15);
+      canvas.drawPath(outline, Paint()..shader = ui.Gradient.radial(const Offset(_cx - 30, 160), 190, [deep, deeper]));
+      canvas.save();
+      canvas.clipPath(outline);
+      _paintBrain(canvas, const Offset(_cx, 232), 134);
+      canvas.restore();
+    }
 
     // La piel (cuerpo y cara), con el mismo contorno.
     final body = figure;
@@ -964,6 +1052,84 @@ class Brainy3DPainter extends CustomPainter {
       if (around(118, a).$2 >= 0) arm(a);
     }
     canvas.restore();
+  }
+
+  /// La cabeza como cerebro sólido: una superficie clara (tono del color elegido) con los surcos dibujados
+  /// encima. Los surcos están en 3D sobre la cabeza: al girar se desplazan, se afinan cerca del borde y los
+  /// de detrás no se ven. Las señales son luces que recorren esos surcos.
+  void _paintSolidBrain(Canvas canvas) {
+    const cxh = _cx, cyh = 236.0, rx = 118.0, ry = 124.0, pitch = 0.20;
+    final cp = math.cos(pitch), sp = math.sin(pitch);
+    final surface = BrainyCharacterPainter._shade(color, 0.24, -0.06), surfaceDark = BrainyCharacterPainter._shade(color, 0.06);
+    final groove = BrainyCharacterPainter._shade(color, -0.14, 0.04);
+    // La superficie, con luz desde arriba a la izquierda (no gira: la luz está quieta).
+    canvas.drawRect(const Rect.fromLTWH(60, 100, 280, 160), Paint()..shader = ui.Gradient.radial(const Offset(160, 150), 190, [surface, surfaceDark]));
+
+    // (longitud, latitud) → (punto en pantalla, cuánto mira hacia nosotros).
+    (Offset, double) project(double lon, double lat) {
+      final a = lon + yaw, cl = math.cos(lat);
+      final x = cl * math.sin(a), y = math.sin(lat), z = cl * math.cos(a);
+      final y2 = y * cp - z * sp, z2 = y * sp + z * cp;
+      return (Offset(cxh + rx * x, cyh - ry * y2), z2);
+    }
+
+    final folds = BrainFolds.instance;
+    final pen = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final shine = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: 0.28);
+    for (var f = 0; f < folds.lines.length; f++) {
+      final line = folds.lines[f];
+      final thick = f == folds.fissureIndex ? 8.5 : 6.5;
+      var (prev, prevZ) = project(line[0].$1, line[0].$2);
+      for (var k = 1; k < line.length; k++) {
+        final (p, z) = project(line[k].$1, line[k].$2);
+        if (z > 0.04 && prevZ > 0.04) {
+          final facing = ((z + prevZ) / 2).clamp(0.0, 1.0);
+          // El surco y, justo encima, un filo de luz: da el relieve de «pliegue».
+          pen
+            ..color = groove.withValues(alpha: 0.55 + 0.35 * facing)
+            ..strokeWidth = thick * (0.35 + 0.65 * facing);
+          canvas.drawLine(prev, p, pen);
+          shine.strokeWidth = 2.2 * (0.35 + 0.65 * facing);
+          canvas.drawLine(prev.translate(0, -thick * 0.62 * facing), p.translate(0, -thick * 0.62 * facing), shine);
+        }
+        prev = p;
+        prevZ = z;
+      }
+    }
+
+    // Señales: una luz con estela, recorriendo cada surco.
+    final sig = foldSignals;
+    if (sig != null) {
+      final glow = Paint()..color = const Color(0xFFFFE45C).withValues(alpha: 0.45);
+      final head = Paint()..color = Colors.white;
+      final trail = Paint()..strokeCap = StrokeCap.round;
+      for (var i = 0; i < sig.fold.length; i++) {
+        final line = folds.lines[sig.fold[i]];
+        (Offset, double) at(double t) {
+          final pos = t.clamp(0.0, 1.0) * (line.length - 1), k = pos.floor().clamp(0, line.length - 2), u = pos - k;
+          return project(line[k].$1 + (line[k + 1].$1 - line[k].$1) * u, line[k].$2 + (line[k + 1].$2 - line[k].$2) * u);
+        }
+
+        final (p, z) = at(sig.t[i]);
+        if (z < 0.08) continue;
+        for (var j = 5; j >= 1; j--) {
+          final (a, za) = at(sig.t[i] - j * 0.012);
+          final (b, zb) = at(sig.t[i] - (j - 1) * 0.012);
+          if (za < 0.08 || zb < 0.08) continue;
+          trail
+            ..color = const Color(0xFFFFF3B0).withValues(alpha: 0.85 * (1 - j / 6))
+            ..strokeWidth = 4.2 * z;
+          canvas.drawLine(a, b, trail);
+        }
+        canvas.drawCircle(p, 8.5 * z, glow);
+        canvas.drawCircle(p, 3.6 * z, head);
+      }
+    }
   }
 
   /// El cerebro 3D girado [yaw] (más la pequeña inclinación de siempre), proyectado en este cuadro.
