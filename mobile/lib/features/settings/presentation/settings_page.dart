@@ -48,7 +48,7 @@ class SettingsPage extends ConsumerWidget {
       ],
       if (Platform.isIOS) ...[
         _h(tr('AirPods')),
-        const _AirPodsMicCard(),
+        const AirPodsMicCard(),
       ],
       _h(tr('Tu opinión')),
       Card(
@@ -327,20 +327,32 @@ class _AirPodsCardState extends ConsumerState<_AirPodsCard> {
 }
 
 /// iPhone: grabar con el micrófono de los AirPods (para practicar con el iPhone en el bolsillo).
-class _AirPodsMicCard extends ConsumerWidget {
-  const _AirPodsMicCard();
+///
+/// El interruptor guarda una PREFERENCIA (por defecto, sí). Sin audífonos conectados esa preferencia no se
+/// está usando: el iPhone graba con su propio micrófono. Entonces el interruptor sale apagado y en gris,
+/// y el texto dice qué pasa de verdad. La preferencia no se toca: vuelve a verse al conectar los audífonos.
+class AirPodsMicCard extends ConsumerWidget {
+  const AirPodsMicCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final on = ref.watch(airPodsMicProvider).valueOrNull ?? true;
+    final phones = ref.watch(headphonesProvider);
+    // Solo se da por «sin audífonos» cuando ya se sabe; mientras se averigua (o si falla), se enseña la preferencia.
+    final none = phones.hasValue && phones.value == null;
     return Card(
       child: SwitchListTile(
+        key: const ValueKey('airpods-mic-switch'),
         title: Text(tr('Micrófono de los AirPods')),
-        subtitle: Text(on
-            ? tr('Te oye por los AirPods aunque el iPhone esté en el bolsillo. La voz de la app suena como una llamada.')
-            : tr('Te oye por el micrófono del iPhone. La voz de la app suena en alta calidad.')),
-        value: on,
-        onChanged: (v) => ref.read(airPodsMicProvider.notifier).set(v),
+        subtitle: Text(none
+            ? (on
+                ? tr('No hay audífonos conectados: ahora te oye el micrófono del iPhone. Al conectar tus AirPods se usará su micrófono.')
+                : tr('No hay audífonos conectados: te oye el micrófono del iPhone.'))
+            : on
+                ? tr('Te oye por los AirPods aunque el iPhone esté en el bolsillo. La voz de la app suena como una llamada.')
+                : tr('Te oye por el micrófono del iPhone. La voz de la app suena en alta calidad.')),
+        value: none ? false : on,
+        onChanged: none ? null : (v) => ref.read(airPodsMicProvider.notifier).set(v),
       ),
     );
   }

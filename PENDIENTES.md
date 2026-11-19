@@ -8,13 +8,19 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 259 ✓ (19/11), app 155 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **21** (19/11).
+- Tests: servidor 259 ✓ (19/11), app 160 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **21** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **iPhone: «Micrófono de los AirPods» ya no sale activado sin audífonos** (Ajustes). Era solo la tarjeta: pintaba la
+  preferencia guardada (encendida por defecto) sin mirar si había audífonos, y decía «Te oye por los AirPods». Ahora, sin audífonos
+  (`headphonesProvider` = null), el interruptor sale apagado y en gris con «No hay audífonos conectados: ahora te oye el micrófono del
+  iPhone…»; la preferencia no se toca y vuelve a verse al conectarlos. La grabación no cambió. `AirPodsMicCard` (antes privada) en
+  `settings_page.dart`, +5 tests (`airpods_mic_card_test.dart`). La tarjeta solo existe en iPhone: **sin parche de Android**;
+  iPhone Air reinstalado (19/11). No probado en el teléfono con y sin AirPods.
 - (19/11) **Experimento A/B del Modo Brainy** — hecho y **APAGADO** (lo enciende Reynaldo en el `.env`). Commit `3d7cb3e`, **parche 21**
   (dry-run «No issues detected»). Tabla nueva `experiment_participants` (migración solo aditiva, **aplicada el 19/11**; copia previa en
   `~/Backups/w2w/database-2026-11-19-antes-experimento.sqlite`).
@@ -118,6 +124,8 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] iPhone: abrir Ajustes **sin** AirPods (el interruptor «Micrófono de los AirPods» debe salir apagado y en gris) y luego **con**
+  AirPods (debe salir como lo dejaste y poder cambiarse).
 - [ ] **Encender el experimento del Modo Brainy** cuando quieras empezar: añadir al `.env` de W2W
   `BRAINY_AB_ENABLED=true` y `BRAINY_AB_START=AAAA-MM-DD` (el día que empieza). Opcional: `BRAINY_AB_EXCLUDE_IDS=1,2` para dejar
   fuera también la cuenta de pruebas (id 2). No hace falta reiniciar. Para pararlo: `BRAINY_AB_ENABLED=false` (quien ya eligió a mano

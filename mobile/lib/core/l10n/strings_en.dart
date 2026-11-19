@@ -472,4 +472,6 @@ const stringsEn = <String, String>{
   "En la demo no se pueden enviar sugerencias. Crea tu cuenta para enviarlas.": "You can't send suggestions in the demo. Create your account to send them.",
   "Ya enviaste muchas sugerencias hoy. Mañana puedes enviar más.": "You've sent a lot of suggestions today. You can send more tomorrow.",
   "Hoy ya recibimos muchas sugerencias. Inténtalo mañana.": "We've already received a lot of suggestions today. Try again tomorrow.",
+  "No hay audífonos conectados: ahora te oye el micrófono del iPhone. Al conectar tus AirPods se usará su micrófono.": "No headphones connected: the iPhone's microphone hears you now. When you connect your AirPods, their microphone will be used.",
+  "No hay audífonos conectados: te oye el micrófono del iPhone.": "No headphones connected: the iPhone's microphone hears you.",
 };
