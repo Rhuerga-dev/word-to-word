@@ -8,13 +8,20 @@ _Última actualización: 2026-11-19_
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 259 ✓ (19/11), app 160 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **21** (19/11).
+- Tests: servidor 259 ✓ (19/11), app 164 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **22** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Android: opción «Micrófono de los audífonos»** (Ajustes → Audífonos), **apagada por defecto**. Encendida, la grabación
+  usa el micrófono de los audífonos Bluetooth (`AndroidRecordConfig(manageBluetooth: true)`: los pone en modo llamada mientras grabas)
+  para practicar con el teléfono guardado; a cambio la voz de la app suena con calidad de llamada y algunos audífonos quitan la
+  cancelación de ruido. Apagada, todo como siempre. Sin audífonos la tarjeta sale apagada y en gris (la preferencia no se toca).
+  `AppAudio.headsetMic()`, `headsetMicProvider`, `HeadsetMicCard`; +5 tests (`headset_mic_card_test.dart`). Sin permisos nuevos (la 1.0.14
+  ya trae `BLUETOOTH_CONNECT` y `MODIFY_AUDIO_SETTINGS`) ni iconos. Commit `47860b4`, **parche 22** (dry-run «No issues detected»).
+  **No probado en un teléfono real**: falta ver si cada marca cambia de modo a tiempo (puede perderse el principio de la frase).
 - (19/11) **iPhone: «Micrófono de los AirPods» ya no sale activado sin audífonos** (Ajustes). Era solo la tarjeta: pintaba la
   preferencia guardada (encendida por defecto) sin mirar si había audífonos, y decía «Te oye por los AirPods». Ahora, sin audífonos
   (`headphonesProvider` = null), el interruptor sale apagado y en gris con «No hay audífonos conectados: ahora te oye el micrófono del
@@ -124,6 +131,9 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] Android (parche 22, abrir la app 2 veces): con audífonos Bluetooth, **Ajustes → Audífonos → Micrófono de los audífonos**.
+  Encenderlo, guardar el teléfono y hacer un ejercicio de hablar. Fijarse en: si te entiende desde el principio de la frase, cuánto
+  baja la calidad de la voz y si se quita la cancelación de ruido. Si va mal, dejarlo apagado (así viene) y avisar.
 - [ ] iPhone: abrir Ajustes **sin** AirPods (el interruptor «Micrófono de los AirPods» debe salir apagado y en gris) y luego **con**
   AirPods (debe salir como lo dejaste y poder cambiarse).
 - [ ] **Encender el experimento del Modo Brainy** cuando quieras empezar: añadir al `.env` de W2W
