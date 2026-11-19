@@ -15,6 +15,13 @@ return [
     'srs' => env('VOCAB_SRS', 'fsrs'),
     'fsrs' => ['retention' => 0.9, 'max_days' => 365],
 
+    // Freno de palabras nuevas: con MÁS de estos repasos atrasados no se ofrecen palabras nuevas hasta ponerse al día
+    // (si no, el atraso crece y se olvida lo aprendido). 0 = sin freno.
+    'new_pause_reviews' => (int) env('VOCAB_NEW_PAUSE_REVIEWS', 20),
+
+    // Una palabra marcada «Olvidé» vuelve HOY mismo (al final de la cola) en vez de mañana: se reaprende en la sesión.
+    'relearn_same_day' => (bool) env('VOCAB_RELEARN_SAME_DAY', true),
+
     // Protectores de racha: uno nuevo cada N días seguidos, hasta un máximo.
     'streak_freeze_every' => 7,
     'streak_freeze_max' => 2,

@@ -73,6 +73,9 @@ class SessionController extends Controller
                 'mistakes' => $mistakes,
             ],
             'minutes' => round(SpeakingSession::where('user_id', $user->id)->whereDate('day', $today->toDateString())->sum('speech_ms') / 60000, 1),
+            // true = hoy no hay palabras nuevas porque hay demasiados repasos atrasados.
+            'new_paused' => $q['new_paused'],
+            'reviews_due' => $q['reviews']->count(),
         ];
     }
 

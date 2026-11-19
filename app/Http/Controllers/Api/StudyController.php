@@ -54,6 +54,9 @@ class StudyController extends Controller
             'today' => $this->srs->today($user)->toDateString(),
             'daily_new' => $user->daily_new,
             'new_done' => $q['new_done'],
+            // true = hoy no hay palabras nuevas porque hay demasiados repasos atrasados (primero ponerse al día).
+            'new_paused' => $q['new_paused'],
+            'reviews_due' => $q['reviews']->count(),
             'cards' => $cards,
         ];
     }

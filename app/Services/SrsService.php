@@ -35,7 +35,7 @@ class SrsService
         return CarbonImmutable::today(config('vocab.timezone'))->addDays($user->day_offset);
     }
 
-    /** @return array{reviews: Collection, new: Collection, new_done: int} */
+    /** @return array{reviews: Collection, new: Collection, new_done: int, new_paused: bool} */
     public function queue(User $user): array
     {
         $today = $this->today($user);
@@ -54,6 +54,12 @@ class SrsService
             ->value('new_count');
 
         $remaining = max(0, $user->daily_new - $newDone);
+        // Freno: con demasiados repasos atrasados no entran palabras nuevas hasta ponerse al día.
+        $pauseAt = (int) config('vocab.new_pause_reviews', 0);
+        $paused = $pauseAt > 0 && $reviews->count() > $pauseAt;
+        if ($paused) {
+            $remaining = 0;
+        }
 
         $introducedIds = UserWord::where('user_id', $user->id)
             ->whereNotNull('introduced_at')
@@ -61,7 +67,7 @@ class SrsService
 
         $new = $this->newWords($user, $introducedIds, $remaining);
 
-        return ['reviews' => $reviews, 'new' => $new, 'new_done' => $newDone];
+        return ['reviews' => $reviews, 'new' => $new, 'new_done' => $newDone, 'new_paused' => $paused];
     }
 
     /**
@@ -141,7 +147,7 @@ class SrsService
             case 'again':
                 $uw->level = 0;
                 $uw->fails++;
-                $days = 1;
+                $days = $this->againDays();
                 break;
             case 'hard':
                 $days = max(1, (int) round($this->interval($uw->level) * 0.5));
@@ -190,9 +196,15 @@ class SrsService
                 : $s; // sin fecha: suponemos que se repasó cuando tocaba
             $state = $fsrs->next($s, $d, $elapsed, $grade);
         }
-        $days = $grade === 'again' ? 1 : $fsrs->interval($state['stability']);
+        $days = $grade === 'again' ? $this->againDays() : $fsrs->interval($state['stability']);
 
         return [$state, $days];
+    }
+
+    /** Días hasta volver a ver una palabra olvidada: 0 = hoy mismo (se reaprende en la sesión), 1 = mañana. */
+    private function againDays(): int
+    {
+        return config('vocab.relearn_same_day', true) ? 0 : 1;
     }
 
     /** Nivel clásico equivalente a una estabilidad (para "dominadas" y fichas sin español). */
@@ -230,7 +242,7 @@ class SrsService
         $max = count(config('vocab.intervals')) - 1;
 
         return [
-            'again' => 1,
+            'again' => $this->againDays(),
             'hard' => max(1, (int) round($this->interval($uw->level) * 0.5)),
             'good' => $this->interval(min($uw->level + 1, $max)),
             'easy' => $this->interval(min($uw->level + 2, $max)),

@@ -91,7 +91,7 @@ class _WordsPageState extends ConsumerState<WordsPage> {
               _how(Icons.wb_sunny_outlined, tr('Hoy aprendes tus palabras nuevas.')),
               _how(Icons.replay, tr('Mañana las repasas, junto con las nuevas de mañana.')),
               _how(Icons.calendar_month_outlined, tr('Las que recuerdas vuelven en 3 días, luego en una semana, 15 días, un mes…')),
-              _how(Icons.lightbulb_outline, tr('Si una se te olvida, vuelve mañana. Crea una escena AID para fijarla.')),
+              _how(Icons.lightbulb_outline, tr('Si una se te olvida, vuelve hoy mismo hasta que te salga. Crea una escena AID para fijarla.')),
               const SizedBox(height: 18),
               Text(tr('Repasos próximos 7 días'), style: W.display(19)),
               const SizedBox(height: 10),

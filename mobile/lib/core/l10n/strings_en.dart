@@ -480,4 +480,6 @@ const stringsEn = <String, String>{
   "No hay audífonos conectados: te oye el micrófono del teléfono.": "No headphones connected: the phone's microphone hears you.",
   "Te oye por los audífonos aunque el teléfono esté guardado. Mientras grabas, la voz de la app suena como una llamada (menos calidad) y algunos audífonos quitan la cancelación de ruido.": "It hears you through your headphones even with the phone put away. While recording, the app's voice sounds like a phone call (lower quality) and some headphones turn off noise cancellation.",
   "Te oye por el micrófono del teléfono. La voz de la app suena en alta calidad. Enciéndelo para practicar con el teléfono guardado (solo audífonos Bluetooth).": "It hears you through the phone's microphone. The app's voice sounds in high quality. Turn this on to practice with the phone put away (Bluetooth headphones only).",
+  "hoy otra vez": "again today",
+  "Si una se te olvida, vuelve hoy mismo hasta que te salga. Crea una escena AID para fijarla.": "If you forget one, it comes back the same day until you get it. Create an AID scene to lock it in.",
 };
