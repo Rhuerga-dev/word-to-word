@@ -865,32 +865,16 @@ class Brainy3DPainter extends CustomPainter {
       if (around(118, a).$2 < 0) arm(a);
     }
 
-    // --- La cúpula de cristal con el cerebro girando dentro ---
-    final skull = Rect.fromCenter(center: const Offset(_cx, 234), width: 240, height: 220);
-    canvas.drawOval(skull, Paint()..shader = ui.Gradient.radial(const Offset(_cx, 200), 150, [const Color(0xFF1E2B6A), const Color(0xFF080D2A)]));
+    // --- La cabeza ES el cerebro: una forma redonda y sólida, del tono oscuro del cuerpo, con las neuronas encima.
+    // Sin borde ni brillo de cristal: no es un casco. El fondo oscuro hace falta para que las luces se vean
+    // también sobre el fondo claro de la app.
+    final head = Rect.fromCenter(center: const Offset(_cx, 234), width: 236, height: 192); // ceñida al cerebro
+    final deep = BrainyCharacterPainter._shade(color, -0.36, -0.10), deeper = BrainyCharacterPainter._shade(color, -0.46, -0.15);
+    canvas.drawOval(head, Paint()..shader = ui.Gradient.radial(const Offset(_cx - 30, 170), 170, [deep, deeper]));
     canvas.save();
-    canvas.clipPath(Path()..addOval(skull.deflate(3)));
-    _paintBrain(canvas, const Offset(_cx, 226), 100);
+    canvas.clipPath(Path()..addOval(head));
+    _paintBrain(canvas, const Offset(_cx, 228), 108);
     canvas.restore();
-    canvas.drawOval(
-      skull,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4
-        ..color = BrainyCharacterPainter._shade(color, 0.34).withValues(alpha: 0.9),
-    );
-    // El brillo del cristal no gira: la luz viene siempre del mismo sitio.
-    canvas.drawPath(
-      Path()
-        ..moveTo(94, 210)
-        ..cubicTo(96, 176, 114, 148, 146, 136),
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawCircle(const Offset(160, 131), 3, Paint()..color = Colors.white.withValues(alpha: 0.5));
 
     // --- Cuerpo: redondo, mismo contorno desde cualquier lado ---
     final body = RRect.fromLTRBAndCorners(84, 232, 316, 378,
