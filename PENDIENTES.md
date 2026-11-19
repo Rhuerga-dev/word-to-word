@@ -30,7 +30,7 @@ _Última actualización: 2026-11-19_
   **Servidor:** guarda por alumno grupo, modo real, si lo cambió y cuándo, aperturas y botones de cuidado (`POST /api/pet/{acción}`).
   **Informe:** `php artisan experiments:report brainy` (`--json`) y bloque `experiments.brainy` en `metrics:snapshot`.
   +14 tests servidor (`BrainyExperimentTest`), +13 app (`brainy_experiment_test.dart`). **No probado en un teléfono real** ni con el
-  experimento encendido en producción. iPhone nativo **sin reinstalar** (con la versión vieja el Modo Brainy nace apagado y no informa).
+  experimento encendido en producción. **iPhone Air reinstalado (19/11)** con sugerencias y experimento.
 - (19/11) **Sugerencias de usuarios** (servidor + web + app) y **página de apoyo voluntario** (solo web). Commit `e48c5bb`, **parche 20**
   (dry-run «No issues detected»).
   **Sugerencias:** tabla nueva `suggestions` (migración solo aditiva, **aplicada el 19/11**; copia previa en
@@ -47,7 +47,7 @@ _Última actualización: 2026-11-19_
   la página da 404 y el enlace no sale** hasta que Reynaldo los ponga. El enlace solo está en la web (Ajustes); un test del servidor y
   otro de la app fallan si la app Flutter menciona /apoyo, PayPal o Zelle. +15 tests servidor (`SuggestionTest`, `SupportPageTest`),
   +7 app (`feedback_test.dart`). Probado en Chrome sin pantalla contra un servidor de prueba (enviar sugerencia y ver /apoyo a 390 px);
-  **no probado en un teléfono real**. iPhone nativo **sin reinstalar** (sigue con la versión del 18/11, sin sugerencias).
+  **no probado en un teléfono real**. iPhone Air reinstalado el 19/11.
 - (18/11) **Brainy: cuidados tipo mascota virtual + Modo Brainy** (Pasos 6a+ y 6a++ de `~/Code/brain/HANDOFF.md`; solo en la app).
   **Servidor:** tabla nueva `pets` (migración solo aditiva, **aplicada el 18/11**; copia previa en
   `~/Backups/w2w/database-2026-11-18-antes-mascota.sqlite`). `PetCare` lleva 4 barras de 0–4 corazones: **comida** (palabra nueva +1,
@@ -135,7 +135,6 @@ _Última actualización: 2026-11-19_
   `https://paypal.me/tuusuario`). Sin eso `/apoyo` da 404 y el enlace no aparece en Ajustes de la web. No hace falta reiniciar.
 - [ ] Probar **«Enviar sugerencia»**: en la web (Ajustes) y en la app Android (abrirla 2 veces para bajar el **parche 20**; Ajustes →
   Tu opinión). Para leer lo que llega, de momento: `sqlite3 database/database.sqlite "select created_at,type,platform,message from suggestions order by id desc"`.
-- [ ] Decidir si reinstalar la app nativa del iPhone para que tenga «Enviar sugerencia» (la web del iPhone ya la tiene).
 - [ ] Probar a **Brainy con cuidados**: Hoy → tarjeta «Brainy» → ver las 4 barras de corazones y pulsar Comer / Jugar / Limpiar /
   Medicina (cada uno abre un ejercicio; al terminarlo, Brainy da las gracias y sube la barra). Luego **Ajustes → Brainy → Modo Brainy**:
   la pestaña Hoy pasa a ser Brainy y «Mi sesión de hoy» abre lo de siempre. Fijarse en: que los emoji de los botones se ven bien, que
