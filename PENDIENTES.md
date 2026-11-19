@@ -3,18 +3,35 @@
 > Memoria del proyecto entre chats. **Léelo antes de empezar** y actualízalo al terminar.
 > Lo mantiene al día la bitácora nocturna y el cierre de cada sesión.
 
-_Última actualización: 2026-11-18_
+_Última actualización: 2026-11-19_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
 - **App Android** (`mobile/`, Flutter): **1.0.14 (16)** en Play (prueba interna) con Shorebird; parches 1–3, **4** (15/11: protector de racha, informe semanal, recordatorio automático) **5** (loader al pensar), **6** («I heard» y consejos en Oído), **7** (nota por voz más tolerante) **8** (avisa «repeat/slower» para la escalera) **9** (registro con código de invitación) **10** (loader «Evaluando…» en errores para repasar) **11** (errores: «Dilo así:» con la frase correcta desde el principio) **12** (errores: tocar el micro para terminar, espera de silencio 1,1 s) **13** (mini-taller de la palabra que fallas) y **14** (manos libres: tocar la barra para terminar, consejos en paralelo), todos del 15/11; **15** (16/11: loaders de Taller/Sonido y Oído) **16** (16/11: shadowing de la unidad en la app) **17** (17/11: prueba de la unidad —conversación con nota— en la app) **18** (18/11: Brainy, la mascota) y **19** (18/11: cuidados de Brainy y Modo Brainy).
-- Tests: servidor 230 ✓ (18/11), app 135 ✓ (+2 saltados), `flutter analyze` limpio (18/11).
+- Tests: servidor 245 ✓ (19/11), app 142 ✓ (+2 saltados), `flutter analyze` limpio (19/11). Último parche de Shorebird: **20** (19/11).
 - Repasos con **FSRS** desde el 15/11 (`VOCAB_SRS=classic` en .env vuelve al sistema de saltos fijos).
 - iPhone: web en pantalla de inicio y, desde el 15/11, **app nativa instalada con Xcode** en el iPhone Air (R3Y), firma del equipo PTJG6N43MX válida hasta 15/11/2027. Reinstalar: `flutter build ios --release` y `xcrun devicectl device install app --device <id> build/ios/iphoneos/Runner.app`. Sin notificaciones push de Apple (los avisos son locales). Se instala por wifi (el iPhone está emparejado en red local); no caduca a los 7 días: firma de pago hasta 15/11/2027.
 - Voz: Whisper local en el Mac para el habla libre; Azure para la nota de pronunciación.
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Sugerencias de usuarios** (servidor + web + app) y **página de apoyo voluntario** (solo web). Commit `e48c5bb`, **parche 20**
+  (dry-run «No issues detected»).
+  **Sugerencias:** tabla nueva `suggestions` (migración solo aditiva, **aplicada el 19/11**; copia previa en
+  `~/Backups/w2w/database-2026-11-19-antes-sugerencias.sqlite`). `POST /api/suggestions` (`SuggestionController`): con sesión,
+  `throttle:5,10`, tope de 10 al día por alumno y 500 entre todos (`Suggestion::DAILY_*`), `type` idea|bug|other y `platform`
+  android|ios|web con lista fija, mensaje de 5 a 2000 letras, `user_id` y `status` siempre puestos por el servidor; la demo recibe 403.
+  Se borran con la cuenta; «Reiniciar progreso» no las toca. `metrics:snapshot` añade el bloque `suggestions`
+  (`new`, `new_by_type`, `last_7d`, `total`; solo cifras, nunca el texto). **Web:** «💡 Enviar sugerencia» en Ajustes
+  (`public/app/feedback.js`, botones con `data-fb`, sin `onclick=`); `app.js` v21, caché del SW **v47**. **App:** Ajustes → «Tu opinión»
+  → «Enviar sugerencia» (`features/feedback/`), envía sola la versión (`appVersion` en `core/config/env.dart`; un test avisa si no
+  coincide con `pubspec.yaml`), la plataforma y la pantalla. Emoji en vez de icono nuevo. Al final de Ajustes: «W2W 1.0.14 · huergalabs.dev».
+  **Apoyo:** `/apoyo` («☕ Apoya mi desarrollo con un café», es/en, `SupportController` + `resources/views/apoyo.blade.php`), sin scripts y
+  con CSP propia. Datos del `.env`: `SUPPORT_ZELLE` y `SUPPORT_PAYPAL_URL` (solo https de paypal.me / paypal.com). **Hoy están vacíos:
+  la página da 404 y el enlace no sale** hasta que Reynaldo los ponga. El enlace solo está en la web (Ajustes); un test del servidor y
+  otro de la app fallan si la app Flutter menciona /apoyo, PayPal o Zelle. +15 tests servidor (`SuggestionTest`, `SupportPageTest`),
+  +7 app (`feedback_test.dart`). Probado en Chrome sin pantalla contra un servidor de prueba (enviar sugerencia y ver /apoyo a 390 px);
+  **no probado en un teléfono real**. iPhone nativo **sin reinstalar** (sigue con la versión del 18/11, sin sugerencias).
 - (18/11) **Brainy: cuidados tipo mascota virtual + Modo Brainy** (Pasos 6a+ y 6a++ de `~/Code/brain/HANDOFF.md`; solo en la app).
   **Servidor:** tabla nueva `pets` (migración solo aditiva, **aplicada el 18/11**; copia previa en
   `~/Backups/w2w/database-2026-11-18-antes-mascota.sqlite`). `PetCare` lleva 4 barras de 0–4 corazones: **comida** (palabra nueva +1,
@@ -85,6 +102,11 @@ _Última actualización: 2026-11-18_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Apoyo:** poner en el `.env` de W2W `SUPPORT_ZELLE=` (tu correo o teléfono de Zelle) y `SUPPORT_PAYPAL_URL=` (p. ej.
+  `https://paypal.me/tuusuario`). Sin eso `/apoyo` da 404 y el enlace no aparece en Ajustes de la web. No hace falta reiniciar.
+- [ ] Probar **«Enviar sugerencia»**: en la web (Ajustes) y en la app Android (abrirla 2 veces para bajar el **parche 20**; Ajustes →
+  Tu opinión). Para leer lo que llega, de momento: `sqlite3 database/database.sqlite "select created_at,type,platform,message from suggestions order by id desc"`.
+- [ ] Decidir si reinstalar la app nativa del iPhone para que tenga «Enviar sugerencia» (la web del iPhone ya la tiene).
 - [ ] Probar a **Brainy con cuidados**: Hoy → tarjeta «Brainy» → ver las 4 barras de corazones y pulsar Comer / Jugar / Limpiar /
   Medicina (cada uno abre un ejercicio; al terminarlo, Brainy da las gracias y sube la barra). Luego **Ajustes → Brainy → Modo Brainy**:
   la pestaña Hoy pasa a ser Brainy y «Mi sesión de hoy» abre lo de siempre. Fijarse en: que los emoji de los botones se ven bien, que
@@ -107,6 +129,8 @@ _Última actualización: 2026-11-18_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Sugerencias: **verlas y cambiar su estado** (new → reviewing → done / dismissed). Hoy solo se guardan; el panel recibe el conteo
+  en `metrics.json` (bloque `suggestions`) pero aún no lo pinta ni hay pantalla para leerlas. Sin capturas de pantalla (decidido).
 - [ ] Brainy · ajustar con datos reales: los puntos, metas y ritmos de `config/pet.php` están puestos a ojo (horas por corazón, cuánto
   da cada cosa, topes de desorden). Sin hacer del diseño del HANDOFF: **avisos locales** de Brainy (máx. 2 al día, nunca de noche; no
   añadí ninguno), frases con solo palabras ya aprendidas (hoy son 6 frases fijas de inglés muy fácil), árbol de evolución con dibujo
@@ -122,6 +146,9 @@ _Última actualización: 2026-11-18_
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
 
 ## Decisiones
+- (19/11) Apoyo voluntario: se llama «apoyo», nunca «donación»; Zelle (EE. UU.) y PayPal (resto del mundo); **solo en la web**. En la
+  app Android no se enlaza ni se mencionan pagos (política de Google Play); como mucho, el texto neutro «huergalabs.dev».
+- (19/11) Sugerencias sin capturas de pantalla por ahora.
 - (18/11) Brainy (mascota): diseño propio dibujado con código; todo se calcula en el servidor. Con los cuidados (6a+) ya tiene estados
   (hambre, desorden, malita, dormida), pero **nunca muere, no culpa ni dramatiza** y no manda avisos. Cuidarla = estudiar: los botones
   no dan nada, lo da el ejercicio. La etapa nunca baja. Modo Brainy apagado por defecto y sin quitar nada de la app normal.
