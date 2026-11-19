@@ -259,8 +259,10 @@ _Última actualización: 2026-11-19_
 - [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
 - [ ] (opcional) Seguir partiendo `public/app/app.js` (~1100 líneas): niveles, conversación.
 - [ ] (opcional) Cloudflare mete su script de estadísticas (beacon) y la CSP lo bloquea: apagar «Web Analytics» automático en Cloudflare para W2W o dejarlo así (no rompe nada).
+- [ ] **Idea a futuro: W2W en el carro (CarPlay / Android Auto).** Decidido (19/11): ahora NO; es código nativo en los dos sistemas (versión nueva, no parche), solo admiten ciertas categorías (W2W entraría como «audio»; «educación» no existe), la pantalla es de ellos (sin Brainy ni ejercicios) y el micrófono para evaluar el habla es dudoso. Con ~5 alumnos no compensa. Pasos, en orden: (1) Reynaldo prueba el **modo manos libres por Bluetooth en un carro real** (¿sale por las bocinas?, ¿el micrófono del carro entiende?) — sin código; (2) controles en pantalla de bloqueo y volante (pausa/siguiente): cambio nativo pequeño y base de lo siguiente; (3) CarPlay y Android Auto de verdad cuando haya más alumnos y alguno lo pida. En el carro, solo escuchar y repetir (nada que obligue a mirar o tocar). **Por verificar antes de decidir:** si Apple abrió CarPlay a apps de conversación por voz (encajaría mejor que «audio»).
 
 ## Decisiones
+- (19/11) **CarPlay / Android Auto: ahora no.** Primero probar manos libres por Bluetooth en un carro; ver «Pendiente (código)».
 - (19/11) Brainy es el personaje con cúpula y cerebro de neuronas dentro (no un cerebro con patas, ni cabeza-cerebro, ni 3D que gira).
   Nace neutra y con las neuronas blancas; el color lo elige cada alumno y las neuronas se encienden al aprender. Rive quedó
   descartado por ahora (su MCP pide plan de pago y el motor obliga a versión nueva en Play).
