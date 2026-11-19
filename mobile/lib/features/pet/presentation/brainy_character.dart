@@ -183,6 +183,9 @@ class Brain3D implements BrainGraph {
   @override
   final int count;
   late final Float32List sx, sy, scale; // posición en pantalla (unidades del cerebro) y tamaño por cercanía
+
+  /// Las coordenadas 3D sin girar (x = izquierda/derecha, y = arriba, z = delante): para dibujarlo girando.
+  late final Float32List x3, y3, z3;
   late final Uint8List region, band; // región 0…4; capa 0 = fondo, 1 = medio, 2 = frente
   @override
   late final Uint16List edgeA;
@@ -281,6 +284,10 @@ class Brain3D implements BrainGraph {
       final t = rand(), a = rand() * math.pi * 2, r = (0.1 - 0.035 * t) * math.sqrt(rand());
       add(math.cos(a) * r, -0.42 - 0.56 * t, -0.28 - 0.12 * t + math.sin(a) * r, 4);
     }
+
+    x3 = Float32List.fromList(xs);
+    y3 = Float32List.fromList(ys);
+    z3 = Float32List.fromList(zs);
 
     // La vista del panel al abrirse: giro −0,95, inclinación 0,22. Lo cercano, más grande.
     const dist = 3.4;
@@ -796,4 +803,274 @@ class BrainyCharacterPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(BrainyCharacterPainter old) => true;
+}
+
+
+/// PRUEBA: el personaje como objeto 3D que se puede girar los 360° y se ve coherente desde cualquier lado.
+///
+/// Cómo se consigue sin un motor 3D:
+/// - El cuerpo y la cúpula son formas REDONDAS alrededor del eje vertical: su contorno es el mismo se miren
+///   desde donde se miren, así que basta dibujar el mismo contorno.
+/// - Lo que sí cambia al girar se coloca en 3D y se proyecta en cada cuadro: los ojos, las mejillas y la boca
+///   se desplazan por la superficie, se estrechan al acercarse al borde y desaparecen por detrás; los brazos y
+///   los pies dan la vuelta y pasan por delante o por detrás del cuerpo; y el cerebro (puntos 3D de verdad)
+///   gira dentro de la cúpula.
+/// [yaw] = giro en radianes (0 = de frente).
+class Brainy3DPainter extends CustomPainter {
+  Brainy3DPainter({required this.color, this.yaw = 0, this.signals, this.blink = 0});
+
+  final Color color;
+  final double yaw;
+  final BrainSignals? signals;
+  final double blink;
+
+  static const _cx = 200.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = math.min(size.width / 400, size.height / 420);
+    canvas.save();
+    canvas.translate((size.width - 400 * s) / 2, (size.height - 420 * s) / 2);
+    canvas.scale(s);
+
+    final light = BrainyCharacterPainter._shade(color, 0.16), dark = BrainyCharacterPainter._shade(color, -0.20), darker = BrainyCharacterPainter._shade(color, -0.27);
+    final cs = math.cos(yaw);
+    // Un punto a [radius] del eje vertical y a [angle] del frente → (x en pantalla, profundidad: + delante).
+    (double, double) around(double radius, double angle) => (_cx + radius * math.sin(yaw + angle), radius * math.cos(yaw + angle));
+
+    canvas.drawOval(Rect.fromCenter(center: const Offset(_cx, 396), width: 200, height: 22), Paint()..color = const Color(0x59050A2A));
+
+    // --- Pies y brazos: primero los que quedan DETRÁS del cuerpo ---
+    final limb = Paint()..shader = ui.Gradient.linear(const Offset(0, 240), const Offset(0, 330), [BrainyCharacterPainter._shade(color, 0.04), dark]);
+    void foot(double angle) {
+      final (x, _) = around(46, angle);
+      canvas.drawOval(Rect.fromCenter(center: Offset(x, 378), width: 60, height: 30), Paint()..color = darker);
+    }
+
+    void arm(double angle) {
+      final (x, z) = around(118, angle);
+      final side = (x - _cx) / 118; // −1 … 1: cuánto se asoma hacia cada lado
+      canvas.save();
+      canvas.translate(x, 290);
+      canvas.rotate(-side * 18 * math.pi / 180);
+      canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 38 * (0.75 + 0.25 * (z / 118).abs() + 0.25 * side.abs()).clamp(0.75, 1.0), height: 72), limb);
+      canvas.restore();
+    }
+
+    final feet = [0.45, -0.45], arms = [math.pi / 2, -math.pi / 2];
+    for (final a in feet) {
+      if (around(46, a).$2 < 0) foot(a);
+    }
+    for (final a in arms) {
+      if (around(118, a).$2 < 0) arm(a);
+    }
+
+    // --- La cúpula de cristal con el cerebro girando dentro ---
+    final skull = Rect.fromCenter(center: const Offset(_cx, 234), width: 240, height: 220);
+    canvas.drawOval(skull, Paint()..shader = ui.Gradient.radial(const Offset(_cx, 200), 150, [const Color(0xFF1E2B6A), const Color(0xFF080D2A)]));
+    canvas.save();
+    canvas.clipPath(Path()..addOval(skull.deflate(3)));
+    _paintBrain(canvas, const Offset(_cx, 226), 100);
+    canvas.restore();
+    canvas.drawOval(
+      skull,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..color = BrainyCharacterPainter._shade(color, 0.34).withValues(alpha: 0.9),
+    );
+    // El brillo del cristal no gira: la luz viene siempre del mismo sitio.
+    canvas.drawPath(
+      Path()
+        ..moveTo(94, 210)
+        ..cubicTo(96, 176, 114, 148, 146, 136),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(const Offset(160, 131), 3, Paint()..color = Colors.white.withValues(alpha: 0.5));
+
+    // --- Cuerpo: redondo, mismo contorno desde cualquier lado ---
+    final body = RRect.fromLTRBAndCorners(84, 232, 316, 378,
+        topLeft: const Radius.circular(34), topRight: const Radius.circular(34), bottomLeft: const Radius.elliptical(114, 112), bottomRight: const Radius.elliptical(114, 112));
+    canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(_cx, 232), const Offset(_cx, 380), [light, color, dark], const [0, 0.4, 1]));
+    canvas.drawLine(
+      const Offset(102, 236),
+      const Offset(298, 236),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.35)
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // Lo que va pegado a la superficie del cuerpo: se dibuja recortado al cuerpo.
+    canvas.save();
+    canvas.clipRRect(body);
+    // La barriga clara, solo por delante.
+    if (cs > 0) {
+      final (bx, _) = around(70, 0);
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(bx, 322), width: 160 * (0.35 + 0.65 * cs), height: 100),
+        Paint()..shader = ui.Gradient.radial(Offset(bx, 322), 80, [Colors.white.withValues(alpha: 0.26 * cs), Colors.white.withValues(alpha: 0)]),
+      );
+    }
+    // Una pieza de la cara a [angle] del frente: devuelve (x, cuánto se ve de frente 0–1) o null si queda detrás.
+    (double, double)? face(double angle) {
+      final (x, z) = around(112, angle);
+      final facing = z / 112;
+      return facing > 0.06 ? (x, facing) : null;
+    }
+
+    final cheek = Paint()..color = const Color(0x99FF8FB1);
+    for (final a in [0.60, -0.60]) {
+      final f = face(a);
+      if (f != null) canvas.drawOval(Rect.fromCenter(center: Offset(f.$1, 292), width: 30 * f.$2, height: 20), cheek);
+    }
+    final white = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.5
+      ..strokeCap = StrokeCap.round;
+    for (final a in [0.33, -0.33]) {
+      final f = face(a);
+      if (f == null) continue;
+      final (x, w) = f;
+      if (blink > 0.85) {
+        canvas.drawPath(
+          Path()
+            ..moveTo(x - 15 * w, 270)
+            ..quadraticBezierTo(x, 284, x + 15 * w, 270),
+          white,
+        );
+        continue;
+      }
+      final eye = Rect.fromCenter(center: Offset(x, 270), width: 34 * w, height: 40 * (1 - blink));
+      canvas.drawOval(eye, Paint()..color = Colors.white);
+      canvas.save();
+      canvas.clipPath(Path()..addOval(eye));
+      // La pupila mira un poco hacia donde va el giro (hacia el centro de la pantalla).
+      final look = (_cx - x) * 0.05;
+      canvas.drawOval(Rect.fromCenter(center: Offset(x + look, 274), width: 22 * w, height: 22), Paint()..color = const Color(0xFF0B1238));
+      canvas.drawOval(Rect.fromCenter(center: Offset(x + look + 4 * w, 269), width: 8.4 * w, height: 8.4), Paint()..color = Colors.white);
+      canvas.restore();
+    }
+    final mouth = face(0);
+    if (mouth != null) {
+      final (x, w) = mouth;
+      canvas.drawPath(
+        Path()
+          ..moveTo(x - 18 * w, 300)
+          ..quadraticBezierTo(x, 320, x + 18 * w, 300),
+        white,
+      );
+    }
+    canvas.restore();
+
+    // --- Pies y brazos que quedan DELANTE ---
+    for (final a in feet) {
+      if (around(46, a).$2 >= 0) foot(a);
+    }
+    for (final a in arms) {
+      if (around(118, a).$2 >= 0) arm(a);
+    }
+    canvas.restore();
+  }
+
+  /// El cerebro 3D girado [yaw] (más la pequeña inclinación de siempre), proyectado en este cuadro.
+  /// Es un poco más ancho que el real (×1,3) para que llene la cúpula igual de frente que de lado.
+  void _paintBrain(Canvas canvas, Offset c, double r) {
+    final m = Brain3D.front;
+    const pitch = 0.16, dist = 3.4, widen = 1.3;
+    final cy = math.cos(yaw), sy0 = math.sin(yaw), cp = math.cos(pitch), sp = math.sin(pitch);
+    final n = m.count;
+    final px = Float32List(n), py = Float32List(n);
+    final band = Uint8List(n);
+    final counts = List.generate(5, (_) => List.filled(3, 0));
+    for (var i = 0; i < n; i++) {
+      final x = m.x3[i] * widen, y = m.y3[i] + 0.14, z = m.z3[i];
+      final x1 = x * cy + z * sy0, z1 = -x * sy0 + z * cy;
+      final y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+      final k = dist / (dist - z2);
+      px[i] = x1 * k;
+      py[i] = -y2 * k;
+      final b = z2 < -0.3 ? 0 : (z2 < 0.3 ? 1 : 2);
+      band[i] = b;
+      counts[m.region[i]][b]++;
+    }
+    final lists = List.generate(5, (p) => List.generate(3, (b) => Float32List(counts[p][b] * 2)));
+    final fill = List.generate(5, (_) => List.filled(3, 0));
+    for (var i = 0; i < n; i++) {
+      final p = m.region[i], b = band[i], at = fill[p][b];
+      lists[p][b][at] = px[i];
+      lists[p][b][at + 1] = py[i];
+      fill[p][b] = at + 2;
+    }
+
+    canvas.save();
+    canvas.translate(c.dx, c.dy);
+    canvas.scale(r);
+    final unit = 1 / r;
+    const halo = [0.035, 0.055, 0.08], core = [0.34, 0.55, 0.85];
+    final lines = Paint()
+      ..strokeWidth = 0.45 * unit
+      ..blendMode = BlendMode.plus;
+    final dots = Paint()
+      ..strokeCap = StrokeCap.round
+      ..blendMode = BlendMode.plus;
+    final edges = List.generate(5, (_) => <double>[]);
+    for (var e = 0; e < m.edgeA.length; e++) {
+      edges[m.edgeRegion[e]]..add(px[m.edgeA[e]])..add(py[m.edgeA[e]])..add(px[m.edgeB[e]])..add(py[m.edgeB[e]]);
+    }
+    for (var p = 0; p < 5; p++) {
+      final base = brainRegionColors[p];
+      lines.color = base.withValues(alpha: 0.20);
+      canvas.drawRawPoints(ui.PointMode.lines, Float32List.fromList(edges[p]), lines);
+      for (var b = 0; b < 3; b++) {
+        final sizePt = (0.62 + 0.10 * b) * unit * math.max(1.0, r / 92);
+        dots
+          ..color = base.withValues(alpha: halo[b])
+          ..strokeWidth = sizePt * 2.6 * 2;
+        canvas.drawRawPoints(ui.PointMode.points, lists[p][b], dots);
+        dots
+          ..color = base.withValues(alpha: core[b])
+          ..strokeWidth = sizePt * 1.25 * 2;
+        canvas.drawRawPoints(ui.PointMode.points, lists[p][b], dots);
+      }
+    }
+    final sig = signals;
+    if (sig != null && identical(sig.graph, m)) {
+      final flash = Paint()..blendMode = BlendMode.plus;
+      for (var i = 0; i < n; i++) {
+        final g = sig.glow[i];
+        if (g <= 0.02) continue;
+        flash.color = Colors.white.withValues(alpha: 0.45 * g);
+        canvas.drawCircle(Offset(px[i], py[i]), (0.9 + 1.1 * g) * unit, flash);
+      }
+      final trail = Paint()
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 0.9 * unit;
+      final head = Paint()..color = Colors.white;
+      final glow = Paint()
+        ..color = const Color(0xFFFFE45C).withValues(alpha: 0.45)
+        ..blendMode = BlendMode.plus;
+      for (var i = 0; i < sig.length; i++) {
+        final e = sig.edge(i);
+        final ia = sig.forward(i) ? m.edgeA[e] : m.edgeB[e], ib = sig.forward(i) ? m.edgeB[e] : m.edgeA[e];
+        final from = Offset(px[ia], py[ia]), to = Offset(px[ib], py[ib]);
+        final p = Offset.lerp(from, to, sig.t(i))!, tail = Offset.lerp(from, to, math.max(0, sig.t(i) - 0.8))!;
+        if ((p - tail).distance > 0.2 * unit) {
+          trail.shader = ui.Gradient.linear(tail, p, [const Color(0x00FFE45C), const Color(0xF2FFF3B0)]);
+          canvas.drawLine(tail, p, trail);
+        }
+        canvas.drawCircle(p, 1.9 * unit, glow);
+        canvas.drawCircle(p, 0.85 * unit, head);
+      }
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(Brainy3DPainter old) => true;
 }
