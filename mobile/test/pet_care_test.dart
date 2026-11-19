@@ -452,7 +452,8 @@ void main() {
     });
 
     testWidgets('el ajuste nace apagado', (tester) async {
-      final c = ProviderContainer();
+      // Sin experimento A/B (el servidor no propone nada): apagado, como siempre.
+      final c = ProviderContainer(overrides: [brainyServerDefaultProvider.overrideWithValue(null)]);
       addTearDown(c.dispose);
       expect(await c.read(brainyModeProvider.future), isFalse);
       await c.read(brainyModeProvider.notifier).set(true);

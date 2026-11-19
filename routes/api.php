@@ -83,6 +83,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pet', \App\Http\Controllers\Api\PetController::class)->middleware('throttle:60,1');
     Route::post('/pet/{action}', [\App\Http\Controllers\Api\PetController::class, 'act'])
         ->whereIn('action', ['feed', 'play', 'clean', 'medicine'])->middleware('throttle:30,1');
+    // Experimentos A/B: la app informa del modo real en uso (lista fija de experimentos).
+    Route::post('/experiments/{experiment}', [\App\Http\Controllers\Api\ExperimentController::class, 'store'])
+        ->whereIn('experiment', ['brainy'])->middleware('throttle:30,1');
     Route::get('/achievements', [\App\Http\Controllers\Api\AchievementController::class, 'index']);
     Route::get('/league', [\App\Http\Controllers\Api\AchievementController::class, 'league']);
     Route::put('/league/visibility', [\App\Http\Controllers\Api\AchievementController::class, 'visibility']);

@@ -17,6 +17,7 @@ import '../../auth/presentation/profession_picker.dart';
 import '../../path/data/path_models.dart';
 import '../../path/presentation/path_providers.dart';
 import '../../../core/services/brainy_mode_setting.dart';
+import '../../experiments/data/brainy_experiment.dart';
 import '../../pet/presentation/pet_card.dart';
 import '../../pet/presentation/pet_home.dart';
 import '../../pet/presentation/pet_providers.dart';
@@ -38,7 +39,7 @@ class TodayPage extends ConsumerWidget {
     // enseñar (servidor viejo, sin datos), sale la pantalla de siempre.
     if (!classic && (ref.watch(brainyModeProvider).valueOrNull ?? false)) {
       final pet = ref.watch(petProvider).valueOrNull;
-      if (pet?.care != null) return PetHome(pet: pet!);
+      if (pet?.care != null) return BrainyOpened(child: PetHome(pet: pet!)); // cuenta la apertura para el experimento A/B
     }
     final today = ref.watch(todayProvider);
     return AsyncView<TodayData>(

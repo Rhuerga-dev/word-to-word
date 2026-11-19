@@ -69,6 +69,8 @@ class User extends Authenticatable implements MustVerifyEmail
                 'usual_time' => $this->reminder_auto ? app(\App\Services\ReminderService::class)->usualTime($this) : null,
             ],
             'spanish' => app(\App\Services\SpanishService::class)->summary($this),
+            // Experimento A/B: true = Modo Brainy encendido por defecto. null = sin experimento (la app sigue como siempre).
+            'brainy_default' => app(\App\Services\BrainyExperiment::class)->default($this),
         ];
     }
 }

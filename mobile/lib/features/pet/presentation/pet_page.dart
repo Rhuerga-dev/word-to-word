@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/tr.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
+import '../../experiments/data/brainy_experiment.dart';
 import '../data/pet.dart';
 import 'pet_brain.dart';
 import 'pet_care_panel.dart';
@@ -17,15 +18,18 @@ class PetPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: W.callBg,
-      appBar: AppBar(title: const Text('Brainy'), backgroundColor: W.callBg),
-      body: AsyncView<PetState?>(
-        value: ref.watch(petProvider),
-        onRetry: () => ref.invalidate(petProvider),
-        data: (pet) => pet == null
-            ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(tr('Brainy está descansando. Vuelve en un rato.'), textAlign: TextAlign.center)))
-            : RefreshIndicator(onRefresh: () => ref.refresh(petProvider.future), child: PetView(pet: pet)),
+    // BrainyOpened: cuenta esta apertura para el experimento A/B (si lo hay).
+    return BrainyOpened(
+      child: Scaffold(
+        backgroundColor: W.callBg,
+        appBar: AppBar(title: const Text('Brainy'), backgroundColor: W.callBg),
+        body: AsyncView<PetState?>(
+          value: ref.watch(petProvider),
+          onRetry: () => ref.invalidate(petProvider),
+          data: (pet) => pet == null
+              ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(tr('Brainy está descansando. Vuelve en un rato.'), textAlign: TextAlign.center)))
+              : RefreshIndicator(onRefresh: () => ref.refresh(petProvider.future), child: PetView(pet: pet)),
+        ),
       ),
     );
   }

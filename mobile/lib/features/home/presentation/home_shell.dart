@@ -7,6 +7,7 @@ import '../../../core/storage/offline_cache.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/l10n/tr.dart';
 import '../../../core/widgets/w2w_loader.dart';
+import '../../experiments/data/brainy_experiment.dart';
 
 /// Las 5 pestañas con la barra de abajo. Cada pestaña guarda su posición al cambiar.
 class HomeShell extends ConsumerStatefulWidget {
@@ -30,6 +31,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final shell = widget.shell;
     final offline = ref.watch(offlineProvider);
     final update = ref.watch(appUpdateProvider);
+    ref.watch(brainyExperimentReporterProvider); // experimento A/B: informa del Modo Brainy en uso (si lo hay)
     return Scaffold(
       backgroundColor: W.callBg,
       body: SafeArea(

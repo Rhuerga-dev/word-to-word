@@ -84,7 +84,7 @@ class SpanishInfo {
 
 /// El alumno con sesión iniciada (GET /me).
 class UserProfile {
-  const UserProfile({required this.name, required this.cefrLevel, required this.xpGoal, required this.reminder, this.spanish = const SpanishInfo(), this.profession, this.goal});
+  const UserProfile({required this.name, required this.cefrLevel, required this.xpGoal, required this.reminder, this.spanish = const SpanishInfo(), this.profession, this.goal, this.brainyDefault});
   final String name;
   /// A qué se dedica ("tech", "health"…) y para qué quiere el inglés. null = no lo eligió (todo como siempre).
   final String? profession;
@@ -94,8 +94,12 @@ class UserProfile {
   final Reminder reminder;
   final SpanishInfo spanish;
 
+  /// Experimento A/B: true = Modo Brainy encendido por defecto para este alumno; false = apagado.
+  /// null = no hay experimento (o el servidor es viejo): la app se comporta como siempre.
+  final bool? brainyDefault;
+
   UserProfile withSpanish(SpanishInfo s) =>
-      UserProfile(name: name, cefrLevel: cefrLevel, xpGoal: xpGoal, reminder: reminder, spanish: s, profession: profession, goal: goal);
+      UserProfile(name: name, cefrLevel: cefrLevel, xpGoal: xpGoal, reminder: reminder, spanish: s, profession: profession, goal: goal, brainyDefault: brainyDefault);
 
   /// Nombre de pila para saludar ("" en la demo).
   String get firstName {
@@ -111,6 +115,7 @@ class UserProfile {
         spanish: SpanishInfo.fromJson(asMap(j['spanish'])),
         profession: asStringOrNull(j['profession']),
         goal: asStringOrNull(j['goal']),
+        brainyDefault: j['brainy_default'] is bool ? j['brainy_default'] as bool : null,
       );
 }
 

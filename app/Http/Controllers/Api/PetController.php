@@ -17,6 +17,13 @@ class PetController extends Controller
     /** POST /pet/{action}: un botón de cuidado (lista fija en la ruta). Devuelve qué ejercicio toca. */
     public function act(Request $request, PetService $pet, string $action)
     {
+        // Para el experimento A/B se cuenta el botón pulsado. Un fallo aquí nunca rompe la mascota.
+        try {
+            app(\App\Services\BrainyExperiment::class)->careTap($request->user());
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         return $pet->act($request->user(), $action);
     }
 }

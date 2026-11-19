@@ -69,7 +69,21 @@ class MetricsSnapshot extends Command
             'learning' => $this->learning($demoIds, $today),
             // Sugerencias de los alumnos (solo cifras). Bloque aparte: no toca nada de lo de arriba.
             'suggestions' => $this->suggestions(),
+            // Experimentos A/B (solo cifras por grupo). Bloque aparte: no toca nada de lo de arriba.
+            'experiments' => $this->experiments($today),
         ];
+    }
+
+    /** El informe de cada experimento A/B. Si algo falla (tabla sin crear…): null, y el resto de métricas sigue. */
+    private function experiments(CarbonImmutable $today): array
+    {
+        try {
+            return ['brainy' => app(\App\Services\BrainyExperiment::class)->report($today)];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return ['brainy' => null];
+        }
     }
 
     /** Cuántas sugerencias hay sin mirar (el panel avisa) y cuántas llegaron. Si la tabla aún no existe: ceros. */
