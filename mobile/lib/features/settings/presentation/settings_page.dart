@@ -42,6 +42,10 @@ class SettingsPage extends ConsumerWidget {
       const _WordDrillCard(),
       _h('Brainy'),
       const _BrainyModeCard(),
+      if (Platform.isAndroid) ...[
+        _h(tr('Audífonos')),
+        const HeadsetMicCard(),
+      ],
       if (AirPodsService.supported) ...[
         _h(tr('AirPods')),
         const _AirPodsCard(),
@@ -353,6 +357,35 @@ class AirPodsMicCard extends ConsumerWidget {
                 : tr('Te oye por el micrófono del iPhone. La voz de la app suena en alta calidad.')),
         value: none ? false : on,
         onChanged: none ? null : (v) => ref.read(airPodsMicProvider.notifier).set(v),
+      ),
+    );
+  }
+}
+
+/// Android: grabar con el micrófono de los audífonos Bluetooth (para practicar con el teléfono guardado).
+/// Apagado por defecto: lo normal es grabar con el teléfono y oír la voz en alta calidad.
+/// Sin audífonos conectados sale apagado y en gris (la preferencia guardada no se toca), igual que en el iPhone.
+class HeadsetMicCard extends ConsumerWidget {
+  const HeadsetMicCard({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final on = ref.watch(headsetMicProvider).valueOrNull ?? false;
+    final phones = ref.watch(headphonesProvider);
+    final none = phones.hasValue && phones.value == null;
+    return Card(
+      child: SwitchListTile(
+        key: const ValueKey('headset-mic-switch'),
+        title: Text(tr('Micrófono de los audífonos')),
+        subtitle: Text(none
+            ? (on
+                ? tr('No hay audífonos conectados: ahora te oye el micrófono del teléfono. Al conectarlos se usará su micrófono.')
+                : tr('No hay audífonos conectados: te oye el micrófono del teléfono.'))
+            : on
+                ? tr('Te oye por los audífonos aunque el teléfono esté guardado. Mientras grabas, la voz de la app suena como una llamada (menos calidad) y algunos audífonos quitan la cancelación de ruido.')
+                : tr('Te oye por el micrófono del teléfono. La voz de la app suena en alta calidad. Enciéndelo para practicar con el teléfono guardado (solo audífonos Bluetooth).')),
+        value: none ? false : on,
+        onChanged: none ? null : (v) => ref.read(headsetMicProvider.notifier).set(v),
       ),
     );
   }

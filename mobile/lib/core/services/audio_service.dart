@@ -58,6 +58,33 @@ class AppAudio {
     await _configure();
   }
 
+  static const _headsetMicKey = 'headset_mic';
+  bool? _headsetMic;
+
+  /// Lo guardado ('1' / '0' / null) → ¿grabar con el micrófono de los audífonos? Solo Android y solo si se encendió.
+  static bool headsetMicFrom(String? stored, {required bool android}) => android && stored == '1';
+
+  /// Android: ¿grabar con el micrófono de los audífonos Bluetooth? Por defecto NO (graba el teléfono y los
+  /// audífonos siguen en modo música). Encendido, los audífonos pasan a «modo llamada» mientras grabas:
+  /// te oye aunque el teléfono esté guardado, pero la voz de la app suena con menos calidad.
+  Future<bool> headsetMic() async {
+    if (_headsetMic == null) {
+      try {
+        _headsetMic = headsetMicFrom(await _storage.read(key: _headsetMicKey), android: Platform.isAndroid);
+      } catch (_) {
+        _headsetMic = false;
+      }
+    }
+    return _headsetMic!;
+  }
+
+  Future<void> setHeadsetMic(bool on) async {
+    _headsetMic = on && Platform.isAndroid;
+    try {
+      await _storage.write(key: _headsetMicKey, value: on ? '1' : '0');
+    } catch (_) {}
+  }
+
   Future<void> _configure() async {
     if (_configured) return;
     final session = await AudioSession.instance;
@@ -123,16 +150,18 @@ class AppAudio {
     if (!await _rec.hasPermission()) throw ApiException(tr('Permite el micrófono en Ajustes para hablar con la app.'));
     final dir = await getTemporaryDirectory();
     final path = '${dir.path}/voz_${DateTime.now().millisecondsSinceEpoch}.wav';
+    final headsetMic = await this.headsetMic();
     await _rec.start(
-      const RecordConfig(
+      RecordConfig(
         encoder: AudioEncoder.wav,
         sampleRate: 16000,
         numChannels: 1,
         autoGain: true,
         echoCancel: true,
         noiseSuppress: true,
-        // Micrófono del teléfono; los auriculares siguen en modo música (A2DP) para oír la voz.
-        androidConfig: AndroidRecordConfig(manageBluetooth: false),
+        // Por defecto, micrófono del teléfono: los auriculares siguen en modo música (A2DP) para oír la voz.
+        // Con «Micrófono de los audífonos» (Ajustes, Android) se graba por ellos, en modo llamada.
+        androidConfig: AndroidRecordConfig(manageBluetooth: headsetMic),
       ),
       path: path,
     );
@@ -230,6 +259,19 @@ class AirPodsMicNotifier extends AsyncNotifier<bool> {
 }
 
 final airPodsMicProvider = AsyncNotifierProvider<AirPodsMicNotifier, bool>(AirPodsMicNotifier.new);
+
+/// Interruptor «Micrófono de los audífonos» de Ajustes (solo Android; apagado por defecto).
+class HeadsetMicNotifier extends AsyncNotifier<bool> {
+  @override
+  Future<bool> build() => ref.read(audioProvider).headsetMic();
+
+  Future<void> set(bool on) async {
+    state = AsyncData(on);
+    await ref.read(audioProvider).setHeadsetMic(on);
+  }
+}
+
+final headsetMicProvider = AsyncNotifierProvider<HeadsetMicNotifier, bool>(HeadsetMicNotifier.new);
 
 final audioProvider = Provider<AppAudio>((ref) {
   final audio = AppAudio(ref.watch(apiProvider));
