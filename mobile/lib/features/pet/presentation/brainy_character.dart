@@ -865,29 +865,33 @@ class Brainy3DPainter extends CustomPainter {
       if (around(118, a).$2 < 0) arm(a);
     }
 
-    // --- La cabeza ES el cerebro: una forma redonda y sólida, del tono oscuro del cuerpo, con las neuronas encima.
-    // Sin borde ni brillo de cristal: no es un casco. El fondo oscuro hace falta para que las luces se vean
-    // también sobre el fondo claro de la app.
-    final head = Rect.fromCenter(center: const Offset(_cx, 234), width: 236, height: 192); // ceñida al cerebro
+    // --- UNA sola figura: el contorno del muñeco sube y se cierra por arriba. La parte alta de ese mismo contorno
+    // es el cerebro (recortado por el contorno, aunque no se vea entero); la piel empieza justo encima de los
+    // ojos, en una curva suave. Sin borde, sin brillo y sin corte recto: el cerebro no está «metido» en nada.
+    final figure = RRect.fromLTRBAndCorners(84, 114, 316, 378,
+        topLeft: const Radius.elliptical(116, 124), topRight: const Radius.elliptical(116, 124), bottomLeft: const Radius.elliptical(114, 112), bottomRight: const Radius.elliptical(114, 112));
+    final outline = Path()..addRRect(figure);
+    // Donde termina la piel: el borde de delante de un corte redondo, visto un poco desde arriba (baja en el centro).
+    final skinEdge = Path()
+      ..moveTo(60, 224)
+      ..lineTo(84, 224)
+      ..arcToPoint(const Offset(316, 224), radius: const Radius.elliptical(116, 14), clockwise: false)
+      ..lineTo(340, 224)
+      ..lineTo(340, 400)
+      ..lineTo(60, 400)
+      ..close();
+    final skin = Path.combine(PathOperation.intersect, outline, skinEdge);
+
     final deep = BrainyCharacterPainter._shade(color, -0.36, -0.10), deeper = BrainyCharacterPainter._shade(color, -0.46, -0.15);
-    canvas.drawOval(head, Paint()..shader = ui.Gradient.radial(const Offset(_cx - 30, 170), 170, [deep, deeper]));
+    canvas.drawPath(outline, Paint()..shader = ui.Gradient.radial(const Offset(_cx - 30, 160), 190, [deep, deeper]));
     canvas.save();
-    canvas.clipPath(Path()..addOval(head));
-    _paintBrain(canvas, const Offset(_cx, 228), 108);
+    canvas.clipPath(outline);
+    _paintBrain(canvas, const Offset(_cx, 232), 134);
     canvas.restore();
 
-    // --- Cuerpo: redondo, mismo contorno desde cualquier lado ---
-    final body = RRect.fromLTRBAndCorners(84, 232, 316, 378,
-        topLeft: const Radius.circular(34), topRight: const Radius.circular(34), bottomLeft: const Radius.elliptical(114, 112), bottomRight: const Radius.elliptical(114, 112));
-    canvas.drawRRect(body, Paint()..shader = ui.Gradient.linear(const Offset(_cx, 232), const Offset(_cx, 380), [light, color, dark], const [0, 0.4, 1]));
-    canvas.drawLine(
-      const Offset(102, 236),
-      const Offset(298, 236),
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.35)
-        ..strokeWidth = 4
-        ..strokeCap = StrokeCap.round,
-    );
+    // La piel (cuerpo y cara), con el mismo contorno.
+    final body = figure;
+    canvas.drawPath(skin, Paint()..shader = ui.Gradient.linear(const Offset(_cx, 224), const Offset(_cx, 380), [light, color, dark], const [0, 0.4, 1]));
 
     // Lo que va pegado a la superficie del cuerpo: se dibuja recortado al cuerpo.
     canvas.save();
