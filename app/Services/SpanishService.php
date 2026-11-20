@@ -132,7 +132,8 @@ class SpanishService
             'level_step' => $this->levelStep($user),
             // Escucha de la semana: aciertos en Oído y cuántas veces pidió repetir.
             'listening' => $this->listening->week($user) + ['verdict' => $this->listening->verdict($user)],
-            'ui' => $step >= 3 ? 'en' : 'es',
+            // Idioma de la pantalla: en el curso de inglés, español hasta el escalón 3; en los demás cursos, el idioma del alumno.
+            'ui' => ($native = $user->course?->from ?? 'es') !== 'es' ? $native : ($step >= 3 ? 'en' : 'es'),
             'coach' => $this->coachLang($user),
             'limit' => $limit,
             'today' => $today,

@@ -165,6 +165,24 @@ class CourseScopeTest extends TestCase
         $this->assertSame('x', \App\Support\CoursePack::get('speaking.no_existe', 'x'));
     }
 
+    public function test_a_course_that_brings_its_own_list_does_not_inherit_items_from_the_english_one(): void
+    {
+        config(['courses.es-en' => ['units' => ['levels' => []]], 'units.levels' => ['A1' => [['id' => 'hello', 'title' => 'Saludar', 'words' => ['english1'], 'sound' => 'θ', 'scenario' => 'free']]]]);
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());
+
+        $this->assertSame([], \App\Support\CoursePack::get('units.levels', []));
+        $this->assertSame([], \App\Support\CoursePack::get('units.levels.A1', []), 'no hereda las unidades de inglés');
+        $this->assertStringNotContainsString('Saludar', $this->getJson('/api/path')->assertOk()->getContent());
+        // Y la pantalla va en el idioma del alumno (inglés), no en español.
+        $this->assertSame('en', $this->getJson('/api/me')->json('spanish.ui'));
+
+        $this->student->forceFill(['course_id' => Course::DEFAULT_ID])->save();
+        Sanctum::actingAs($this->student->fresh());
+        $this->assertStringContainsString('Saludar', $this->getJson('/api/path')->assertOk()->getContent());
+        $this->assertSame('es', $this->getJson('/api/me')->json('spanish.ui'));
+    }
+
     public function test_content_is_always_read_through_the_course_pack(): void
     {
         // Regla para el futuro: el contenido no se pide con config() a secas (se saltaría el curso).

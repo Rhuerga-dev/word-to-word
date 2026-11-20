@@ -23,5 +23,7 @@ return [
     // palabras de database/content/courses/es-en/words/*.json. Apagado (`active` false) hasta que esté completo.
     'es-en' => [
         'course' => ['learn' => 'es', 'from' => 'en', 'name' => 'Spanish for English speakers', 'speech_locale' => 'es-US', 'active' => false],
+        // Aún sin unidades propias: el Camino sale vacío en vez de enseñar las unidades del curso de inglés.
+        'units' => ['levels' => []],
     ],
 ];
