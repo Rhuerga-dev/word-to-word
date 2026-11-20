@@ -119,6 +119,29 @@ class CourseScopeTest extends TestCase
         $this->assertSame(['en-US', 'es-US', 'es-US'], $languages());
     }
 
+    public function test_the_voice_reads_slower_the_language_you_are_learning_whatever_it_is(): void
+    {
+        config(['vocab.azure_speech.key' => 'test-key', 'vocab.azure_speech.region' => 'eastus', 'vocab.tts.local_url' => null, 'vocab.tts.enabled' => true]);
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response('mp3')]);
+        $tts = app(\App\Services\TtsService::class);
+        $said = fn () => collect(\Illuminate\Support\Facades\Http::recorded())
+            ->map(fn ($pair) => \Illuminate\Support\Str::match('/name="([a-z]{2})-/', $pair[0]->body()).' '.\Illuminate\Support\Str::match('/rate="([^"]+)"/', $pair[0]->body()))->all();
+
+        Sanctum::actingAs($this->student);                                   // aprende inglés (como siempre)
+        $tts->audio('house', 'en');
+        $tts->audio('casa', 'es');
+        $tts->audio('house', 'en', slow: true);
+        $this->assertSame(['en -5%', 'es 0%', 'en -30%'], $said());
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                          // aprende español: al revés
+        $tts->audio('perro', 'es');
+        $tts->audio('dog', 'en');
+        $tts->audio('perro', 'es', slow: true);
+        $this->assertSame(['es -5%', 'en 0%', 'es -30%'], array_slice($said(), 3));
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);

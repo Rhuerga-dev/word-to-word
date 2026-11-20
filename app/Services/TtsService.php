@@ -75,8 +75,10 @@ class TtsService
             }
         }
         $voice = $this->voices()[$lang];
-        // Lento: inglés -30%; español -20% con pausas en comas y puntos (para las escenas AID).
-        $rate = $slow ? ($lang === 'en' ? '-30%' : '-20%') : ($lang === 'en' ? '-5%' : '0%');
+        // El idioma que se aprende (el del curso) se lee algo más despacio: -5%, y -30% en lento.
+        // El idioma del alumno va normal, y -20% en lento con pausas en comas y puntos (para las escenas AID).
+        $learning = $lang === app(\App\Support\CurrentCourse::class)->course()->learn;
+        $rate = $slow ? ($learning ? '-30%' : '-20%') : ($learning ? '-5%' : '0%');
         $path = 'tts/'.hash('sha256', $voice.'|'.$rate.'|'.$text).'.mp3';
 
         if (Storage::disk('local')->exists($path)) {
