@@ -253,6 +253,11 @@ _Última actualización: 2026-11-19_
     `TtsService`/`PronunciationService`/`SpeakingController` (voz y evaluación en en-US), `config/speaking.php`, taller de sonidos.
   · *Ya existe y ayuda*: la pantalla traducida al inglés (app y web), y `SpanishService`/`spanish_step` («cuánto español de apoyo»).
   · *App Flutter*: 17 archivos mencionan inglés.
+  **Paso 2a escrito (19/11), migración SIN aplicar (falta el OK de Reynaldo):** `2026_11_20_000001_create_courses` crea `courses`
+  (nace con el curso 1 `en-es`), añade `words.course_id` y `users.course_id` (por defecto 1) y cambia la palabra única por
+  (curso, palabra). Solo añade; se puede deshacer (hay test). Ensayada sobre una copia de la base real: 2.952 palabras y 7 alumnos al
+  curso 1, 83 progresos intactos, 6 ms. Modelo `Course`, `CourseTest` (5). Para aplicarla: `php artisan db:backup` y
+  `php artisan migrate --force`. Después, paso 2b: que las consultas de palabras filtren por el curso del alumno (~26 archivos).
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
   el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
   curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.

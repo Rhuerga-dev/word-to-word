@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Word extends Model
 {
-    protected $fillable = ['word', 'rank', 'source', 'translation', 'example', 'example_es', 'category', 'definition', 'gloss', 'emoji', 'definition_easy', 'phrase', 'sentence_long'];
+    protected $fillable = ['course_id', 'word', 'rank', 'source', 'translation', 'example', 'example_es', 'category', 'definition', 'gloss', 'emoji', 'definition_easy', 'phrase', 'sentence_long'];
+
+    public function course(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Course::class);
+    }
 
     /** Etiqueta y emoji de su familia, o null. */
     public function family(): ?array

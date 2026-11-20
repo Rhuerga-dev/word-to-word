@@ -36,6 +36,12 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /** El curso que estudia (qué idioma aprende). No se puede fijar desde fuera: no está en `$fillable`. */
+    public function course(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Course::class);
+    }
+
     public function userWords(): HasMany
     {
         return $this->hasMany(UserWord::class);
