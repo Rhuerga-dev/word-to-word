@@ -197,6 +197,10 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Probar el curso de español** con la cuenta `test@huergalabs.dev` (o la tuya: eres cuenta de prueba): Ajustes → «Qué aprendes» →
+  Spanish for English speakers. Android: abrir 2 veces (parche 29). iPhone: instalar `W2W-iPhone.zip` de iCloud desde la MacBook.
+  Apuntar lo que salga en inglés o roto. Antes: **cambiar la contraseña de esa cuenta** (tenía la de fábrica de Laravel) — quitar
+  `test@huergalabs.dev` de la lista de bloqueo de Resend y usar «¿Olvidaste tu contraseña?».
 - [ ] **Probar los avisos de Brainy** (Android: abrir la app 2 veces, **parche 28**; iPhone Air: instalado el 19/11 desde la
   MacBook). Encender Modo Brainy en Ajustes (pide permiso de
   notificaciones), dejar la app y esperar: debe llegar «<nombre> tiene hambre» o «<nombre> quiere jugar» a la hora en que baja a 1
@@ -293,6 +297,14 @@ _Última actualización: 2026-11-19_
   `example_es` van en INGLÉS (el nombre de la columna `example_es` es herencia: significa «ejemplo en el idioma del alumno»).
   **Falta del paso 4:** las otras ~440 palabras de A1 (días, números, palabras gramaticales, familias), unidades y conversaciones del
   curso, y probarlo de verdad con una cuenta de prueba en el curso 2 (hoy solo se puede poner a mano: `users.course_id`).
+  **Paso 5 empezado (20/11): elegir curso en Ajustes.** Servidor: `GET /api/courses` y `PUT /api/course {code}` (`CourseController`):
+  solo cursos activos; los apagados solo los ven las cuentas de `vocab.course_testers` (`COURSE_TESTERS`, por defecto ids 1 y 2);
+  `/me` trae `course`. **Progreso por curso**: regla global en `UserWord` (apoyada en la de `Word`): cambiar de curso no borra ni
+  mezcla; «Reiniciar progreso» sí borra el de todos. App: `settings/presentation/course_card.dart` (Ajustes → «Qué aprendes», arriba;
+  solo sale con ≥ 2 cursos), **parche 29**; iPhone: zip en iCloud Drive (`W2W-iPhone.zip`) para instalar desde la MacBook.
+  `CourseChoiceTest` (5), +2 en `CourseScopeTest`, `course_card_test.dart` (5). **Falta del paso 5:** elegir curso al REGISTRARSE; la web
+  no tiene selector; el nivel (`users.cefr_level`), los errores al hablar, los sonidos, las unidades y los exámenes aún son uno solo
+  por alumno, no por curso; la racha, los puntos y Brainy son comunes a todos los cursos (a propósito, por ahora).
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
   el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
   curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.
