@@ -163,7 +163,7 @@ let cfg = { ai: false, pronunciation: false, time_travel: false };
 let cards = [], revealed = false, showHint = false, stats = null;
 
 // ===== Auth =====
-// Modos: login | register | forgot | reset
+// Modos: login | register | forgot | sent (enlace enviado: «revisa tu correo») | reset
 let authMode = "login", resetToken = null;
 // Registro solo con código de invitación. Si no se puede leer /config, se muestra el campo igual.
 let inviteRequired = true, inviteCfgLoaded = false;
@@ -179,13 +179,17 @@ function showInviteField() { $("inviteWrap").hidden = !(authMode === "register" 
 function cleanInvite(v) { return String(v || "").replace(/\s+/g, "").toUpperCase().slice(0, 40); }
 function setAuthMode(mode) {
   authMode = mode;
-  const titles = { login: "Entrar", register: "Crear cuenta", forgot: "Recuperar contraseña", reset: "Contraseña nueva" };
-  const submits = { login: "Entrar", register: "Crear cuenta", forgot: "Enviarme el enlace", reset: "Guardar contraseña" };
+  const titles = { login: "Entrar", register: "Crear cuenta", forgot: "Recuperar contraseña", sent: "Revisa tu correo", reset: "Contraseña nueva" };
+  const submits = { login: "Entrar", register: "Crear cuenta", forgot: "Enviarme el enlace", sent: "Enviar otra vez", reset: "Guardar contraseña" };
   $("authTitle").textContent = titles[mode];
   $("authSubmit").textContent = submits[mode];
   $("nameWrap").hidden = mode !== "register";
-  $("passWrap").hidden = mode === "forgot";
-  $("aPass").required = mode !== "forgot";
+  const noPass = mode === "forgot" || mode === "sent";
+  $("passWrap").hidden = noPass;
+  $("aPass").required = !noPass;
+  // Entrar acepta contraseñas antiguas (8); crear una nueva pide lo mismo que el servidor (10, con letras y números).
+  $("aPass").minLength = mode === "login" ? 8 : 10; $("aPass2").minLength = 10;
+  $("emailWrap").hidden = mode === "sent"; $("authSent").hidden = mode !== "sent";
   $("aPass").autocomplete = mode === "login" ? "current-password" : "new-password";
   $("pass2Wrap").hidden = mode !== "reset";
   $("aPass2").required = mode === "reset";
@@ -193,7 +197,7 @@ function setAuthMode(mode) {
   $("authSwitch").textContent = mode === "login" ? "Crear cuenta" : "Volver a entrar";
   $("forgotLink").hidden = mode !== "login";
   $("authHelp").hidden = !(mode === "forgot" || mode === "reset");
-  $("authHelp").textContent = mode === "forgot" ? "Escribe tu correo y te enviamos un enlace para crear una contraseña nueva." : mode === "reset" ? "Elige una contraseña nueva de al menos 8 caracteres." : "";
+  $("authHelp").textContent = mode === "forgot" ? "Escribe tu correo y te enviamos un enlace para crear una contraseña nueva." : mode === "reset" ? "Elige una contraseña nueva de al menos 10 caracteres, con letras y números." : "";
   $("authErr").textContent = ""; $("authOk").textContent = ""; $("inviteErr").textContent = "";
   showInviteField();
   if (mode === "register") loadInviteCfg();
@@ -213,9 +217,13 @@ $("authForm").onsubmit = async e => {
   const btn = $("authSubmit"); btn.disabled = true;
   try {
     const email = $("aEmail").value.trim(), password = $("aPass").value;
-    if (authMode === "forgot") {
-      const r = await api("/auth/forgot-password", { method: "POST", body: { email } });
-      $("authOk").textContent = r.message;
+    if (authMode === "forgot" || authMode === "sent") {
+      const again = authMode === "sent";
+      await api("/auth/forgot-password", { method: "POST", body: { email } });
+      // Pantalla propia: que se note que ya se envió y qué hay que hacer ahora.
+      setAuthMode("sent");
+      $("authSentText").textContent = "Si " + email + " tiene una cuenta, le acabamos de enviar un enlace.";
+      if (again) $("authOk").textContent = "Enviado otra vez.";
     } else if (authMode === "reset") {
       if (password !== $("aPass2").value) throw new Error("Las contraseñas no coinciden.");
       const r = await api("/auth/reset-password", { method: "POST", body: { token: resetToken, email, password, password_confirmation: $("aPass2").value } });

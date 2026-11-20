@@ -15,6 +15,12 @@ _Última actualización: 2026-11-19_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (20/11) **Web · «Revisa tu correo»**: al pedir el enlace de contraseña la pantalla de entrar se quedaba igual (solo una línea verde).
+  Ahora cambia a una pantalla propia (sobre, a qué correo, «no hay ningún código que escribir», 60 min, spam, «Enviar otra vez»).
+  El texto de ayuda decía 8 caracteres y son 10 con letras y números: corregido, y el campo lo exige al crear contraseña (entrar
+  sigue aceptando las antiguas de 8). `app.js?v=23`, caché `wtw-shell-v49`, `WebAuthScreenTest`. Probado en Chrome sin pantalla.
+  La cuenta de pruebas (id 2) pasó a `test@huergalabs.dev` y está en el curso de español; **tenía la contraseña por defecto de
+  Laravel: Reynaldo debe cambiarla con «¿Olvidaste tu contraseña?»**. Sigue pendiente «Olvidé mi contraseña» en la app Android.
 - (19/11) **Avisos de Brainy** (`dbafc6f`, **parche 28**): servidor `PetCare::state` → `care.alerts` = [{kind: hungry|bored, at}]
   (cuándo bajará cada barra a 1 corazón, saltando la noche; vacío si hiberna o está malita; sin migración). App:
   `core/services/brainy_alerts.dart` (`BrainyAlerts.plan`, ajuste `brainy_alerts`, `brainyAlertsSyncProvider` en `home_shell`),
