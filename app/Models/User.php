@@ -58,6 +58,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'demo' => \App\Services\DemoService::isDemo($this),
             'daily_new' => $this->daily_new,
             'cefr_level' => $this->cefr_level,
+            // El curso que estudia (qué aprende y desde qué idioma). Una app antigua lo ignora.
+            'course' => ($c = $this->course ?? Course::find(Course::DEFAULT_ID)) ? ['code' => $c->code, 'name' => $c->name, 'learn' => $c->learn, 'from' => $c->from] : null,
             'freelance_pack' => (bool) $this->freelance_pack,
             'family' => $this->family,
             'profession' => $this->profession,

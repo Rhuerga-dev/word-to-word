@@ -29,6 +29,9 @@ Route::post('/auth/demo', [\App\Http\Controllers\Api\DemoController::class, 'sto
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    // Cursos: qué idioma aprende el alumno (solo los activos; los apagados, solo cuentas de prueba).
+    Route::get('/courses', [\App\Http\Controllers\Api\CourseController::class, 'index']);
+    Route::put('/course', [\App\Http\Controllers\Api\CourseController::class, 'update'])->middleware('throttle:10,1');
     Route::delete('/account', [\App\Http\Controllers\Api\AccountController::class, 'destroy'])->middleware('throttle:5,1');
     Route::post('/i18n/missing', [\App\Http\Controllers\Api\I18nController::class, 'missing'])->middleware('throttle:10,1');
     Route::post('/email/verification-notification', [AuthController::class, 'resendVerification'])->middleware('throttle:3,1');

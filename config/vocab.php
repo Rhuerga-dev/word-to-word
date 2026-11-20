@@ -62,6 +62,9 @@ return [
     | (sin contar el paquete de freelance). La NGSL cubre ~2.800 palabras; para
     | C1 hace falta importar una lista más larga.
     */
+    // Cuentas (id) que ven también los cursos apagados, para probarlos antes de abrirlos. Lista fija: COURSE_TESTERS=1,2
+    'course_testers' => array_values(array_filter(array_map('intval', explode(',', (string) env('COURSE_TESTERS', '1,2'))))),
+
     'levels' => [
         'A1' => ['name' => 'Básico', 'from' => 1, 'to' => 500, 'can' => [
             'Presentarte y hablar de ti y de tu trabajo',
