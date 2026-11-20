@@ -64,7 +64,7 @@ class PronunciationLabController extends Controller
     public function assess(Request $request, PronunciationService $pron)
     {
         $data = $request->validate([
-            'text' => ['required', 'string', 'max:160', "regex:/^[A-Za-z][A-Za-z'’,.!?\\- ]*$/u"],
+            'text' => ['required', 'string', 'max:160', 'regex:'.\App\Services\ShadowingBank::sentencePattern()],   // según el idioma del curso
             'phoneme' => ['nullable', 'string', 'max:8'],
             'audio' => ['required', 'file', 'max:3072'],
         ]);

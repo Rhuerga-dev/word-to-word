@@ -252,6 +252,54 @@ class CourseScopeTest extends TestCase
         $this->assertSame(0, DB::table('user_words')->where('user_id', $this->student->id)->count());
     }
 
+    public function test_the_spanish_course_has_its_own_shadowing_texts_and_only_speaking_modes_that_work(): void
+    {
+        // Con el paquete de verdad del curso de español (config/courses.php) y su banco de textos.
+        $bank = json_decode(file_get_contents(database_path('content/courses/es-en/shadowing.json')), true);
+        $this->assertSame(config('speaking.shadowing_themes'), array_keys($bank['A1']), 'un texto por cada tema, para no caer en la IA');
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());
+        \Illuminate\Support\Facades\Http::fake();   // si pidiera el texto a la IA, se vería aquí
+
+        foreach (range(0, 11) as $skip) {
+            $text = $this->getJson("/api/speaking/shadowing?skip=$skip")->assertOk()->json();
+            $this->assertCount(5, $text['sentences'], $text['theme']);
+            foreach ($text['sentences'] as $sentence) {
+                $this->assertMatchesRegularExpression(\App\Services\ShadowingBank::SENTENCE_ANY, $sentence);
+            }
+        }
+        \Illuminate\Support\Facades\Http::assertNothingSent();
+        $this->assertStringContainsString('¿', json_encode($bank, JSON_UNESCAPED_UNICODE), 'frases en español de verdad');
+        $this->assertSame('shadowing', $this->getJson('/api/session/today')->assertOk()->json('plan.speak'));
+
+        // El curso de inglés sigue con sus textos y sus tres formas de hablar.
+        $this->student->forceFill(['course_id' => Course::DEFAULT_ID])->save();
+        Sanctum::actingAs($this->student->fresh());
+        $english = $this->getJson('/api/speaking/shadowing')->assertOk()->json('sentences.0');
+        $this->assertMatchesRegularExpression(\App\Services\ShadowingBank::SENTENCE, $english);
+        $this->assertContains($this->getJson('/api/session/today')->json('plan.speak'), \App\Http\Controllers\Api\SessionController::SPEAK_MODES);
+    }
+
+    public function test_pronunciation_accepts_spanish_sentences_only_in_the_spanish_course(): void
+    {
+        config(['vocab.azure_speech.key' => 'test-key', 'vocab.azure_speech.region' => 'eastus']);
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['RecognitionStatus' => 'Success', 'NBest' => [[
+            'Lexical' => 'como estas', 'PronunciationAssessment' => ['AccuracyScore' => 90, 'FluencyScore' => 90, 'CompletenessScore' => 100, 'PronScore' => 90], 'Words' => [],
+        ]]])]);
+        $send = fn (string $text) => $this->post('/api/pronunciation/assess', ['text' => $text,
+            'audio' => \Illuminate\Http\UploadedFile::fake()->createWithContent('voz.wav', str_repeat("\0", 2000))], ['Accept' => 'application/json'])->getStatusCode();
+
+        Sanctum::actingAs($this->student);                                   // curso de inglés: como siempre, sin acentos
+        $this->assertSame(422, $send('¿Cómo estás?'));
+        $this->assertNotSame(422, $send('How are you?'));
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                          // curso de español: acentos, ñ, ¿ y ¡
+        $this->assertNotSame(422, $send('¿Cómo estás?'));
+        $this->assertNotSame(422, $send('Mañana voy al médico.'));
+        $this->assertSame(422, $send('<script>alert(1)</script>'));
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);

@@ -25,5 +25,12 @@ return [
         'course' => ['learn' => 'es', 'from' => 'en', 'name' => 'Spanish for English speakers', 'speech_locale' => 'es-US', 'active' => false],
         // Aún sin unidades propias: el Camino sale vacío en vez de enseñar las unidades del curso de inglés.
         'units' => ['levels' => []],
+        'speaking' => [
+            // Textos de shadowing propios (en español, escritos a mano). Mismos temas que el curso de inglés.
+            'shadowing_bank' => database_path('content/courses/es-en/shadowing.json'),
+            // La parte de hablar de la clase: por ahora solo shadowing. Narración, imagen y conversación usan la IA
+            // con instrucciones pensadas para quien aprende inglés (paso 3d): se abrirán cuando estén adaptadas.
+            'session_modes' => ['shadowing'],
+        ],
     ],
 ];

@@ -295,6 +295,11 @@ _Última actualización: 2026-11-19_
   de la lista fija; `LoadCourseTest` vigila que cada ficha esté completa). En la base real: curso 2, 60 palabras (20 nombres y 40
   verbos muy comunes), 0 alumnos; un alumno de inglés no las ve. En esta tabla, para el curso de español, `translation` y
   `example_es` van en INGLÉS (el nombre de la columna `example_es` es herencia: significa «ejemplo en el idioma del alumno»).
+  **Shadowing propio (20/11):** `database/content/courses/es-en/shadowing.json` (A1: 12 textos, uno por tema, 60 frases en español,
+  escritos a mano). La clase del curso de español solo usa shadowing (`speaking.session_modes` en su paquete): narración, imagen y
+  conversación siguen con instrucciones de IA para inglés. `ShadowingBank::sentencePattern()` y las dos validaciones de
+  pronunciación aceptan acentos, ñ, ¿ y ¡ fuera del curso de inglés. Reynaldo lo vio en el iPhone: tras 3 palabras en español, la
+  clase le pedía repetir frases en inglés.
   **Falta del paso 4:** las otras ~440 palabras de A1 (días, números, palabras gramaticales, familias), unidades y conversaciones del
   curso, y probarlo de verdad con una cuenta de prueba en el curso 2 (hoy solo se puede poner a mano: `users.course_id`).
   **Paso 5 empezado (20/11): elegir curso en Ajustes.** Servidor: `GET /api/courses` y `PUT /api/course {code}` (`CourseController`):

@@ -1,0 +1,148 @@
+{
+ "A1": {
+  "ordering coffee": [
+   {
+    "title": "Un café, por favor",
+    "sentences": [
+     "Hola, quiero un café, por favor.",
+     "¿Lo quiere con leche o solo?",
+     "Con un poco de leche y sin azúcar.",
+     "¿Es para tomar aquí o para llevar?",
+     "Para llevar, muchas gracias."
+    ]
+   }
+  ],
+  "a phone call with a client": [
+   {
+    "title": "Una llamada corta",
+    "sentences": [
+     "Hola, buenos días, soy Daniel.",
+     "Llamo para hablar de su pedido.",
+     "El pedido llega mañana por la tarde.",
+     "¿Le parece bien a las tres?",
+     "Perfecto, muchas gracias por su tiempo."
+    ]
+   }
+  ],
+  "small talk with a coworker": [
+   {
+    "title": "Con un compañero",
+    "sentences": [
+     "Hola, Ana, ¿cómo estás hoy?",
+     "Estoy bien, pero tengo mucho trabajo.",
+     "Yo también, hoy es un día largo.",
+     "¿Quieres tomar un café conmigo?",
+     "Sí, gracias, vamos en cinco minutos."
+    ]
+   }
+  ],
+  "asking for directions": [
+   {
+    "title": "¿Dónde está el banco?",
+    "sentences": [
+     "Perdón, ¿dónde está el banco?",
+     "Está cerca, en esta calle.",
+     "Siga todo recto dos calles.",
+     "El banco está a la derecha.",
+     "Muchas gracias, es usted muy amable."
+    ]
+   }
+  ],
+  "a quick team meeting": [
+   {
+    "title": "Una reunión rápida",
+    "sentences": [
+     "Buenos días a todos, vamos a empezar.",
+     "Hoy tenemos tres cosas importantes.",
+     "Primero, el proyecto va muy bien.",
+     "Segundo, necesitamos ayuda esta semana.",
+     "Gracias a todos, eso es todo por hoy."
+    ]
+   }
+  ],
+  "talking about the weekend": [
+   {
+    "title": "Mi fin de semana",
+    "sentences": [
+     "El sábado fui al parque con mi familia.",
+     "Comimos juntos y hablamos mucho.",
+     "El domingo me quedé en casa.",
+     "Vi una película y descansé.",
+     "Fue un fin de semana muy tranquilo."
+    ]
+   }
+  ],
+  "at the doctor": [
+   {
+    "title": "En el médico",
+    "sentences": [
+     "Buenos días, doctor, no me siento bien.",
+     "¿Qué le pasa? ¿Le duele algo?",
+     "Me duele la cabeza y tengo frío.",
+     "Tiene que descansar y tomar mucha agua.",
+     "Gracias, doctor, voy a casa a descansar."
+    ]
+   }
+  ],
+  "returning something at a store": [
+   {
+    "title": "Quiero devolver esto",
+    "sentences": [
+     "Hola, quiero devolver esta camisa.",
+     "¿Tiene algún problema la camisa?",
+     "Sí, es muy grande para mí.",
+     "¿Quiere otra más pequeña o su dinero?",
+     "Quiero otra más pequeña, por favor."
+    ]
+   }
+  ],
+  "explaining a delay": [
+   {
+    "title": "Voy a llegar tarde",
+    "sentences": [
+     "Hola, lo siento, voy a llegar tarde.",
+     "Hay mucho tráfico en la calle.",
+     "Creo que llego en veinte minutos.",
+     "Pueden empezar la reunión sin mí.",
+     "Gracias por esperar, llego pronto."
+    ]
+   }
+  ],
+  "meeting someone new": [
+   {
+    "title": "Mucho gusto",
+    "sentences": [
+     "Hola, me llamo Laura, mucho gusto.",
+     "Mucho gusto, Laura, yo soy Pedro.",
+     "¿De dónde eres, Pedro?",
+     "Soy de Miami, pero vivo en Tampa.",
+     "Qué bien, yo también vivo aquí."
+    ]
+   }
+  ],
+  "planning a trip": [
+   {
+    "title": "Un viaje a México",
+    "sentences": [
+     "Este verano quiero viajar a México.",
+     "Voy a ir con mi esposa y mis hijos.",
+     "Queremos ver la playa y la ciudad.",
+     "Necesito comprar los boletos esta semana.",
+     "Va a ser un viaje muy bonito."
+    ]
+   }
+  ],
+  "a job interview answer": [
+   {
+    "title": "Hablo de mí",
+    "sentences": [
+     "Soy una persona amable y tranquila.",
+     "Me gusta trabajar con otras personas.",
+     "Puedo trabajar por la mañana o por la tarde.",
+     "Aprendo rápido y siempre llego a tiempo.",
+     "Puedo empezar a trabajar la próxima semana."
+    ]
+   }
+  ]
+ }
+}

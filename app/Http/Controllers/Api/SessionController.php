@@ -51,7 +51,8 @@ class SessionController extends Controller
             ->orderByDesc('count')->limit(5)->get(['phoneme', 'tier', 'stage'])
             ->map(fn ($s) => ['phoneme' => $s->phoneme, 'tier' => $s->tier ?? 'g', 'stage' => (int) $s->stage])->values();
 
-        $modes = array_values(array_filter(self::SPEAK_MODES, fn ($m) => $m !== 'picture' || $pictures->enabled()));
+        // Qué formas de hablar tiene el curso (su paquete puede limitarlas); «picture» solo si hay fotos.
+        $modes = array_values(array_filter((array) \App\Support\CoursePack::get('speaking.session_modes', self::SPEAK_MODES), fn ($m) => in_array($m, self::SPEAK_MODES, true) && ($m !== 'picture' || $pictures->enabled()))) ?: ['shadowing'];
         $done = (int) DB::table('xp_days')->where('user_id', $user->id)->where('day', $today->toDateString())->value('sessions');
         $speak = $modes[((int) $today->format('z') + $done) % count($modes)];
 

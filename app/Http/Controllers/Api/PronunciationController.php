@@ -23,7 +23,8 @@ class PronunciationController extends Controller
     {
         $data = $request->validate([
             'target' => ['required', 'in:word,sentence,text'],
-            'text' => ['required_if:target,text', 'nullable', 'string', 'max:64', "regex:/^[A-Za-z][A-Za-z'’\\- ]*$/u"],
+            // Curso de inglés: solo letras sin acentos (como siempre). Otros cursos: letras de cualquier idioma (á, ñ…).
+            'text' => ['required_if:target,text', 'nullable', 'string', 'max:64', app(\App\Support\CurrentCourse::class)->course()->learn === 'en' ? "regex:/^[A-Za-z][A-Za-z'’\\- ]*$/u" : "regex:/^[\\p{L}][\\p{L}'’\\- ]*$/u"],
             'audio' => ['nullable', 'file', 'max:2048'],
             'score' => ['nullable', 'integer', 'min:0', 'max:100'],
         ]);

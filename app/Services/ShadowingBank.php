@@ -9,8 +9,16 @@ namespace App\Services;
  */
 class ShadowingBank
 {
-    /** Las mismas frases que acepta la evaluación de pronunciación. */
+    /** Las mismas frases que acepta la evaluación de pronunciación (curso de inglés: solo letras sin acentos). */
     public const SENTENCE = "/^[A-Za-z][A-Za-z'’,.!?\- ]*$/u";
+
+    /** En los demás cursos: letras de cualquier idioma (á, ñ…) y los signos que abren pregunta y exclamación. */
+    public const SENTENCE_ANY = "/^[\p{L}¿¡][\p{L}'’,.!?¿¡\- ]*$/u";
+
+    public static function sentencePattern(): string
+    {
+        return app(\App\Support\CurrentCourse::class)->course()->learn === 'en' ? self::SENTENCE : self::SENTENCE_ANY;
+    }
 
     private static ?array $bank = null;
 
@@ -51,7 +59,7 @@ class ShadowingBank
             return null;
         }
         $sentences = array_values(array_filter(array_map(fn ($x) => is_string($x) ? trim(preg_replace('/\s+/', ' ', $x)) : '', $t['sentences']),
-            fn ($x) => $x !== '' && mb_strlen($x) <= 160 && preg_match(self::SENTENCE, $x)));
+            fn ($x) => $x !== '' && mb_strlen($x) <= 160 && preg_match(self::sentencePattern(), $x)));
 
         return count($sentences) >= 3
             ? ['title' => mb_substr(trim((string) ($t['title'] ?? 'Shadowing')), 0, 80), 'sentences' => array_slice($sentences, 0, 6)]
