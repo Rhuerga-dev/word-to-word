@@ -300,6 +300,11 @@ _Última actualización: 2026-11-19_
   conversación siguen con instrucciones de IA para inglés. `ShadowingBank::sentencePattern()` y las dos validaciones de
   pronunciación aceptan acentos, ñ, ¿ y ¡ fuera del curso de inglés. Reynaldo lo vio en el iPhone: tras 3 palabras en español, la
   clase le pedía repetir frases en inglés.
+  **Pasos de la clase por curso (20/11, parche 31; iPhone `W2W-iPhone-0148.zip` en iCloud):** `/session/today` manda `plan.steps`
+  (del paquete: `session.steps`; null = todos). La app (`SessionPlan.fromToday`, `TodayData.has`) se salta «sound» y «narrate» si el
+  curso no los tiene y habla con `ShadowStep`. Motivo: Reynaldo vio en el iPhone «Pronunciation: the sound /θ/ — think» en la clase
+  de español: el taller de sonidos (`soundWords`) y la narración viven en la app y son del inglés. La pantalla Practicar aún ofrece
+  los sonidos del inglés en cualquier curso.
   **Falta del paso 4:** las otras ~440 palabras de A1 (días, números, palabras gramaticales, familias), unidades y conversaciones del
   curso, y probarlo de verdad con una cuenta de prueba en el curso 2 (hoy solo se puede poner a mano: `users.course_id`).
   **Paso 5 empezado (20/11): elegir curso en Ajustes.** Servidor: `GET /api/courses` y `PUT /api/course {code}` (`CourseController`):
