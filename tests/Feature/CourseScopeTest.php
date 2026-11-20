@@ -99,6 +99,26 @@ class CourseScopeTest extends TestCase
         $this->postJson("/api/words/$english/learn")->assertNotFound();
     }
 
+    public function test_pronunciation_is_scored_in_the_language_of_the_course(): void
+    {
+        config(['vocab.azure_speech.key' => 'test-key', 'vocab.azure_speech.region' => 'eastus']);
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response(['RecognitionStatus' => 'Success', 'NBest' => [[
+            'Lexical' => 'hola', 'PronunciationAssessment' => ['AccuracyScore' => 90, 'FluencyScore' => 90, 'CompletenessScore' => 100, 'PronScore' => 90], 'Words' => [],
+        ]]])]);
+        $pron = app(\App\Services\PronunciationService::class);
+        $languages = fn () => collect(\Illuminate\Support\Facades\Http::recorded())->map(fn ($pair) => \Illuminate\Support\Str::match('/language=([A-Za-z-]+)/', $pair[0]->url()))->all();
+
+        Sanctum::actingAs($this->student);                                   // inglés: como siempre
+        $pron->assess(str_repeat("\0", 2000), 'hello');
+        $this->assertSame(['en-US'], $languages());
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                          // español: se evalúa en español
+        $pron->assess(str_repeat("\0", 2000), 'hola');
+        $pron->azureTranscribe(str_repeat("\0", 2000));
+        $this->assertSame(['en-US', 'es-US', 'es-US'], $languages());
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);

@@ -265,6 +265,11 @@ _Última actualización: 2026-11-19_
   (para el paso 5):** el progreso (`user_words`, errores, niveles, unidades) aún no va por curso, y los `join('words')` a mano
   (`StudyController::families`, `MetricsSnapshot`) no pasan por la regla; las tareas que recorren alumnos (recordatorios) usan el
   curso 1 y habrá que envolverlas en `CurrentCourse::run` cuando haya alumnos en otro curso.
+  **Paso 3a hecho (19/11):** la evaluación de pronunciación y la transcripción (Azure y Whisper) usan `courses.speech_locale` del
+  curso del alumno (`CurrentCourse::speechLocale()`) en vez de «en-US» fijo. Para el curso 1 no cambia nada. **Falta del paso 3:**
+  (3b) `TtsService`: hoy piensa en `en`/`es` (voz que se aprende / español del alumno) con voces y velocidades fijas; (3c) los textos
+  que se piden a la IA en `ClaudeService` (lo más grande: ~47 menciones de inglés/español); (3d) el taller de sonidos y `config/speaking.php`;
+  (3e) el parámetro `lang=en|es` de la API debería ser `learn|from` (toca la app: parche).
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
   el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
   curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.

@@ -71,7 +71,8 @@ class SpeakingController extends Controller
         abort_unless($pron->enabled(), 503, 'La transcripción de voz no está configurada en el servidor (AZURE_SPEECH_KEY).');
         $data = $request->validate(['audio' => ['required', 'file', 'max:1024'], 'lang' => ['sometimes', 'in:en,es']]);
         // El manos libres de la web en el iPhone también escucha respuestas en español (escalón 1).
-        $language = ($data['lang'] ?? 'en') === 'es' ? 'es-ES' : 'en-US';
+        // «en» = el idioma que se aprende (el del curso); «es» = español del alumno. (Paso 5: que la app diga «learn»/«from».)
+        $language = ($data['lang'] ?? 'en') === 'es' ? 'es-ES' : app(\App\Support\CurrentCourse::class)->speechLocale();
         try {
             $text = $pron->transcribe($request->file('audio')->get(), $language)['text'];
         } catch (Throwable $e) {
@@ -99,7 +100,7 @@ class SpeakingController extends Controller
             $request->validate(['audio' => ['required', 'file', 'max:4096']]);   // ~60 s de WAV 16 kHz mono
             try {
                 // Conversación: habla libre → Whisper local (gratis), con Azure de respaldo.
-                $out = $pron->transcribe($request->file('audio')->get(), 'en-US', freeSpeech: true);
+                $out = $pron->transcribe($request->file('audio')->get(), freeSpeech: true);   // en el idioma del curso
             } catch (Throwable $e) {
                 report($e);
                 abort(502, 'No se pudo entender el audio ahora. Intenta otra vez.');

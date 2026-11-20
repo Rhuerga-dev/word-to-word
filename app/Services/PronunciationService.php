@@ -36,7 +36,7 @@ class PronunciationService
 
         $region = config('vocab.azure_speech.region');
         $url = "https://{$region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1"
-            .'?language=en-US&format=detailed';
+            .'?language='.$this->locale().'&format=detailed';
 
         $response = Http::withHeaders([
             'Ocp-Apim-Subscription-Key' => config('vocab.azure_speech.key'),
@@ -102,13 +102,20 @@ class PronunciationService
     /** Desde aquí, el audio largo (narración) va a Whisper aunque no se pida: ahí no se califica palabra por palabra. */
     public const LOCAL_FROM_SECS = 12;
 
+    /** El idioma que se evalúa y se transcribe: el que se aprende en el curso del alumno (antes, siempre en-US). */
+    private function locale(): string
+    {
+        return app(\App\Support\CurrentCourse::class)->speechLocale();
+    }
+
     /**
      * Voz a texto. [$freeSpeech] = habla libre (conversación): se usa Whisper en este Mac (gratis).
      * Lo corto que se califica (repetir, órdenes, errores) sigue en Azure, que no "arregla" lo que dices.
      * Si Whisper no está o falla, Azure como siempre.
      */
-    public function transcribe(string $wavBytes, string $language = 'en-US', bool $freeSpeech = false): array
+    public function transcribe(string $wavBytes, ?string $language = null, bool $freeSpeech = false): array
     {
+        $language ??= $this->locale();
         $secs = max(0, (strlen($wavBytes) - 44) / 32000);
         if (($freeSpeech || $secs >= self::LOCAL_FROM_SECS) && $this->whisperUp()) {
             try {
@@ -132,10 +139,11 @@ class PronunciationService
      * Voz a texto con whisper-server (whisper.cpp, modelo large-v3-turbo en memoria).
      * audio_ctx: para frases cortas solo se mira la parte con audio (la mitad de tiempo); 1500 = 30 s.
      */
-    public function whisper(string $wavBytes, string $language = 'en-US'): array
+    public function whisper(string $wavBytes, ?string $language = null): array
     {
+        $language ??= $this->locale();
         $secs = max(0, (strlen($wavBytes) - 44) / 32000);
-        $fields = ['response_format' => 'verbose_json', 'language' => str_starts_with($language, 'es') ? 'es' : 'en', 'temperature' => '0'];
+        $fields = ['response_format' => 'verbose_json', 'language' => strtolower(substr($language, 0, 2)), 'temperature' => '0'];
         if ($secs < 29) {
             $fields['audio_ctx'] = (string) min(1500, max(512, (int) (ceil(($secs + 1.5) * 50 / 64) * 64)));
         }
@@ -166,8 +174,9 @@ class PronunciationService
     }
 
     /** Voz a texto con Azure (de pago). */
-    public function azureTranscribe(string $wavBytes, string $language = 'en-US'): array
+    public function azureTranscribe(string $wavBytes, ?string $language = null): array
     {
+        $language ??= $this->locale();
         if (! $this->enabled()) {
             throw new RuntimeException('Falta AZURE_SPEECH_KEY en el archivo .env');
         }

@@ -17,9 +17,26 @@ class CurrentCourse
 {
     private ?int $forced = null;
 
+    /** @var array<int, Course> */
+    private array $loaded = [];
+
     public function id(): int
     {
         return $this->forced ?? (int) (auth()->user()?->course_id ?: Course::DEFAULT_ID);
+    }
+
+    /** El curso actual entero (se lee una vez y se recuerda). Si no existe, el de siempre. */
+    public function course(): Course
+    {
+        $id = $this->id();
+
+        return $this->loaded[$id] ??= Course::find($id) ?? Course::findOrFail(Course::DEFAULT_ID);
+    }
+
+    /** Voz y reconocimiento del idioma que se aprende en el curso actual (en-US, es-US…). */
+    public function speechLocale(): string
+    {
+        return $this->course()->speech_locale;
     }
 
     /** Ejecuta $work con otro curso como actual (por ejemplo, para preparar contenido de ese curso). */
