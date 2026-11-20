@@ -22,7 +22,8 @@ class TtsController extends Controller
         abort_unless($tts->enabled(), 503, 'Voces naturales no configuradas.');
 
         try {
-            $path = $tts->audio(trim($data['text']), $data['lang'], (bool) ($data['slow'] ?? false), $data['provider'] ?? null);
+            // «en» = el idioma que se aprende; «es» = el del alumno (ver CurrentCourse::languageFor).
+            $path = $tts->audio(trim($data['text']), app(\App\Support\CurrentCourse::class)->languageFor($data['lang']), (bool) ($data['slow'] ?? false), $data['provider'] ?? null);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'No se pudo generar la voz ahora.');

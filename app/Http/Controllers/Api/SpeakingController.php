@@ -72,7 +72,7 @@ class SpeakingController extends Controller
         $data = $request->validate(['audio' => ['required', 'file', 'max:1024'], 'lang' => ['sometimes', 'in:en,es']]);
         // El manos libres de la web en el iPhone también escucha respuestas en español (escalón 1).
         // «en» = el idioma que se aprende (el del curso); «es» = español del alumno. (Paso 5: que la app diga «learn»/«from».)
-        $language = ($data['lang'] ?? 'en') === 'es' ? 'es-ES' : app(\App\Support\CurrentCourse::class)->speechLocale();
+        $language = ($data['lang'] ?? 'en') === 'es' ? app(\App\Support\CurrentCourse::class)->nativeLocale() : app(\App\Support\CurrentCourse::class)->speechLocale();
         try {
             $text = $pron->transcribe($request->file('audio')->get(), $language)['text'];
         } catch (Throwable $e) {

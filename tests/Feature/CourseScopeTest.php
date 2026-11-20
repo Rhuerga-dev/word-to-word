@@ -181,6 +181,26 @@ class CourseScopeTest extends TestCase
         $this->assertSame([], $bad, 'Usa CoursePack::get() para leer contenido');
     }
 
+    public function test_an_app_that_knows_nothing_about_courses_still_gets_the_right_voice(): void
+    {
+        config(['vocab.azure_speech.key' => 'test-key', 'vocab.azure_speech.region' => 'eastus', 'vocab.tts.local_url' => null, 'vocab.tts.enabled' => true]);
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response('mp3')]);
+        $voices = fn () => collect(\Illuminate\Support\Facades\Http::recorded())->map(fn ($pair) => \Illuminate\Support\Str::match('/name="([a-z]{2})-/', $pair[0]->body()))->all();
+
+        Sanctum::actingAs($this->student);                                   // curso de inglés: «en» es inglés, como siempre
+        $this->get('/api/tts?text=house&lang=en')->assertOk();
+        $this->get('/api/tts?text=casa&lang=es')->assertOk();
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                          // curso de español: «en» = lo que aprendo = español
+        $this->get('/api/tts?text=perro&lang=en')->assertOk();
+        $this->get('/api/tts?text=dog&lang=es')->assertOk();
+
+        $this->assertSame(['en', 'es', 'es', 'en'], $voices());
+        $this->assertSame('en-US', app(\App\Support\CurrentCourse::class)->nativeLocale());
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);

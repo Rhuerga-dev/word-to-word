@@ -39,6 +39,22 @@ class CurrentCourse
         return $this->course()->speech_locale;
     }
 
+    /**
+     * Las apps nacieron con el curso de inglés y piden la voz con «en» (lo que aprendo) o «es» (mi idioma).
+     * Aquí se traduce a los idiomas del curso: en el de español, «en» pasa a ser español y «es», inglés.
+     * Así una app que no sabe de cursos funciona con cualquiera sin actualizarse.
+     */
+    public function languageFor(string $asked): string
+    {
+        return $asked === 'en' ? $this->course()->learn : $this->course()->from;
+    }
+
+    /** Idioma → variante para reconocer la voz del alumno cuando habla en SU idioma. */
+    public function nativeLocale(): string
+    {
+        return ['es' => 'es-ES', 'en' => 'en-US'][$this->course()->from] ?? 'en-US';
+    }
+
     /** Ejecuta $work con otro curso como actual (por ejemplo, para preparar contenido de ese curso). */
     public function run(int $courseId, callable $work): mixed
     {
