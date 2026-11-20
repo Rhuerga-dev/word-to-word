@@ -52,6 +52,7 @@ class SpanishInfo {
     this.streak = 0,
     this.reaction,
     this.translating = false,
+    this.ui,
   });
   final int step, base, today, week, streak;
   final bool auto, translating;
@@ -59,7 +60,11 @@ class SpanishInfo {
   final String coach;
   final double? reaction;
 
-  bool get uiEnglish => step >= 3;
+  /// Idioma de la pantalla que dice el servidor («en» o «es»). En el curso de español va en inglés, sea cual sea
+  /// el escalón. null = servidor viejo: se decide por el escalón, como siempre.
+  final String? ui;
+
+  bool get uiEnglish => ui != null ? ui == 'en' : step >= 3;
   /// La traducción de las palabras se oculta (definición primero) desde el escalón 2.
   bool get hideTranslation => step >= 2;
   bool get noSpanish => step >= 4;
@@ -72,6 +77,7 @@ class SpanishInfo {
         autoStep: j['auto_step'] == null ? null : asInt(j['auto_step']),
         base: asInt(j['base'], 1),
         coach: asString(j['coach'], 'es'),
+        ui: j['ui'] == 'en' || j['ui'] == 'es' ? j['ui'] as String : null,
         limit: j['limit'] == null ? null : asInt(j['limit']),
         today: asInt(j['today']),
         left: j['left'] == null ? null : asInt(j['left']),

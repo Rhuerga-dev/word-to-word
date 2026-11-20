@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/tr.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../auth/presentation/auth_controller.dart';
 import '../../path/presentation/path_providers.dart';
 import '../../practice/presentation/practice_providers.dart';
 import '../../progress/presentation/progress_providers.dart';
@@ -65,6 +66,10 @@ class _CourseCardState extends ConsumerState<CourseCard> {
     });
     try {
       await ref.read(apiProvider).put('/course', {'code': course.code});
+      // El perfil dice en qué idioma va la pantalla (en el curso de español, en inglés): se vuelve a pedir ya.
+      try {
+        await ref.read(authControllerProvider.notifier).refreshProfile();
+      } catch (_) {}
       // Todo lo que se ve depende del curso: se vuelve a pedir.
       ref.invalidate(coursesProvider);
       ref.invalidate(todayProvider);

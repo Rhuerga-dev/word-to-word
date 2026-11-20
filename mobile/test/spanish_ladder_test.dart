@@ -36,6 +36,20 @@ void main() {
     Lang.onMissing = null;
   });
 
+  test('el idioma de la pantalla lo dice el servidor; si no lo dice, el escalón', () {
+    SpanishInfo info(Map<String, dynamic> j) => UserProfile.fromJson({'name': 'Ana', 'spanish': j}).spanish;
+
+    // Curso de español (para angloparlantes): pantalla en inglés aunque el escalón sea 1.
+    expect(info({'step': 1, 'ui': 'en'}).uiEnglish, isTrue);
+    // Curso de inglés: español hasta el escalón 3.
+    expect(info({'step': 2, 'ui': 'es'}).uiEnglish, isFalse);
+    expect(info({'step': 3, 'ui': 'en'}).uiEnglish, isTrue);
+    // Servidor viejo (sin «ui») o un valor raro: como siempre, por el escalón.
+    expect(info({'step': 2}).uiEnglish, isFalse);
+    expect(info({'step': 3}).uiEnglish, isTrue);
+    expect(info({'step': 1, 'ui': 'xx'}).uiEnglish, isFalse);
+  });
+
   test('perfil: la escalera de español viene en /me', () {
     final p = UserProfile.fromJson({
       'name': 'Ana',
