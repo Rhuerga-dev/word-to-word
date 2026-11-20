@@ -15,6 +15,10 @@ _Última actualización: 2026-11-19_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (20/11) **Correos «No se publicó: word-to-word»: arreglado** (`39a0dcc`). La publicación automática del panel prueba la app en una
+  copia recién sacada de git, y `mobile/test/fonts/*.ttf` estaba en `.gitignore`: sin fuentes fallaban los tests de pantalla (15–26
+  fallos) en CADA push desde el 19/11, y la marca de «publicado» se había quedado en `75df917`. Las fuentes (3 MB, licencia OFL) ya
+  van en git. Comprobado: `hq:auto-deploy` → «Publicado 39a0dcc», 202 tests en la copia limpia.
 - (20/11) **Web · «Revisa tu correo»**: al pedir el enlace de contraseña la pantalla de entrar se quedaba igual (solo una línea verde).
   Ahora cambia a una pantalla propia (sobre, a qué correo, «no hay ningún código que escribir», 60 min, spam, «Enviar otra vez»).
   El texto de ayuda decía 8 caracteres y son 10 con letras y números: corregido, y el campo lo exige al crear contraseña (entrar
