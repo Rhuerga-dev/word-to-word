@@ -49,5 +49,5 @@ app.*.map.json
 /android/build/
 /releases/
 
-# Fuentes para las capturas (las baja test/fonts/fetch.py)
-/test/fonts/*.ttf
+# Las fuentes de los tests (test/fonts/*.ttf, licencia abierta OFL) SÍ van en git: sin ellas los tests de pantalla
+# fallan en una copia limpia, y la publicación automática prueba justo ahí. fetch.py las vuelve a bajar si cambian.
