@@ -14,7 +14,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Uno por petición (o por tarea): el curso actual no se arrastra de un alumno a otro.
+        $this->app->scoped(\App\Support\CurrentCourse::class);
     }
 
     public function boot(): void

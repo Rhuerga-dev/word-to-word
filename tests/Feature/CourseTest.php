@@ -45,7 +45,8 @@ class CourseTest extends TestCase
         Word::create(['word' => 'pie', 'rank' => 1, 'source' => 'ngsl']);                               // «tarta», en inglés
         Word::create(['word' => 'pie', 'rank' => 1, 'source' => 'ngsl', 'course_id' => $spanish->id]);  // «foot», en español
 
-        $this->assertSame(2, Word::where('word', 'pie')->count());
+        $this->assertSame(2, Word::withoutGlobalScope('course')->where('word', 'pie')->count());
+        $this->assertSame(1, Word::where('word', 'pie')->count(), 'una búsqueda normal solo ve la del curso actual');
         $this->assertSame(1, $spanish->words()->count());
 
         $this->expectException(QueryException::class);

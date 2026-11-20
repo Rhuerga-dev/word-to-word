@@ -20,6 +20,7 @@ class Course extends Model
 
     public function words(): HasMany
     {
-        return $this->hasMany(Word::class);
+        // Sin la regla del curso actual: aquí se piden las de ESTE curso, sea cual sea el del alumno.
+        return $this->hasMany(Word::class)->withoutGlobalScope('course');
     }
 }

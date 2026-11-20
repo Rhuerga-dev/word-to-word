@@ -258,6 +258,13 @@ _Última actualización: 2026-11-19_
   (curso, palabra). Solo añade; se puede deshacer (hay test). Ensayada sobre una copia de la base real: 2.952 palabras y 7 alumnos al
   curso 1, 83 progresos intactos, 6 ms; en la real salió igual. Modelo `Course`, `CourseTest` (5). Para deshacer: `php artisan
   migrate:rollback --step=1`. **Siguiente, paso 2b:** que las consultas de palabras filtren por el curso del alumno (~26 archivos).
+  **Paso 2b hecho (19/11):** `App\Support\CurrentCourse` (el curso del alumno de la petición; sin alumno, el 1; `run($id, fn)` para
+  que un comando trabaje con otro) + **regla global en `Word`**: toda búsqueda de palabras ve solo el curso actual y una palabra nueva
+  nace en él (`Word::withoutGlobalScope('course')` para mirar todos). Cubre también las rutas `/words/{word}/…` (otra de otro curso =
+  404). `CourseScopeTest` (5): un alumno de inglés no ve palabras de otro curso en 11 pantallas ni por id. **Sin cubrir a propósito
+  (para el paso 5):** el progreso (`user_words`, errores, niveles, unidades) aún no va por curso, y los `join('words')` a mano
+  (`StudyController::families`, `MetricsSnapshot`) no pasan por la regla; las tareas que recorren alumnos (recordatorios) usan el
+  curso 1 y habrá que envolverlas en `CurrentCourse::run` cuando haya alumnos en otro curso.
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
   el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
   curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.
