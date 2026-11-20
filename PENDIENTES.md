@@ -15,6 +15,11 @@ _Última actualización: 2026-11-19_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (19/11) **Avisos de Brainy** (`dbafc6f`, **parche 28**): servidor `PetCare::state` → `care.alerts` = [{kind: hungry|bored, at}]
+  (cuándo bajará cada barra a 1 corazón, saltando la noche; vacío si hiberna o está malita; sin migración). App:
+  `core/services/brainy_alerts.dart` (`BrainyAlerts.plan`, ajuste `brainy_alerts`, `brainyAlertsSyncProvider` en `home_shell`),
+  `ReminderService.syncBrainy` (canal Android `brainy_alerts`, ids 200–201; el recordatorio diario ya solo borra los suyos, 100–109).
+  +2 tests servidor (285), +11 app (202).
 - (19/11) **Prueba de micrófono en la web: `/prueba-micro`** (https://w2w.huergalabs.dev/prueba-micro). Para saber si un micrófono (el del carro por Bluetooth, audífonos…) sirve para practicar hablando. Graba 3 s de silencio + 7 s leyendo una frase y lo analiza **en el navegador** (no se envía ni se guarda nada en el servidor; la CSP no deja hacer peticiones): voz frente al ruido, hasta dónde llegan los agudos, distorsión y cortes; da nota Bueno/Regular/Malo, deja escucharse, guarda las pruebas en el teléfono para comparar y «Copiar resultados». Pública, sin cuenta, `noindex`, sin enlace desde la app. Archivos: `MicTestController`, `resources/views/mic-test.blade.php`, `public/mic-test.js`, `public/mic-test.css`; test `MicTestPageTest`. Servidor 283 tests. Probado: las cuentas con voz sintetizada (banda completa, tipo llamada, con ruido) y el flujo entero en Chrome con micrófono simulado. **No probado: en un iPhone/Android real ni con un carro.**
 - (19/11) **Brainy: nacimiento nuevo** (pedido por Reynaldo: «en HD»). Commit `395a38f`, **parche 27**, iPhone reinstalado. Las 680 neuronas llegan en remolino cada una a su sitio del cerebro, se conectan y laten; tras el estallido el cuerpo sale de detrás de la cúpula, crece la antena, se enciende la chispa, abre los ojos y da un saltito. Vibración suave en cada golpe (no si se salta ni con «Reducir movimiento»). Dura 7 s; tocar la adelanta. Los tiempos están en `BirthTimeline` (pet_birth.dart) y la pose en `PetBirthPose` (pet_figure.dart). Decidido: se mejora en código, no con video ni Blender (un video sería archivo nuevo = versión de Play, y no encajaría con la mascota real). Sin sonido por ahora (exige versión nueva). Video de muestra: `~/Desktop/Brainy-pruebas/17-nacimiento-nuevo-HD.mp4`. App 191 tests. **No probado en teléfono real** (fluidez y vibración).
 - (19/11) **Brainy: personaje nuevo** (elegido por Reynaldo tras muchas pruebas; para todos los alumnos). Commit `462b5b0`, **parche 26**
@@ -182,6 +187,11 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] **Probar los avisos de Brainy** (Android: abrir la app 2 veces, **parche 28**; iPhone: falta reinstalar, no estaba conectado el
+  19/11 — `flutter build ios --release` + `xcrun devicectl device install app`). Encender Modo Brainy en Ajustes (pide permiso de
+  notificaciones), dejar la app y esperar: debe llegar «<nombre> tiene hambre» o «<nombre> quiere jugar» a la hora en que baja a 1
+  corazón. Fijarse en: si llega, si la hora tiene sentido, y si 2 avisos + el recordatorio diario son demasiados. **No probado en
+  teléfono real** (solo tests). Se apagan en Ajustes → Brainy → «Avisos de Brainy».
 - [ ] **Mirar la Brainy nueva en el teléfono** (Android: abrir 2 veces, parches 26 y 27; iPhone ya reinstalado). Al entrar sale el nacimiento Fijarse también en el **nacimiento nuevo**: si va fluido y si la vibración se nota bien.
   (tu cuenta aún no lo ha visto): nombre y luego color. Fijarse en: si va fluida (el cerebro tiene 680 neuronas animadas), si calienta
   o gasta batería, si en la tarjeta de Hoy se distingue, y si las neuronas encendidas corresponden a lo que llevas aprendido.
@@ -233,6 +243,10 @@ _Última actualización: 2026-11-19_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] Avisos de Brainy · siguientes: no avisa de desorden ni de «malita» (dependen de los repasos, no solo del reloj); el aviso
+  no abre directamente el cuidado (abre la app); la web (iPhone sin app nativa) no tiene Brainy ni estos avisos. Las horas de noche
+  del servidor usan `vocab.timezone` (Nueva York) y no la zona del alumno; la app sí aplica la hora local (nada entre 21:00 y 08:00).
+  Ojo con el experimento A/B: los avisos pasan a ser parte de lo que recibe el grupo Brainy.
 - [ ] Brainy nueva: medir en teléfono real y, si va justa, bajar neuronas (`BrainCloud._(680)`) o señales. Diseño de Figma de
   referencia: https://www.figma.com/design/e7DC7WFNKeuX5obmXOZ1ze (hoja «Brainy · personaje nuevo»).
 - [ ] Brainy en el flujo (siguiente de la idea de Reynaldo): que reaccione al terminar la sesión (resumen con ella) y, con cuidado de
@@ -263,6 +277,10 @@ _Última actualización: 2026-11-19_
 - [ ] **Idea a futuro: W2W en el carro (CarPlay / Android Auto).** Decidido (19/11): ahora NO; es código nativo en los dos sistemas (versión nueva, no parche), solo admiten ciertas categorías (W2W entraría como «audio»; «educación» no existe), la pantalla es de ellos (sin Brainy ni ejercicios) y el micrófono para evaluar el habla es dudoso. Con ~5 alumnos no compensa. Pasos, en orden: (1) Reynaldo prueba el **modo manos libres por Bluetooth en un carro real** (¿sale por las bocinas?, ¿el micrófono del carro entiende?) — sin código; usar la página `/prueba-micro` (una prueba con el teléfono solo y otra con el carro, y pasarle a Claude lo de «Copiar resultados»); (2) controles en pantalla de bloqueo y volante (pausa/siguiente): cambio nativo pequeño y base de lo siguiente; (3) CarPlay y Android Auto de verdad cuando haya más alumnos y alguno lo pida. En el carro, solo escuchar y repetir (nada que obligue a mirar o tocar). **Por verificar antes de decidir:** si Apple abrió CarPlay a apps de conversación por voz (encajaría mejor que «audio»).
 
 ## Decisiones
+- (19/11) **Brainy SÍ manda avisos, solo en Modo Brainy** (cambia lo del 18/11 «no manda avisos»): locales (sin Firebase, por
+  parche), cuando va a tener hambre o va a querer jugar; máx. 2 programados, separados ≥ 3 h, nunca entre 21:00 y 08:00, nunca con
+  culpa (hay test de palabras prohibidas). Interruptor propio, encendido por defecto. Push de servidor (Firebase) descartado por ahora:
+  es cambio nativo y versión nueva en Play.
 - (19/11) **CarPlay / Android Auto: ahora no.** Primero probar manos libres por Bluetooth en un carro; ver «Pendiente (código)».
 - (19/11) Brainy es el personaje con cúpula y cerebro de neuronas dentro (no un cerebro con patas, ni cabeza-cerebro, ni 3D que gira).
   Nace neutra y con las neuronas blancas; el color lo elige cada alumno y las neuronas se encienden al aprender. Rive quedó
