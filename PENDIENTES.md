@@ -187,8 +187,8 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
-- [ ] **Probar los avisos de Brainy** (Android: abrir la app 2 veces, **parche 28**; iPhone: falta reinstalar, no estaba conectado el
-  19/11 — `flutter build ios --release` + `xcrun devicectl device install app`). Encender Modo Brainy en Ajustes (pide permiso de
+- [ ] **Probar los avisos de Brainy** (Android: abrir la app 2 veces, **parche 28**; iPhone Air: instalado el 19/11 desde la
+  MacBook). Encender Modo Brainy en Ajustes (pide permiso de
   notificaciones), dejar la app y esperar: debe llegar «<nombre> tiene hambre» o «<nombre> quiere jugar» a la hora en que baja a 1
   corazón. Fijarse en: si llega, si la hora tiene sentido, y si 2 avisos + el recordatorio diario son demasiados. **No probado en
   teléfono real** (solo tests). Se apagan en Ajustes → Brainy → «Avisos de Brainy».
@@ -277,6 +277,10 @@ _Última actualización: 2026-11-19_
 - [ ] **Idea a futuro: W2W en el carro (CarPlay / Android Auto).** Decidido (19/11): ahora NO; es código nativo en los dos sistemas (versión nueva, no parche), solo admiten ciertas categorías (W2W entraría como «audio»; «educación» no existe), la pantalla es de ellos (sin Brainy ni ejercicios) y el micrófono para evaluar el habla es dudoso. Con ~5 alumnos no compensa. Pasos, en orden: (1) Reynaldo prueba el **modo manos libres por Bluetooth en un carro real** (¿sale por las bocinas?, ¿el micrófono del carro entiende?) — sin código; usar la página `/prueba-micro` (una prueba con el teléfono solo y otra con el carro, y pasarle a Claude lo de «Copiar resultados»); (2) controles en pantalla de bloqueo y volante (pausa/siguiente): cambio nativo pequeño y base de lo siguiente; (3) CarPlay y Android Auto de verdad cuando haya más alumnos y alguno lo pida. En el carro, solo escuchar y repetir (nada que obligue a mirar o tocar). **Por verificar antes de decidir:** si Apple abrió CarPlay a apps de conversación por voz (encajaría mejor que «audio»).
 
 ## Decisiones
+- (19/11) **Actualizar el iPhone fuera de casa**: la app compilada en el iMac ya va firmada para el iPhone, así que se instala desde
+  cualquier Mac con Xcode: `ditto -c -k --keepParent build/ios/iphoneos/Runner.app W2W-iPhone.zip` → iCloud Drive → en la MacBook,
+  iPhone por cable y `xcrun devicectl device install app --device <UDID> <ruta a Runner.app>` (arrastrar el archivo a Terminal para
+  la ruta). Probado el 19/11. TestFlight + Shorebird sigue siendo la opción para que llegue solo.
 - (19/11) **Brainy SÍ manda avisos, solo en Modo Brainy** (cambia lo del 18/11 «no manda avisos»): locales (sin Firebase, por
   parche), cuando va a tener hambre o va a querer jugar; máx. 2 programados, separados ≥ 3 h, nunca entre 21:00 y 08:00, nunca con
   culpa (hay test de palabras prohibidas). Interruptor propio, encendido por defecto. Push de servidor (Firebase) descartado por ahora:
