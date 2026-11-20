@@ -96,6 +96,43 @@ class PetCareTest extends TestCase
         $this->assertSame(0, $this->hearts()['joy']);
     }
 
+    public function test_it_says_when_it_will_be_hungry_or_want_to_play(): void
+    {
+        $alerts = collect($this->care()['alerts'])->pluck('at', 'kind');
+        $local = fn (string $kind) => CarbonImmutable::parse($alerts[$kind])->setTimezone(config('vocab.timezone'))->format('Y-m-d H:i');
+
+        // Nace a las 12:00 con 2 corazones: 6 h despierta por corazón de comida, 8 h por uno de ánimo.
+        $this->assertSame('2026-11-18 18:00', $local('hungry'));
+        $this->assertSame('2026-11-18 20:00', $local('bored'));
+
+        // Y es verdad: un minuto antes aún no tiene hambre; a esa hora, sí.
+        $this->at('2026-11-18 17:59');
+        $this->assertSame(2, $this->hearts()['food']);
+        $this->at('2026-11-18 18:00');
+        $this->assertSame(1, $this->hearts()['food']);
+        // Lo que ya pasó no se vuelve a avisar.
+        $this->assertSame(['bored'], collect($this->care()['alerts'])->pluck('kind')->all());
+    }
+
+    public function test_the_alerts_never_fall_at_night_and_stop_when_it_is_sick_or_hibernating(): void
+    {
+        $this->did('learn', 2);                          // comida a 4 corazones → 18 h despierta hasta quedarse en 1
+        $this->at('2026-11-18 20:00');
+        $this->did('ear', 4);                            // ánimo: 1 (ya bajó uno) + 1 = 2 → 8 h despierta
+        $alerts = collect($this->care()['alerts'])->pluck('at', 'kind');
+        $local = fn (string $kind) => CarbonImmutable::parse($alerts[$kind])->setTimezone(config('vocab.timezone'));
+
+        // Ánimo: 2 h esta noche (hasta las 22:00) + 6 h mañana desde las 07:00 → 13:00.
+        $this->assertSame('2026-11-19 13:00', $local('bored')->format('Y-m-d H:i'));
+        foreach ($alerts->keys() as $kind) {
+            $this->assertTrue($local($kind)->hour >= 7 && $local($kind)->hour < 22, "$kind cae de noche");
+        }
+
+        $this->at('2026-11-26 12:00');                   // más de 5 días sin cuidarla: hiberna
+        $this->assertTrue($this->care()['hibernating']);
+        $this->assertSame([], $this->care()['alerts']);
+    }
+
     public function test_at_night_it_sleeps_and_nothing_goes_down(): void
     {
         $this->at('2026-11-18 21:30');

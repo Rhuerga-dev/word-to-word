@@ -8,6 +8,7 @@ import '../../../core/l10n/tr.dart';
 import '../../../core/services/airpods_service.dart';
 import '../../../core/services/audio_service.dart';
 import '../../../core/services/reminder_service.dart';
+import '../../../core/services/brainy_alerts.dart';
 import '../../../core/services/brainy_mode_setting.dart';
 import '../../../core/services/word_drill_setting.dart';
 import '../../../core/theme/app_theme.dart';
@@ -523,14 +524,33 @@ class _BrainyModeCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final on = ref.watch(brainyModeProvider).valueOrNull ?? false;
+    final alerts = ref.watch(brainyAlertsProvider).valueOrNull ?? true;
+    // Para que los avisos se vean hace falta el permiso de notificaciones: se pide al encender.
+    void askPermission() => ref.read(reminderServiceProvider).requestPermission().catchError((_) => false);
     return Card(
-      child: SwitchListTile(
-        key: const ValueKey('brainy-mode-switch'),
-        title: Text(tr('Modo Brainy')),
-        subtitle: Text(tr('La pantalla principal es Brainy, tu mascota: cuidarla es estudiar. Tu sesión y todo lo demás siguen a un toque.')),
-        value: on,
-        onChanged: (v) => ref.read(brainyModeProvider.notifier).set(v),
-      ),
+      child: Column(children: [
+        SwitchListTile(
+          key: const ValueKey('brainy-mode-switch'),
+          title: Text(tr('Modo Brainy')),
+          subtitle: Text(tr('La pantalla principal es Brainy, tu mascota: cuidarla es estudiar. Tu sesión y todo lo demás siguen a un toque.')),
+          value: on,
+          onChanged: (v) {
+            ref.read(brainyModeProvider.notifier).set(v);
+            if (v && alerts) askPermission();
+          },
+        ),
+        if (on)
+          SwitchListTile(
+            key: const ValueKey('brainy-alerts-switch'),
+            title: Text(tr('Avisos de Brainy')),
+            subtitle: Text(tr('Te avisa cuando tiene hambre o quiere jugar. Como mucho 2 avisos y nunca de noche.')),
+            value: alerts,
+            onChanged: (v) {
+              ref.read(brainyAlertsProvider.notifier).set(v);
+              if (v) askPermission();
+            },
+          ),
+      ]),
     );
   }
 }

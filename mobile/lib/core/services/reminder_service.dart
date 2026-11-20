@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import '../../core/l10n/tr.dart';
+import 'brainy_alerts.dart';
 
 /// Recordatorio diario de estudio con notificaciones locales: el teléfono las programa a tu hora
 /// (la misma que en la web) y se salta el día si ya estudiaste. Funciona sin internet.
@@ -90,13 +91,16 @@ class ReminderService {
     _last = (enabled: enabled, time: time, studiedToday: studiedToday);
     try {
       await _init();
-      await _plugin.cancelAll();
+      // Solo los suyos: los avisos de Brainy (syncBrainy) van aparte.
+      for (var i = 0; i < days; i++) {
+        await _plugin.cancel(_firstId + i);
+      }
       if (!enabled) return;
       final texts = messages(_petName);
       for (final (i, at) in nextTimes(DateTime.now(), time ?? '19:00', studiedToday).indexed) {
         final (title, body) = texts[at.day % texts.length];
         await _plugin.zonedSchedule(
-          100 + i,
+          _firstId + i,
           title,
           body,
           tz.TZDateTime.from(at, tz.UTC),
@@ -106,6 +110,38 @@ class ReminderService {
       }
     } catch (_) {
       // Sin recordatorio no se rompe la app.
+    }
+  }
+
+  static const _firstId = 100, _brainyFirstId = 200;
+  static AndroidNotificationDetails get _brainyChannel => AndroidNotificationDetails(
+    'brainy_alerts',
+    tr('Avisos de Brainy'),
+    channelDescription: tr('Tu mascota te avisa cuando tiene hambre o quiere jugar.'),
+    importance: Importance.defaultImportance,
+    priority: Priority.defaultPriority,
+    icon: 'ic_stat_mic',
+  );
+
+  /// Programa los avisos de la mascota (y quita los anteriores). Lista vacía = quitarlos todos.
+  Future<void> syncBrainy(List<BrainyAlert> alerts) async {
+    try {
+      await _init();
+      for (var i = 0; i < BrainyAlerts.max; i++) {
+        await _plugin.cancel(_brainyFirstId + i);
+      }
+      for (final (i, a) in alerts.take(BrainyAlerts.max).indexed) {
+        await _plugin.zonedSchedule(
+          _brainyFirstId + i,
+          a.title,
+          a.body,
+          tz.TZDateTime.from(a.at, tz.UTC),
+          NotificationDetails(android: _brainyChannel, iOS: const DarwinNotificationDetails()),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      }
+    } catch (_) {
+      // Sin avisos no se rompe la app.
     }
   }
 

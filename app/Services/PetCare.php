@@ -135,8 +135,45 @@ class PetCare
                 'leaning' => $this->leaning($row),
                 'form' => $row->form,
                 'history' => json_decode($row->history ?: '[]', true) ?: [],
+                // Cuándo tendrá hambre o querrá jugar (para los avisos de la app en Modo Brainy). Dormida de
+                // noche sí cuenta; hibernando o malita, no: ahí no se avisa.
+                'alerts' => $hibernating || $sick ? [] : array_values(array_filter([
+                    $this->alert('hungry', $food, $c['food_hours'], $now),
+                    $this->alert('bored', $joy, $c['joy_hours'], $now),
+                ])),
             ],
         ];
+    }
+
+    /** El momento en que una barra bajará a un corazón (null si ya está ahí: no se avisa de lo que ya pasó). */
+    private function alert(string $kind, float $level, float $hoursPerHeart, CarbonImmutable $now): ?array
+    {
+        if ($level <= 1.0) {
+            return null;
+        }
+
+        return ['kind' => $kind, 'at' => $this->afterAwakeHours($now, ($level - 1.0) * $hoursPerHeart)->utc()->format('Y-m-d\TH:i:s\Z')];
+    }
+
+    /** El instante en que habrán pasado $hours horas despierta desde $from (las de la noche no cuentan). */
+    private function afterAwakeHours(CarbonImmutable $from, float $hours): CarbonImmutable
+    {
+        [$sleep, $wake] = config('pet.care.night');
+        $at = $from->setTimezone(config('vocab.timezone'));
+        $minutes = (int) ceil($hours * 60);
+        for ($i = 0; $i < 100; $i++) {
+            if ($this->night($at)) {   // dormida: salta a cuando despierta
+                $at = ($at->hour >= $sleep ? $at->addDay() : $at)->setTime($wake, 0);
+            }
+            $awake = (int) $at->diffInMinutes($at->setTime($sleep, 0));
+            if ($minutes <= $awake) {
+                return $at->addMinutes($minutes);
+            }
+            $minutes -= $awake;
+            $at = $at->setTime($sleep, 0);
+        }
+
+        return $at;
     }
 
     /** Borra los cuidados (al reiniciar el progreso): la mascota vuelve a nacer. */

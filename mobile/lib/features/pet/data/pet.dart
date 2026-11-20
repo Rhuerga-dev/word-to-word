@@ -60,7 +60,11 @@ class PetCare {
     this.leaning,
     this.form,
     this.history = const [],
+    this.alerts = const [],
   });
+
+  /// Cuándo tendrá hambre («hungry») o querrá jugar («bored»): (clave, instante). Para los avisos de Brainy.
+  final List<(String, DateTime)> alerts;
 
   /// Corazones de cada barra, de 0 a [max].
   final Map<PetNeed, int> hearts;
@@ -102,6 +106,10 @@ class PetCare {
       leaning: text(j['leaning']),
       form: text(j['form']),
       history: [for (final h in asMaps(j['history'])) (asString(h['stage']), asString(h['at']))],
+      alerts: [
+        for (final a in asMaps(j['alerts']))
+          if (DateTime.tryParse(asString(a['at'])) case final at?) (asString(a['kind']), at),
+      ],
     );
   }
 }

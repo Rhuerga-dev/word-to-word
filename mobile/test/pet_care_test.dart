@@ -503,5 +503,25 @@ void main() {
       expect(tester.widget<SwitchListTile>(sw).value, isFalse);
       expect(find.text('Modo Brainy'), findsOneWidget);
     });
+
+    testWidgets('«Avisos de Brainy» solo sale con el Modo Brainy encendido, y nace encendido', (tester) async {
+      Future<Finder> openSettings(bool mode) async {
+        await launch(tester, mode: mode, pet: _state());
+        await tester.tap(find.text('Ajustes').last);
+        for (var i = 0; i < 4; i++) {
+          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
+          await tester.pump(const Duration(milliseconds: 300));
+        }
+        return find.byKey(const ValueKey('brainy-alerts-switch'));
+      }
+
+      expect(await openSettings(false), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      final sw = await openSettings(true);
+      expect(sw, findsOneWidget);
+      expect(tester.widget<SwitchListTile>(sw).value, isTrue);
+      expect(find.text('Avisos de Brainy'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

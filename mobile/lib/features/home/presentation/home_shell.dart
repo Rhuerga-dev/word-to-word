@@ -12,6 +12,7 @@ import '../../pet/data/pet.dart';
 import '../../pet/presentation/pet_birth.dart';
 import '../../pet/presentation/pet_providers.dart';
 import '../../../core/services/reminder_service.dart';
+import '../../../core/services/brainy_alerts.dart';
 
 /// Las 5 pestañas con la barra de abajo. Cada pestaña guarda su posición al cambiar.
 class HomeShell extends ConsumerStatefulWidget {
@@ -53,6 +54,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     }
     final offline = ref.watch(offlineProvider);
     final update = ref.watch(appUpdateProvider);
+    ref.watch(brainyAlertsSyncProvider); // avisos de la mascota (solo en Modo Brainy)
     ref.watch(brainyExperimentReporterProvider); // experimento A/B: informa del Modo Brainy en uso (si lo hay)
     return Scaffold(
       backgroundColor: W.callBg,
