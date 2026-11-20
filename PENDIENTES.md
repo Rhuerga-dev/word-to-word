@@ -305,6 +305,12 @@ _Última actualización: 2026-11-19_
   curso no los tiene y habla con `ShadowStep`. Motivo: Reynaldo vio en el iPhone «Pronunciation: the sound /θ/ — think» en la clase
   de español: el taller de sonidos (`soundWords`) y la narración viven en la app y son del inglés. La pantalla Practicar aún ofrece
   los sonidos del inglés en cualquier curso.
+  **Textos del servidor en el idioma del alumno (20/11):** `App\Support\Ui::t('…:n…', [...])` traduce con `lang/en.json` cuando el
+  idioma propio del curso no es el español (en el curso de inglés no cambia nada). Pasados por él: nombre del nivel y «lo que
+  puedes hacer», logros, tareas de «qué hacer hoy» (con huecos `:n`) y etiquetas de tipos de error. +44 traducciones escritas a
+  mano; un test exige traducción para todos. La narración ya no se propone en «qué hacer hoy» si el curso no la tiene. Motivo:
+  Reynaldo vio textos en español en Progreso con la pantalla en inglés. **Quedan en español** (vienen del paquete del curso de
+  inglés): conversaciones, profesiones, familias y unidades; y los correos (verificación, contraseña).
   **Falta del paso 4:** las otras ~440 palabras de A1 (días, números, palabras gramaticales, familias), unidades y conversaciones del
   curso, y probarlo de verdad con una cuenta de prueba en el curso 2 (hoy solo se puede poner a mano: `users.course_id`).
   **Paso 5 empezado (20/11): elegir curso en Ajustes.** Servidor: `GET /api/courses` y `PUT /api/course {code}` (`CourseController`):

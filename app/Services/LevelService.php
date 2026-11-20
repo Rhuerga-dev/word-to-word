@@ -98,8 +98,8 @@ class LevelService
 
         return [
             'level' => $level,
-            'name' => config("vocab.levels.$level.name"),
-            'can' => config("vocab.levels.$level.can"),
+            'name' => \App\Support\Ui::t((string) config("vocab.levels.$level.name")),
+            'can' => \App\Support\Ui::many(config("vocab.levels.$level.can")),
             'next' => $next,
             'total' => $total,
             'introduced' => $introduced,
@@ -115,8 +115,8 @@ class LevelService
     {
         return collect(config('vocab.levels'))->map(fn ($cfg, $code) => [
             'code' => $code,
-            'name' => $cfg['name'],
-            'can' => $cfg['can'],
+            'name' => \App\Support\Ui::t((string) $cfg['name']),
+            'can' => \App\Support\Ui::many($cfg['can']),
             'words' => $this->ready($this->inLevel($code))->count(),
         ])->values()->all();
     }

@@ -303,6 +303,63 @@ class CourseScopeTest extends TestCase
         $this->assertSame(422, $send('<script>alert(1)</script>'));
     }
 
+    public function test_texts_written_by_the_server_come_in_the_students_language(): void
+    {
+        \App\Support\Ui::forget();
+        $texts = function () {
+            $all = [];
+            foreach (['/api/progress', '/api/levels', '/api/achievements'] as $path) {
+                $json = $this->getJson($path)->assertOk()->json();
+                array_walk_recursive($json, function ($v) use (&$all) {
+                    if (is_string($v)) {
+                        $all[] = $v;
+                    }
+                });
+            }
+
+            return $all;
+        };
+
+        Sanctum::actingAs($this->student);                                   // curso de inglés: en español, como siempre
+        $spanish = $texts();
+        $this->assertContains('Básico', $spanish);
+        $this->assertContains('Presentarte y hablar de ti y de tu trabajo', $spanish);
+        $this->assertContains('Primer paso', $spanish);
+        $this->assertContains('Te faltan 5 min de hablar para tu meta de hoy.', $spanish);
+        $this->assertContains('Haz la narración del día: un minuto hablando sin parar.', $spanish);
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                          // curso de español: en inglés
+        $english = $texts();
+        $this->assertContains('Basic', $english);
+        $this->assertContains('Introduce yourself and talk about you and your job', $english);
+        $this->assertContains('First step', $english);
+        $this->assertContains("You need 5 more min of speaking to reach today's goal.", $english);
+        foreach (['Básico', 'Primer paso', 'Presentarte y hablar de ti y de tu trabajo', 'Termina tu primera sesión de Hoy'] as $leftover) {
+            $this->assertNotContains($leftover, $english, 'quedó en español');
+        }
+        // La narración no se propone: la clase de este curso aún no la tiene.
+        $this->assertSame([], array_values(array_filter($english, fn ($t) => str_contains($t, 'narra'))));
+    }
+
+    public function test_every_server_text_has_its_english_translation(): void
+    {
+        $en = json_decode(file_get_contents(base_path('lang/en.json')), true);
+        $need = array_values(config('speaking.mistake_categories'));
+        foreach (config('vocab.levels') as $level) {
+            array_push($need, $level['name'], ...$level['can']);
+        }
+        foreach (\App\Services\AchievementService::LIST as [$title, $desc]) {
+            array_push($need, $title, $desc);
+        }
+        // Las frases de «qué hacer hoy»: las que ProgressService pasa por Ui::t().
+        preg_match_all('/\$t\(\'((?:[^\'\\\\]|\\\\.)+)\'/u', file_get_contents(app_path('Services/ProgressService.php')), $m);
+        $this->assertGreaterThan(8, count($m[1]));
+        foreach (array_merge($need, $m[1]) as $text) {
+            $this->assertArrayHasKey($text, $en, "Falta en lang/en.json: «{$text}»");
+        }
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);

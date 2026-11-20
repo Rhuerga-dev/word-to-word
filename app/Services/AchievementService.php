@@ -79,7 +79,7 @@ class AchievementService
     {
         [$title, $desc, $icon] = self::LIST[$code];
 
-        return ['code' => $code, 'title' => $title, 'desc' => $desc, 'icon' => $icon, 'unlocked_at' => $at];
+        return ['code' => $code, 'title' => \App\Support\Ui::t($title), 'desc' => \App\Support\Ui::t($desc), 'icon' => $icon, 'unlocked_at' => $at];
     }
 
     /** Todos los logros, con los desbloqueados marcados. Los que aún no se habían mostrado salen en "new". */

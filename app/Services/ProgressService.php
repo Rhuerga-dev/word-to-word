@@ -59,7 +59,7 @@ class ProgressService
         $pending = SpeakingMistake::where('user_id', $user->id)->whereNull('mastered_on');
         $byCategory = (clone $pending)->selectRaw("coalesce(category, 'other') as cat, count(*) as n")->groupBy('cat')
             ->orderByDesc('n')->get()
-            ->map(fn ($r) => ['category' => $r->cat, 'label' => $labels[$r->cat] ?? $labels['other'], 'count' => (int) $r->n])->values();
+            ->map(fn ($r) => ['category' => $r->cat, 'label' => \App\Support\Ui::t((string) ($labels[$r->cat] ?? $labels['other'])), 'count' => (int) $r->n])->values();
 
         $level = $this->levels->progress($user);
         $data = [
@@ -109,38 +109,41 @@ class ProgressService
             $out[] = compact('icon', 'text', 'action', 'arg');
         };
 
+        $t = fn (string $es, array $args = []) => \App\Support\Ui::t($es, $args);   // en el idioma del alumno
         if ($d['vocab']['due'] > 0) {
-            $add('🗂️', "Tienes {$d['vocab']['due']} ".($d['vocab']['due'] === 1 ? 'ficha' : 'fichas').' para repasar hoy.', 'cards');
+            $add('🗂️', $d['vocab']['due'] === 1 ? $t('Tienes 1 ficha para repasar hoy.') : $t('Tienes :n fichas para repasar hoy.', ['n' => $d['vocab']['due']]), 'cards');
         }
         $left = round($d['speaking']['goal'] - $d['speaking']['today'], 1);
         if ($left > 0) {
-            $add('🎙️', 'Te faltan '.str_replace('.', ',', (string) $left).' min de hablar para tu meta de hoy.', 'speak');
+            $add('🎙️', $t('Te faltan :n min de hablar para tu meta de hoy.', ['n' => str_replace('.', ',', (string) $left)]), 'speak');
         }
         if ($d['mistakes']['due'] > 0) {
-            $add('🔁', "Repasa {$d['mistakes']['due']} ".($d['mistakes']['due'] === 1 ? 'error' : 'errores').' de tus conversaciones.', 'review');
+            $add('🔁', $d['mistakes']['due'] === 1 ? $t('Repasa 1 error de tus conversaciones.') : $t('Repasa :n errores de tus conversaciones.', ['n' => $d['mistakes']['due']]), 'review');
         }
-        if (! $d['speaking']['narrated_today']) {
-            $add('🗣️', 'Haz la narración del día: un minuto hablando sin parar.', 'narrate');
+        // La narración solo se propone si la clase de este curso la tiene (el de español aún no).
+        $steps = \App\Support\CoursePack::get('session.steps');
+        if (! $d['speaking']['narrated_today'] && ($steps === null || in_array('narrate', (array) $steps, true))) {
+            $add('🗣️', $t('Haz la narración del día: un minuto hablando sin parar.'), 'narrate');
         }
         $sound = collect($d['pronunciation']['sounds'])->first(fn ($s) => $s['due'] && $s['tier'] !== 'd');
         if ($sound) {
-            $tier = $sound['tier'] === 'g' ? 'Guiado' : 'Práctica';
-            $add('🎯', "El sonido /{$sound['phoneme']}/ sigue en {$tier}: haz su taller.", 'lab', $sound['phoneme']);
+            $tier = $t($sound['tier'] === 'g' ? 'Guiado' : 'Práctica');
+            $add('🎯', $t('El sonido /:sound/ sigue en :tier: haz su taller.', ['sound' => $sound['phoneme'], 'tier' => $tier]), 'lab', $sound['phoneme']);
         }
         if (! empty($d['level']['exam_ready'])) {
-            $add('🏆', "Ya puedes hacer el examen para subir a {$d['level']['next']}.", 'exam');
+            $add('🏆', $t('Ya puedes hacer el examen para subir a :level.', ['level' => $d['level']['next']]), 'exam');
         }
         $top = $d['mistakes']['by_category'][0] ?? null;
         if ($top && $top['count'] >= 3 && $top['category'] !== 'other') {
-            $add('🧭', "Tu error más repetido: {$top['label']} ({$top['count']}). Fíjate en eso al hablar.");
+            $add('🧭', $t('Tu error más repetido: :label (:n). Fíjate en eso al hablar.', ['label' => $top['label'], 'n' => $top['count']]));
         }
         $sp = $d['spanish'] ?? null;
-        if ($sp && $sp['step'] >= 2 && $sp['today'] > 0) {
-            $add('🇪🇸', "Hoy pediste español {$sp['today']} ".($sp['today'] === 1 ? 'vez' : 'veces').'. Mañana intenta explicarlo en inglés con otras palabras.');
+        if ($sp && $sp['step'] >= 2 && $sp['today'] > 0 && \App\Support\Ui::lang() === 'es') {   // solo en el curso de inglés
+            $add('🇪🇸', $sp['today'] === 1 ? $t('Hoy pediste español 1 vez. Mañana intenta explicarlo en inglés con otras palabras.') : $t('Hoy pediste español :n veces. Mañana intenta explicarlo en inglés con otras palabras.', ['n' => $sp['today']]));
         }
         $reaction = $d['speaking']['reaction'];
         if ($reaction && end($reaction) > 3) {
-            $add('⚡', 'Tardas más de 3 s en arrancar: activa «Respuesta rápida» en Hablar.', 'speak');
+            $add('⚡', $t('Tardas más de 3 s en arrancar: activa «Respuesta rápida» en Hablar.'), 'speak');
         }
 
         return array_slice($out, 0, 4);
