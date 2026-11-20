@@ -274,6 +274,15 @@ _Última actualización: 2026-11-19_
   se piden a la IA en `ClaudeService` (~47 menciones de inglés/español; mejor hacerlo junto con el curso mínimo de español, para
   probar con respuestas de verdad); (3e) el taller de sonidos (lista de sonidos del inglés); (3f) el parámetro `lang=en|es` de la API
   debería ser `learn|from` (toca la app: parche); (3g) `config/spanish.php` y `SpanishService` = «idioma de apoyo», hoy con nombre de español.
+  **Paso 4 empezado (20/11): curso `es-en` «Spanish for English speakers», APAGADO, con 60 palabras.** Decidido por Reynaldo: se
+  diseña **igual que el de inglés** (palabras por frecuencia y nivel —A1 = 500—, 9 datos por palabra, familias, unidades,
+  conversaciones). Ficha en `config/courses.php` (`es-en.course`); contenido en `database/content/courses/es-en/words/part*.json`
+  (escrito a mano, sin IA); se carga con `php artisan courses:load es-en [--dry-run]` (repetible: actualiza, no duplica; solo cursos
+  de la lista fija; `LoadCourseTest` vigila que cada ficha esté completa). En la base real: curso 2, 60 palabras (20 nombres y 40
+  verbos muy comunes), 0 alumnos; un alumno de inglés no las ve. En esta tabla, para el curso de español, `translation` y
+  `example_es` van en INGLÉS (el nombre de la columna `example_es` es herencia: significa «ejemplo en el idioma del alumno»).
+  **Falta del paso 4:** las otras ~440 palabras de A1 (días, números, palabras gramaticales, familias), unidades y conversaciones del
+  curso, y probarlo de verdad con una cuenta de prueba en el curso 2 (hoy solo se puede poner a mano: `users.course_id`).
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
   el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
   curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.
