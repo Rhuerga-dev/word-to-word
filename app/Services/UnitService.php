@@ -19,12 +19,12 @@ class UnitService
     /** @return array<int, array> unidades del nivel (en orden) */
     public function units(?string $level): array
     {
-        return config("units.levels.{$level}", []);
+        return \App\Support\CoursePack::get("units.levels.{$level}", []);
     }
 
     public function find(string $id): ?array
     {
-        foreach (config('units.levels', []) as $level => $units) {
+        foreach (\App\Support\CoursePack::get('units.levels', []) as $level => $units) {
             foreach ($units as $u) {
                 if ($u['id'] === $id) {
                     return $u + ['level' => $level];
@@ -87,7 +87,7 @@ class UnitService
                 'words' => ['learned' => min($learned, $need), 'need' => $need, 'preview' => $words->take(4)->pluck('word')->all()],
                 'sound' => $u['sound'],
                 'scenario' => $u['scenario'],
-                'scenario_title' => config("speaking.scenarios.{$u['scenario']}.title"),
+                'scenario_title' => \App\Support\CoursePack::get("speaking.scenarios.{$u['scenario']}.title"),
                 'steps' => $steps + ['test' => $done],
                 'test_ready' => $steps['words'] && $steps['sound'] && $steps['shadow'],
                 'test' => ['score' => $row->test_score ?? null, 'tries' => (int) ($row->test_tries ?? 0), 'feedback' => $row->test_feedback ?? null],

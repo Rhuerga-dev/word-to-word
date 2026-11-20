@@ -55,7 +55,7 @@ class ProgressService
             ])->values();
 
         // Errores: los tipos que más se repiten entre los que aún no se superan.
-        $labels = config('speaking.mistake_categories');
+        $labels = \App\Support\CoursePack::get('speaking.mistake_categories');
         $pending = SpeakingMistake::where('user_id', $user->id)->whereNull('mastered_on');
         $byCategory = (clone $pending)->selectRaw("coalesce(category, 'other') as cat, count(*) as n")->groupBy('cat')
             ->orderByDesc('n')->get()

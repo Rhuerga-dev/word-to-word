@@ -266,10 +266,14 @@ _Última actualización: 2026-11-19_
   (`StudyController::families`, `MetricsSnapshot`) no pasan por la regla; las tareas que recorren alumnos (recordatorios) usan el
   curso 1 y habrá que envolverlas en `CurrentCourse::run` cuando haya alumnos en otro curso.
   **Paso 3a hecho (19/11):** la evaluación de pronunciación y la transcripción (Azure y Whisper) usan `courses.speech_locale` del
-  curso del alumno (`CurrentCourse::speechLocale()`) en vez de «en-US» fijo. Para el curso 1 no cambia nada. **Falta del paso 3:**
-  (3b) `TtsService`: hoy piensa en `en`/`es` (voz que se aprende / español del alumno) con voces y velocidades fijas; (3c) los textos
-  que se piden a la IA en `ClaudeService` (lo más grande: ~47 menciones de inglés/español); (3d) el taller de sonidos y `config/speaking.php`;
-  (3e) el parámetro `lang=en|es` de la API debería ser `learn|from` (toca la app: parche).
+  curso del alumno (`CurrentCourse::speechLocale()`) en vez de «en-US» fijo. Para el curso 1 no cambia nada. **3b hecho:** `TtsService` lee más despacio el idioma que se
+  aprende en el curso (antes: «inglés» fijo). **3c hecho:** `App\Support\CoursePack::get('speaking.scenarios')` lee el CONTENIDO
+  (conversaciones, temas, tipos de error, banco de shadowing, unidades, profesiones) del paquete del curso en `config/courses.php`
+  (solo lo que cambia; lo demás se hereda de los archivos de siempre); 29 lecturas pasadas y un test que vigila que nadie lo pida con
+  `config()` a secas. Las REGLAS del motor (metas, tiempos, umbrales) siguen en `config()`. **Falta del paso 3:** (3d) los textos que
+  se piden a la IA en `ClaudeService` (~47 menciones de inglés/español; mejor hacerlo junto con el curso mínimo de español, para
+  probar con respuestas de verdad); (3e) el taller de sonidos (lista de sonidos del inglés); (3f) el parámetro `lang=en|es` de la API
+  debería ser `learn|from` (toca la app: parche); (3g) `config/spanish.php` y `SpanishService` = «idioma de apoyo», hoy con nombre de español.
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
   el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
   curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.

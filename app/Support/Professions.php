@@ -10,15 +10,15 @@ class Professions
 {
     public static function keys(): array
     {
-        return array_keys(config('professions.list'));
+        return array_keys(\App\Support\CoursePack::get('professions.list'));
     }
 
     public static function get(?string $profession): ?array
     {
-        return $profession ? config("professions.list.{$profession}") : null;
+        return $profession ? \App\Support\CoursePack::get("professions.list.{$profession}") : null;
     }
 
-    /** ¿Ve esta conversación el alumno? Usa "only", "except" y "template" de config('speaking.scenarios'). */
+    /** ¿Ve esta conversación el alumno? Usa "only", "except" y "template" de \App\Support\CoursePack::get('speaking.scenarios'). */
     public static function visible(array $scenario, ?string $profession): bool
     {
         if ($profession === null) {
@@ -34,11 +34,11 @@ class Professions
     /** La conversación que le toca en lugar de $key (p. ej. "upwork_call" → "work_customer" si no es developer). */
     public static function scenarioFor(?string $profession, string $key): string
     {
-        $all = config('speaking.scenarios');
+        $all = \App\Support\CoursePack::get('speaking.scenarios');
         if (! isset($all[$key]) || self::visible($all[$key], $profession)) {
             return $key;
         }
-        $alt = config("professions.replace.{$key}");
+        $alt = \App\Support\CoursePack::get("professions.replace.{$key}");
 
         return $alt && isset($all[$alt]) && self::visible($all[$alt], $profession) ? $alt : 'free';
     }
@@ -55,7 +55,7 @@ class Professions
     public static function topicIndexes(?string $profession): array
     {
         $out = [];
-        foreach (config('speaking.narration_topics') as $i => $t) {
+        foreach (\App\Support\CoursePack::get('speaking.narration_topics') as $i => $t) {
             if ($profession === null || ! isset($t[2]) || $t[2] === $profession) {
                 $out[] = $i;
             }

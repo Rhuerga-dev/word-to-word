@@ -24,7 +24,7 @@ class ConversationController extends Controller
             'messages' => ['present', 'array', 'max:40'],
             'messages.*.role' => ['required', 'in:user,assistant'],
             'messages.*.content' => ['required', 'string', 'max:2000'],
-            'scenario' => ['sometimes', 'string', Rule::in(array_keys(config('speaking.scenarios')))],
+            'scenario' => ['sometimes', 'string', Rule::in(array_keys(\App\Support\CoursePack::get('speaking.scenarios')))],
             'voice' => ['sometimes', 'boolean'],
             'session_id' => ['sometimes', 'nullable', 'integer'],
         ]);

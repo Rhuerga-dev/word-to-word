@@ -315,7 +315,7 @@ TXT;
     public function narration(string $topic, string $text, ?string $level = null): array
     {
         $level = $level ?: 'A2-B1';
-        $types = implode(', ', array_keys(config('speaking.mistake_categories')));
+        $types = implode(', ', array_keys(\App\Support\CoursePack::get('speaking.mistake_categories')));
         $in = $this->inLang();
         $system = <<<TXT
 You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
@@ -344,7 +344,7 @@ TXT;
     public function describePicture(string $imageUrl, string $text, ?string $level = null): array
     {
         $level = $level ?: 'A2-B1';
-        $types = implode(', ', array_keys(config('speaking.mistake_categories')));
+        $types = implode(', ', array_keys(\App\Support\CoursePack::get('speaking.mistake_categories')));
         $in = $this->inLang();
         $system = <<<TXT
 You are an English speaking coach for a Spanish-speaking adult (Latin American) in Miami, level about {$level} (CEFR).
@@ -445,7 +445,7 @@ TXT;
      * @param  string[]  $targetWords
      */
     /**
-     * Un turno de la conversación. $scenario es una de config('speaking.scenarios');
+     * Un turno de la conversación. $scenario es una de \App\Support\CoursePack::get('speaking.scenarios');
      * $voice = el alumno habla (lo que llega es una transcripción, sin puntuación fiable).
      *
      * @return array{reply: string, feedback: ?string, used: array<int, string>, mistakes: array<int, array{said: string, correct: string, why: ?string}>}
@@ -453,8 +453,8 @@ TXT;
     public function converse(array $history, array $targetWords, ?string $weakSounds = null, string $scenario = 'free', bool $voice = false, ?string $level = null, ?string $profession = null): array
     {
         $words = implode(', ', $targetWords) ?: '(none)';
-        $types = implode(', ', array_keys(config('speaking.mistake_categories')));
-        $role = \App\Support\Professions::role(config("speaking.scenarios.{$scenario}.role") ?? config('speaking.scenarios.free.role'), $profession);
+        $types = implode(', ', array_keys(\App\Support\CoursePack::get('speaking.mistake_categories')));
+        $role = \App\Support\Professions::role(\App\Support\CoursePack::get("speaking.scenarios.{$scenario}.role") ?? \App\Support\CoursePack::get('speaking.scenarios.free.role'), $profession);
         $level = $level ?: 'A2-B1';
         $input = $voice
             ? 'The student is SPEAKING: their messages are speech-to-text transcripts. Ignore punctuation, capitalization and spelling; correct only grammar, word choice and natural phrasing.'
@@ -507,7 +507,7 @@ TXT;
                 $correct = trim($m[2], " \t\"'“”");
                 // "| por qué | tipo": el tipo va al final si es uno de los conocidos.
                 $parts = isset($m[3]) ? array_map('trim', explode('|', $m[3])) : [];
-                $category = count($parts) > 1 && array_key_exists(strtolower(end($parts)), config('speaking.mistake_categories', []))
+                $category = count($parts) > 1 && array_key_exists(strtolower(end($parts)), \App\Support\CoursePack::get('speaking.mistake_categories', []))
                     ? strtolower(array_pop($parts)) : null;
                 $why = trim(implode(' | ', $parts));
                 if ($said !== '' && $correct !== '' && mb_strtolower($said) !== mb_strtolower($correct)) {

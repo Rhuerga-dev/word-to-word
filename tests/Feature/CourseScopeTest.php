@@ -142,6 +142,45 @@ class CourseScopeTest extends TestCase
         $this->assertSame(['es -5%', 'en 0%', 'es -30%'], array_slice($said(), 3));
     }
 
+    public function test_each_course_brings_its_own_content_and_inherits_the_rest(): void
+    {
+        // El paquete del curso de español solo cambia las conversaciones; lo demás lo hereda.
+        config(['courses.es-en' => ['speaking' => ['scenarios' => [
+            'cafe' => ['title' => 'At the café', 'emoji' => '☕', 'desc' => 'Order a coffee in Spanish.', 'role' => 'Eres un camarero amable.'],
+        ]]]]);
+        $titles = fn () => collect($this->getJson('/api/speaking/scenarios')->assertOk()->json('scenarios'))->pluck('title')->all();
+
+        Sanctum::actingAs($this->student);                                   // inglés: las de siempre
+        $english = $titles();
+        $this->assertContains('Charla libre', $english);
+        $this->assertNotContains('At the café', $english);
+        $this->assertSame(config('speaking.scenarios.free.role'), \App\Support\CoursePack::get('speaking.scenarios.free.role'));
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                          // español: las suyas
+        $this->assertSame(['At the café'], $titles());
+        $this->assertSame('Eres un camarero amable.', \App\Support\CoursePack::get('speaking.scenarios.cafe.role'));
+        // Lo que su paquete no trae, lo hereda del de siempre; y las reglas del motor no dependen del curso.
+        $this->assertSame(config('speaking.picture_themes'), \App\Support\CoursePack::get('speaking.picture_themes'));
+        $this->assertSame('x', \App\Support\CoursePack::get('speaking.no_existe', 'x'));
+    }
+
+    public function test_content_is_always_read_through_the_course_pack(): void
+    {
+        // Regla para el futuro: el contenido no se pide con config() a secas (se saltaría el curso).
+        $content = 'speaking\\.(scenarios|narration_topics|shadowing_themes|picture_themes|mistake_categories|shadowing_bank)|units\\.levels|professions\\.(list|replace|goals)';
+        $bad = [];
+        foreach (\Illuminate\Support\Facades\File::allFiles(app_path()) as $file) {
+            if ($file->getFilename() === 'CoursePack.php') {
+                continue;
+            }
+            if (preg_match_all('/(?<![\\w>:\\\\])config\\([\'"]('.$content.')/', $file->getContents(), $m)) {
+                $bad[] = $file->getRelativePathname().': '.implode(', ', $m[1]);
+            }
+        }
+        $this->assertSame([], $bad, 'Usa CoursePack::get() para leer contenido');
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);

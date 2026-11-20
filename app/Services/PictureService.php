@@ -23,7 +23,7 @@ class PictureService
         if (! $this->enabled()) {
             throw new RuntimeException('Falta UNSPLASH_ACCESS_KEY en el archivo .env');
         }
-        $themes = config('speaking.picture_themes');
+        $themes = \App\Support\CoursePack::get('speaking.picture_themes');
         $theme = $theme && in_array($theme, $themes, true) ? $theme : $themes[array_rand($themes)];
 
         $res = Http::withHeaders(['Authorization' => 'Client-ID '.config('services.unsplash.key'), 'Accept-Version' => 'v1'])

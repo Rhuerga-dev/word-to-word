@@ -83,8 +83,8 @@ class StudyController extends Controller
     public function professions()
     {
         return [
-            'professions' => collect(config('professions.list'))->map(fn ($p, $k) => ['id' => $k, 'label' => $p['label'], 'emoji' => $p['emoji']])->values(),
-            'goals' => collect(config('professions.goals'))->map(fn ($label, $k) => ['id' => $k, 'label' => $label])->values(),
+            'professions' => collect(\App\Support\CoursePack::get('professions.list'))->map(fn ($p, $k) => ['id' => $k, 'label' => $p['label'], 'emoji' => $p['emoji']])->values(),
+            'goals' => collect(\App\Support\CoursePack::get('professions.goals'))->map(fn ($label, $k) => ['id' => $k, 'label' => $label])->values(),
         ];
     }
 
@@ -95,7 +95,7 @@ class StudyController extends Controller
     {
         $data = $request->validate([
             'profession' => ['sometimes', 'nullable', Rule::in(\App\Support\Professions::keys())],
-            'goal' => ['sometimes', 'nullable', Rule::in(array_keys(config('professions.goals')))],
+            'goal' => ['sometimes', 'nullable', Rule::in(array_keys(\App\Support\CoursePack::get('professions.goals')))],
         ]);
         $user = $request->user();
         if (array_key_exists('profession', $data) && $data['profession'] !== $user->profession) {

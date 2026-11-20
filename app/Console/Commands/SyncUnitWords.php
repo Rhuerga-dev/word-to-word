@@ -20,7 +20,7 @@ class SyncUnitWords extends Command
     public function handle(): int
     {
         $created = 0;
-        foreach (config('units.levels', []) as $units) {
+        foreach (\App\Support\CoursePack::get('units.levels', []) as $units) {
             foreach ($units as $u) {
                 foreach ($u['words'] ?? [] as $w) {
                     $word = Word::firstOrCreate(['word' => mb_strtolower($w)], ['rank' => 950000, 'source' => UnitService::SOURCE]);

@@ -18,7 +18,7 @@ class ShadowingBank
 
     public static function path(): string
     {
-        return (string) config('speaking.shadowing_bank', database_path('content/shadowing.json'));
+        return (string) \App\Support\CoursePack::get('speaking.shadowing_bank', database_path('content/shadowing.json'));
     }
 
     /** @return array{title: string, sentences: array<int, string>}|null */

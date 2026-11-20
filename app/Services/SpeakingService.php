@@ -30,7 +30,7 @@ class SpeakingService
     /** Tema de la narración de hoy (cambia cada día; "$skip" pasa a los siguientes). */
     public function topic(User $user, int $skip = 0): array
     {
-        $topics = config('speaking.narration_topics');
+        $topics = \App\Support\CoursePack::get('speaking.narration_topics');
         // Los temas de developer solo salen a quien eligió tecnología (o no eligió profesión).
         $allowed = \App\Support\Professions::topicIndexes($user->profession);
         $i = $allowed[((int) $this->srs->today($user)->format('z') + $user->id + $skip) % count($allowed)];

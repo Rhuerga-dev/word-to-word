@@ -78,7 +78,7 @@ class PathController extends Controller
         }
 
         try {
-            [$score, $feedback] = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->gradeConversation($data['messages'], (string) config("speaking.scenarios.{$u['scenario']}.title"), $user->cefr_level);
+            [$score, $feedback] = $claude->explainIn(app(\App\Services\SpanishService::class)->coachLang($user))->gradeConversation($data['messages'], (string) \App\Support\CoursePack::get("speaking.scenarios.{$u['scenario']}.title"), $user->cefr_level);
         } catch (Throwable $e) {
             report($e);
             abort(502, 'La IA no respondió. Intenta otra vez.');

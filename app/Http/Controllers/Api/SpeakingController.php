@@ -25,7 +25,7 @@ class SpeakingController extends Controller
         // Solo las que le tocan por su profesión (sin profesión: las de siempre).
         $profession = $request->user()->profession;
 
-        return ['scenarios' => collect(config('speaking.scenarios'))
+        return ['scenarios' => collect(\App\Support\CoursePack::get('speaking.scenarios'))
             ->filter(fn ($s) => \App\Support\Professions::visible($s, $profession))
             ->map(fn ($s, $id) => ['id' => $id, 'title' => $s['title'], 'emoji' => $s['emoji'], 'desc' => $s['desc']])
             ->values()];
@@ -48,7 +48,7 @@ class SpeakingController extends Controller
     public function start(Request $request)
     {
         $data = $request->validate([
-            'scenario' => ['required', 'string', Rule::in([...array_keys(config('speaking.scenarios')), 'narrate', 'picture'])],
+            'scenario' => ['required', 'string', Rule::in([...array_keys(\App\Support\CoursePack::get('speaking.scenarios')), 'narrate', 'picture'])],
             'skip' => ['sometimes', 'integer', 'min:0', 'max:100'],   // narración: otro tema
         ]);
         $user = $request->user();
@@ -149,7 +149,7 @@ class SpeakingController extends Controller
         $data = $request->validate(['skip' => ['sometimes', 'integer', 'min:0', 'max:50'], 'unit' => ['sometimes', 'string', 'max:40']]);
         $user = $request->user();
         $level = $user->cefr_level ?: 'A2';
-        $themes = config('speaking.shadowing_themes');
+        $themes = \App\Support\CoursePack::get('speaking.shadowing_themes');
         $day = $this->srs->today($user);
         $i = ((int) $day->format('z') + (int) ($data['skip'] ?? 0)) % count($themes);
         // Shadowing de una unidad del Camino: su tema (y su propio texto en caché).
