@@ -200,7 +200,7 @@ class StudyController extends Controller
             }
         }
         DB::transaction(function () use ($user) {
-            UserWord::where('user_id', $user->id)->delete();
+            UserWord::withoutGlobalScope('course')->where('user_id', $user->id)->delete();   // reiniciar = todo, de todos los cursos
             DB::table('study_days')->where('user_id', $user->id)->delete();
             DB::table('phoneme_errors')->where('user_id', $user->id)->delete();
             DB::table('level_results')->where('user_id', $user->id)->delete();

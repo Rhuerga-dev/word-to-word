@@ -201,6 +201,39 @@ class CourseScopeTest extends TestCase
         $this->assertSame('en-US', app(\App\Support\CurrentCourse::class)->nativeLocale());
     }
 
+    public function test_progress_is_kept_apart_for_each_course_and_nothing_is_lost_when_switching(): void
+    {
+        Sanctum::actingAs($this->student);
+        foreach (Word::orderBy('rank')->limit(3)->get() as $w) {
+            $this->postJson("/api/words/{$w->id}/learn")->assertOk();          // 3 palabras de inglés aprendidas
+        }
+        $this->assertSame(3, $this->getJson('/api/stats')->assertOk()->json('learned'));
+
+        $this->student->forceFill(['course_id' => $this->spanish->id])->save();
+        Sanctum::actingAs($this->student->fresh());                           // se pasa al curso de español: empieza de cero
+        $this->assertSame(0, $this->getJson('/api/stats')->assertOk()->json('learned'));
+        $this->postJson('/api/words/'.$this->spanishId('zzperro').'/learn')->assertOk();
+        $this->assertSame(1, $this->getJson('/api/stats')->json('learned'));
+
+        $this->student->forceFill(['course_id' => Course::DEFAULT_ID])->save();
+        Sanctum::actingAs($this->student->fresh());                           // vuelve a inglés: su progreso sigue ahí
+        $this->assertSame(3, $this->getJson('/api/stats')->json('learned'));
+        $this->assertSame(4, DB::table('user_words')->where('user_id', $this->student->id)->count());
+    }
+
+    public function test_resetting_progress_erases_every_course(): void
+    {
+        Sanctum::actingAs($this->student);
+        $this->postJson('/api/words/'.Word::orderBy('rank')->value('id').'/learn')->assertOk();
+        DB::table('user_words')->insert(['user_id' => $this->student->id, 'word_id' => $this->spanishId('zzperro'), 'level' => 1, 'introduced_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+
+        $route = collect(app('router')->getRoutes())->first(fn ($r) => str_contains($r->getActionName(), 'StudyController@reset'));
+        $this->assertNotNull($route, 'no encuentro la ruta de reiniciar progreso');
+        $this->json($route->methods()[0], '/'.$route->uri(), ['password' => 'password'])->assertSuccessful();   // la de fábrica de los tests
+
+        $this->assertSame(0, DB::table('user_words')->where('user_id', $this->student->id)->count());
+    }
+
     public function test_without_a_student_the_course_is_the_first_one_and_a_task_can_choose_another(): void
     {
         $current = app(CurrentCourse::class);
