@@ -16,6 +16,7 @@ import '../../auth/data/user_profile.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../auth/presentation/profession_picker.dart';
 import '../../feedback/presentation/suggestion_dialog.dart';
+import 'course_card.dart';
 import '../../pet/presentation/pet_birth.dart';
 import '../../pet/presentation/pet_cloud.dart';
 import '../../pet/presentation/pet_providers.dart';
@@ -36,6 +37,7 @@ class SettingsPage extends ConsumerWidget {
         Expanded(child: Text(tr('Ajustes'), style: W.display(26))),
         TextButton(onPressed: () => ref.read(authControllerProvider.notifier).logout(), child: Text(tr('Salir'))),
       ]),
+      const CourseCard(),
       _h(tr('Recordatorio diario')),
       _ReminderCard(studiedToday: studiedToday),
       _h(tr('Tu trabajo')),
