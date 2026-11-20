@@ -243,6 +243,19 @@ _Última actualización: 2026-11-19_
 - [ ] Completar la ficha de Play con el icono, el gráfico, las capturas y las descripciones (corta y completa).
 
 ## Pendiente (código)
+- [ ] **Idea de Reynaldo (19/11): W2W como núcleo con cursos** — una sola app y al registrarse se elige qué idioma aprender; el
+  primero nuevo sería **español para angloparlantes** (compañeros de trabajo americanos de Reynaldo como primeros alumnos). Es
+  proyecto de aprendizaje: se hace por pasos aunque no haya demanda medida. **Nada empezado.** Mapa del 19/11 (solo lectura):
+  · *Base de datos*: `words` no lleva idioma (columnas `word`, `translation`, `example`, `example_es`, `definition`…) y `user_words`,
+    `speaking_mistakes`, `phoneme_errors`, `unit_progress`, `level_results`, `study_days` no llevan curso; `users.cefr_level` es uno solo.
+  · *Contenido*: 2.952 palabras (NGSL + `database/data/*_words.php`), `config/units.php`, `config/professions.php`, banco de shadowing.
+  · *Código con el inglés dentro*: `ClaudeService` (los textos que se piden a la IA, lo más grande), `StudyController`,
+    `TtsService`/`PronunciationService`/`SpeakingController` (voz y evaluación en en-US), `config/speaking.php`, taller de sonidos.
+  · *Ya existe y ayuda*: la pantalla traducida al inglés (app y web), y `SpanishService`/`spanish_step` («cuánto español de apoyo»).
+  · *App Flutter*: 17 archivos mencionan inglés.
+  Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
+  el inglés a configuración · (4) curso de español mínimo (50–100 palabras + conversación, mejor con frases de su trabajo) · (5) elegir
+  curso al registrarse · (6) verbos y sonidos del español. Los pasos 2–3 no cambian nada a la vista.
 - [ ] Avisos de Brainy · siguientes: no avisa de desorden ni de «malita» (dependen de los repasos, no solo del reloj); el aviso
   no abre directamente el cuidado (abre la app); la web (iPhone sin app nativa) no tiene Brainy ni estos avisos. Las horas de noche
   del servidor usan `vocab.timezone` (Nueva York) y no la zona del alumno; la app sí aplica la hora local (nada entre 21:00 y 08:00).
