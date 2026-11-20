@@ -271,6 +271,8 @@ class CourseScopeTest extends TestCase
         \Illuminate\Support\Facades\Http::assertNothingSent();
         $this->assertStringContainsString('¿', json_encode($bank, JSON_UNESCAPED_UNICODE), 'frases en español de verdad');
         $this->assertSame('shadowing', $this->getJson('/api/session/today')->assertOk()->json('plan.speak'));
+        // La clase de este curso no lleva taller de sonidos (es del inglés) ni narración.
+        $this->assertSame(['ear', 'reviews', 'new', 'shadowing', 'mistakes'], $this->getJson('/api/session/today')->json('plan.steps'));
 
         // El curso de inglés sigue con sus textos y sus tres formas de hablar.
         $this->student->forceFill(['course_id' => Course::DEFAULT_ID])->save();
@@ -278,6 +280,7 @@ class CourseScopeTest extends TestCase
         $english = $this->getJson('/api/speaking/shadowing')->assertOk()->json('sentences.0');
         $this->assertMatchesRegularExpression(\App\Services\ShadowingBank::SENTENCE, $english);
         $this->assertContains($this->getJson('/api/session/today')->json('plan.speak'), \App\Http\Controllers\Api\SessionController::SPEAK_MODES);
+        $this->assertNull($this->getJson('/api/session/today')->json('plan.steps'), 'el curso de inglés no limita nada');
     }
 
     public function test_pronunciation_accepts_spanish_sentences_only_in_the_spanish_course(): void

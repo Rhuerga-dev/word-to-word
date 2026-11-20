@@ -36,6 +36,7 @@ class TodayData {
     required this.mistakes,
     this.ear = const [],
     this.offline = false,
+    this.steps,
   });
 
   final XpToday xp;
@@ -53,6 +54,13 @@ class TodayData {
 
   /// Oído: palabras que ya aprendiste para reconocerlas al escucharlas (el primer paso).
   final List<EarItem> ear;
+
+  /// Los pasos que tiene la clase en este curso (ear, reviews, new, sound, narrate, shadowing, mistakes).
+  /// null = todos, como siempre (curso de inglés o servidor viejo).
+  final Set<String>? steps;
+
+  /// ¿La clase de este curso tiene ese paso?
+  bool has(String step) => steps == null || steps!.contains(step);
 
   /// Viene de lo guardado (sin conexión): solo se pueden hacer las fichas.
   final bool offline;
@@ -72,6 +80,7 @@ class TodayData {
       mistakes: listOf(plan['mistakes'], Mistake.fromJson),
       ear: listOf(plan['ear'], EarItem.fromJson),
       offline: offline,
+      steps: plan['steps'] is List ? {for (final x in plan['steps'] as List) if (x is String) x} : null,
     );
   }
 }

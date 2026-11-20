@@ -71,6 +71,9 @@ class SessionController extends Controller
                 'new' => $new->values(),
                 'sounds' => $sounds,
                 'speak' => $speak,
+                // Qué pasos tiene la clase en este curso (null = todos, como siempre). El curso de español aún no tiene
+                // taller de sonidos ni narración: la app se salta esos pasos y usa el shadowing.
+                'steps' => \App\Support\CoursePack::get('session.steps'),
                 'mistakes' => $mistakes,
             ],
             'minutes' => round(SpeakingSession::where('user_id', $user->id)->whereDate('day', $today->toDateString())->sum('speech_ms') / 60000, 1),

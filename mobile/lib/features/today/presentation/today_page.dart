@@ -78,8 +78,8 @@ class _TodayBody extends ConsumerWidget {
     final agenda = <(String, String)>[
       if (!d.offline && d.ear.isNotEmpty) (trn(d.ear.length, 'Oído: reconoce {0} palabra al oírla', 'Oído: reconoce {0} palabras al oírlas'), '1 min'),
       if (cards > 0) (trn(cards, 'Calentamiento con {0} ficha', 'Calentamiento con {0} fichas'), '${(cards * 15 / 60).ceil()} min'),
-      if (!d.offline) (tr('El sonido /{0}/', [d.sounds.isNotEmpty ? d.sounds.first : defaultSound()]), '2 min'),
-      if (!d.offline) (speak, '2 min'),
+      if (!d.offline && d.has('sound')) (tr('El sonido /{0}/', [d.sounds.isNotEmpty ? d.sounds.first : defaultSound()]), '2 min'),
+      if (!d.offline && d.has('narrate')) (speak, '2 min') else if (!d.offline && d.has('shadowing')) (tr('Repetir como un nativo'), '2 min'),
       if (!d.offline && d.mistakes.isNotEmpty) (trn(d.mistakes.length, 'Dices bien {0} error de ayer', 'Dices bien {0} errores de ayer'), '1 min'),
     ];
     final plan = d.offline ? SessionPlan.offline(d) : SessionPlan.fromToday(d);

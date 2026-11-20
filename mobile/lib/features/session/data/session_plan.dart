@@ -83,8 +83,10 @@ class SessionPlan {
       for (final e in d.ear) EarStep(e),
       for (final c in d.reviews) ReviewStep(c),
       for (final c in d.newCards) NewStep(c),
-      for (final w in soundWords[ph]!) SoundStep(ph, w),
-      const NarrateStep(), // por ahora la app hace la narración; foto y shadowing llegan después
+      // El taller de sonidos y la narración son del curso de inglés: un curso que no los tiene se los salta
+      // y habla con shadowing (frases de su idioma).
+      if (d.has('sound')) for (final w in soundWords[ph]!) SoundStep(ph, w),
+      if (d.has('narrate')) const NarrateStep() else if (d.has('shadowing')) const ShadowStep(),
       for (final m in d.mistakes) MistakeStep(m),
     ], daily: true);
   }

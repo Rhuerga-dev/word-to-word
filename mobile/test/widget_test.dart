@@ -76,6 +76,28 @@ void main() {
     expect(plan.steps.map((s) => s.runtimeType.toString()).toList(), ['ReviewStep', 'NewStep', 'SoundStep', 'SoundStep', 'NarrateStep', 'MistakeStep']);
   });
 
+  test('un curso sin taller de sonidos ni narración se los salta y habla con shadowing', () {
+    Map<String, dynamic> json(List<String>? steps) => {
+          'xp': {'xp': 0, 'goal': 100},
+          'plan': {
+            'reviews': [{'id': 1, 'word': 'a', 'mode': 'review'}],
+            'new': [{'id': 2, 'word': 'tiempo', 'mode': 'new'}],
+            'sounds': <Object>[],
+            'mistakes': <Object>[],
+            if (steps != null) 'steps': steps,
+          },
+        };
+    List<String> kinds(List<String>? steps) =>
+        SessionPlan.fromToday(TodayData.fromJson(json(steps))).steps.map((s) => s.runtimeType.toString()).toSet().toList();
+
+    // Curso de español: sin sonidos del inglés («think») ni narración.
+    expect(kinds(['ear', 'reviews', 'new', 'shadowing', 'mistakes']), ['ReviewStep', 'NewStep', 'ShadowStep']);
+    // Curso de inglés o servidor viejo (sin «steps»): la clase de siempre.
+    expect(kinds(null), ['ReviewStep', 'NewStep', 'SoundStep', 'NarrateStep']);
+    // Si un día un curso tiene narración, manda ella.
+    expect(kinds(['new', 'narrate', 'shadowing']), ['ReviewStep', 'NewStep', 'NarrateStep']);
+  });
+
   test('Camino: siguiente paso de la unidad', () {
     final u = PathUnit.fromJson({'id': 'u3', 'number': 3, 'title': 'Freelance', 'state': 'open', 'steps': {'words': true, 'sound': true}});
     expect(u.state, UnitState.open);

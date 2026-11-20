@@ -25,6 +25,9 @@ return [
         'course' => ['learn' => 'es', 'from' => 'en', 'name' => 'Spanish for English speakers', 'speech_locale' => 'es-US', 'active' => false],
         // Aún sin unidades propias: el Camino sale vacío en vez de enseñar las unidades del curso de inglés.
         'units' => ['levels' => []],
+        // Los pasos de la clase que ya tienen contenido en español. Faltan: «sound» (el taller de sonidos de la app es
+        // del inglés: think, very…) y «narrate» (la corrección la hace la IA pensando en inglés).
+        'session' => ['steps' => ['ear', 'reviews', 'new', 'shadowing', 'mistakes']],
         'speaking' => [
             // Textos de shadowing propios (en español, escritos a mano). Mismos temas que el curso de inglés.
             'shadowing_bank' => database_path('content/courses/es-en/shadowing.json'),
