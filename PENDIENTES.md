@@ -302,7 +302,9 @@ _Última actualización: 2026-11-19_
   `/me` trae `course`. **Progreso por curso**: regla global en `UserWord` (apoyada en la de `Word`): cambiar de curso no borra ni
   mezcla; «Reiniciar progreso» sí borra el de todos. App: `settings/presentation/course_card.dart` (Ajustes → «Qué aprendes», arriba;
   solo sale con ≥ 2 cursos), **parche 29**; iPhone: zip en iCloud Drive (`W2W-iPhone.zip`) para instalar desde la MacBook.
-  `CourseChoiceTest` (5), +2 en `CourseScopeTest`, `course_card_test.dart` (5). **Falta del paso 5:** elegir curso al REGISTRARSE; la web
+  `CourseChoiceTest` (5), +2 en `CourseScopeTest`, `course_card_test.dart` (5). **Parche 30 (20/11):** la app ya hace caso a `spanish.ui` del
+  servidor (antes decidía el idioma de la pantalla solo por el escalón: en el curso de español seguía todo en español) y refresca el
+  perfil al cambiar de curso. iPhone: `W2W-iPhone-0135.zip` en iCloud Drive. **Falta del paso 5:** elegir curso al REGISTRARSE; la web
   no tiene selector; el nivel (`users.cefr_level`), los errores al hablar, los sonidos, las unidades y los exámenes aún son uno solo
   por alumno, no por curso; la racha, los puntos y Brainy son comunes a todos los cursos (a propósito, por ahora).
   Pasos propuestos: (1) mapa ✅ · (2) tabla de cursos + curso en palabras y progreso (migración: OK de Reynaldo y copia) · (3) sacar
