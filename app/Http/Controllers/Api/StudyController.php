@@ -30,6 +30,8 @@ class StudyController extends Controller
             'intervals' => config('vocab.intervals'),
             'tts_local' => filled(config('vocab.tts.local_url')),
             'pictures' => app(\App\Services\PictureService::class)->enabled(),
+            // Cursos abiertos, para elegir uno al registrarse (si solo hay uno, el formulario no pregunta).
+            'courses' => \App\Models\Course::where('active', true)->orderBy('id')->get(['code', 'name', 'learn', 'from'])->toArray(),
             // El formulario de registro pide el código de invitación.
             'invite_required' => (bool) config('vocab.invites_required'),
             // La web enseña el enlace a /apoyo solo si hay Zelle o PayPal configurados.

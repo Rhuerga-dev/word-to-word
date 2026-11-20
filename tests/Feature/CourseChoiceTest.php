@@ -68,6 +68,35 @@ class CourseChoiceTest extends TestCase
         $this->putJson('/api/course', ['code' => 'es-en'])->assertOk();
     }
 
+    public function test_the_sign_up_form_can_offer_the_open_courses(): void
+    {
+        $this->assertSame(['en-es'], collect($this->getJson('/api/config')->assertOk()->json('courses'))->pluck('code')->all());
+
+        $this->spanish->update(['active' => true]);
+        $courses = $this->getJson('/api/config')->json('courses');
+        $this->assertSame(['en-es', 'es-en'], array_column($courses, 'code'));
+        $this->assertSame(['code' => 'es-en', 'name' => 'Spanish for English speakers', 'learn' => 'es', 'from' => 'en'], $courses[1]);
+    }
+
+    public function test_a_new_student_can_choose_the_course_when_signing_up(): void
+    {
+        config(['vocab.invites_required' => false]);
+        \Illuminate\Support\Facades\Notification::fake();
+        $form = fn (string $email, array $more = []) => $this->postJson('/api/auth/register', ['name' => 'Ann', 'email' => $email, 'password' => 'una-clave-larga-123'] + $more);
+
+        // Apagado: no se puede elegir (ni inventar un código).
+        $form('a@example.org', ['course' => 'es-en'])->assertStatus(422)->assertJsonValidationErrors('course');
+        $form('a@example.org', ['course' => 'xx'])->assertStatus(422);
+
+        $this->spanish->update(['active' => true]);
+        $form('ann@example.org', ['course' => 'es-en'])->assertSuccessful();
+        $this->assertSame($this->spanish->id, (int) User::where('email', 'ann@example.org')->value('course_id'));
+
+        // Sin decir nada (una app antigua): el curso de siempre.
+        $form('bob@example.org')->assertSuccessful();
+        $this->assertSame(Course::DEFAULT_ID, (int) User::where('email', 'bob@example.org')->value('course_id'));
+    }
+
     public function test_choosing_a_course_needs_login(): void
     {
         $this->getJson('/api/courses')->assertUnauthorized();

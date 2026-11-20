@@ -26,6 +26,8 @@ class AuthController extends Controller
             'password' => ['required', 'string', PasswordRule::min(10)->letters()->numbers(), 'max:72'],
             'timezone' => ['nullable', 'timezone:all'],
             'invite' => [config('vocab.invites_required') ? 'required' : 'nullable', 'string', 'max:40'],
+            // Qué quiere aprender: solo cursos abiertos (lista de la base de datos). Sin decirlo, el de siempre.
+            'course' => ['nullable', 'string', \Illuminate\Validation\Rule::in(\App\Models\Course::where('active', true)->pluck('code')->all())],
         ], ['invite.required' => 'Necesitas un código de invitación para registrarte.']);
 
         $required = config('vocab.invites_required');
@@ -53,6 +55,9 @@ class AuthController extends Controller
             ]);
             if ($inviteId) {
                 $user->forceFill(['invitation_code_id' => $inviteId])->save();
+            }
+            if (filled($data['course'] ?? null)) {
+                $user->forceFill(['course_id' => \App\Models\Course::where('code', $data['course'])->value('id')])->save();
             }
 
             return $user;
