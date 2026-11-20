@@ -213,7 +213,7 @@ input[type=time]{font:inherit;padding:6px 8px;border:1px solid var(--line);borde
 .tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 12px;font-weight:700;color:var(--muted)}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
 .auth{max-width:420px;margin:40px auto 0;display:grid;gap:12px}
-.auth input{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.auth input,.auth select{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .auth label{display:grid;gap:4px;font-size:14px}
 .err{color:var(--bad);font-size:14px;margin:0;min-height:1.2em}
 .scores{display:flex;flex-wrap:wrap;gap:8px}
@@ -776,6 +776,7 @@ body:not([data-nav="progress"]) .grid{max-width:none}
     </div>
     <form class="auth card" id="authForm"><div class="card-body">
       <h2 class="tr" id="authTitle">Entrar</h2>
+      <label id="courseWrap" hidden for="aCourse">¿Qué quieres aprender?<select id="aCourse"></select></label>
       <label id="nameWrap" hidden for="aName">Nombre<input id="aName" autocomplete="name"></label>
       <label for="aEmail" id="emailWrap">Correo<input id="aEmail" type="email" required autocomplete="username"></label>
       <div class="sent" id="authSent" hidden role="status"><p class="sent-icon" aria-hidden="true">✉️</p><p id="authSentText"></p><p class="note">No hay ningún código que escribir: abre el correo y toca «Crear contraseña nueva». El enlace dura 60 minutos. ¿No llega? Mira en spam.</p></div>
@@ -947,7 +948,7 @@ body:not([data-nav="progress"]) .grid{max-width:none}
 </div>
 
 <script src="/app/i18n.js?v=5"></script>
-<script src="/app/app.js?v=23"></script>
+<script src="/app/app.js?v=24"></script>
 <script src="/app/handsfree.js?v=2"></script>
 <script src="/app/lab.js?v=1"></script>
 <script src="/app/speak.js?v=14"></script>

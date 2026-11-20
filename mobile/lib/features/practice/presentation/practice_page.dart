@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../today/presentation/today_providers.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/async_view.dart';
@@ -21,6 +22,9 @@ class PracticePage extends ConsumerWidget {
     }
 
     final ph = defaultSound();
+    // Lo que el curso no tiene (en el de español: el taller de sonidos del inglés y la narración) no se ofrece.
+    final today = ref.watch(todayProvider).valueOrNull;
+    bool has(String step) => today?.has(step) ?? true;
     return AsyncView<PracticeData>(
       value: ref.watch(practiceProvider),
       onRetry: () => ref.invalidate(practiceProvider),
@@ -43,11 +47,16 @@ class PracticePage extends ConsumerWidget {
             ),
           const SizedBox(height: 8),
           _label(tr('Hablar')),
-          _tile(Icons.timer_outlined, tr('Narración'), tr('1 minuto sin parar'), () => run(const [NarrateStep()], tr('Narración'))),
+          if (has('narrate'))
+            _tile(Icons.timer_outlined, tr('Narración'), tr('1 minuto sin parar'), () => run(const [NarrateStep()], tr('Narración')))
+          else if (has('shadowing'))
+            // El mismo icono que la narración: uno nuevo no cabría en un parche.
+            _tile(Icons.timer_outlined, tr('Repetir como un nativo'), tr('Escucha y repite 5 frases'), () => run(const [ShadowStep()], tr('Shadowing'))),
           _label(tr('Palabras y sonidos')),
           _tile(Icons.style_outlined, tr('Fichas'), d.cards.isEmpty ? tr('nada pendiente hoy') : tr('{0} para hoy', [d.cards.length]),
               () => context.push(Routes.words)),
-          _tile(Icons.track_changes, tr('Pronunciación'), '/$ph/ · ${soundWords[ph]!.join(', ')}', () => run(SessionPlan.sound(ph).steps, tr('Sonido'))),
+          if (has('sound'))
+            _tile(Icons.track_changes, tr('Pronunciación'), '/$ph/ · ${soundWords[ph]!.join(', ')}', () => run(SessionPlan.sound(ph).steps, tr('Sonido'))),
           const SizedBox(height: 14),
           Text(tr('Conversación, Describe la imagen, Shadowing y el chat escrito siguen en la web por ahora.'), style: TextStyle(color: W.muted, fontSize: 14)),
         ]),

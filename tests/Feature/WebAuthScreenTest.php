@@ -36,6 +36,19 @@ class WebAuthScreenTest extends TestCase
         $this->assertStringNotContainsString('al menos 8 caracteres', $js);
     }
 
+    public function test_the_sign_up_form_asks_what_to_learn_when_there_is_more_than_one_course(): void
+    {
+        $html = $this->shell('index.html');
+        $js = $this->shell('app.js');
+
+        $this->assertStringContainsString('id="courseWrap" hidden', $html);
+        $this->assertStringContainsString('openCourses.length > 1', $js);
+        $this->assertStringContainsString('body.course = $("aCourse").value', $js);
+        // Los nombres de los cursos se escriben como texto, nunca como HTML.
+        $this->assertStringContainsString('o.textContent = c.name', $js);
+        $this->assertStringNotContainsString('onchange=', $html);
+    }
+
     public function test_the_page_and_the_offline_cache_ask_for_the_same_script_version(): void
     {
         preg_match('#/app/app\.js\?v=(\d+)#', $this->shell('index.html'), $page);

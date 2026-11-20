@@ -172,9 +172,19 @@ function loadInviteCfg() {
   inviteCfgLoaded = true;
   fetch(API + "/config", { headers: { Accept: "application/json" } })
     .then(r => r.ok ? r.json() : null)
-    .then(c => { if (c) { inviteRequired = c.invite_required !== false; showInviteField(); } })
+    .then(c => { if (c) { inviteRequired = c.invite_required !== false; showInviteField(); fillCourses(c.courses); } })
     .catch(() => { inviteCfgLoaded = false; });
 }
+// Cursos abiertos (de /config): con más de uno, el registro pregunta qué se quiere aprender.
+let openCourses = [];
+function fillCourses(list) {
+  openCourses = Array.isArray(list) ? list.filter(c => c && typeof c.code === "string" && typeof c.name === "string") : [];
+  const sel = $("aCourse"); sel.textContent = "";
+  const mine = (navigator.language || "").slice(0, 2);
+  openCourses.forEach(c => { const o = document.createElement("option"); o.value = c.code; o.textContent = c.name; o.selected = c.from === mine; sel.appendChild(o); });
+  showCourseField();
+}
+function showCourseField() { $("courseWrap").hidden = !(authMode === "register" && openCourses.length > 1); }
 function showInviteField() { $("inviteWrap").hidden = !(authMode === "register" && inviteRequired); }
 function cleanInvite(v) { return String(v || "").replace(/\s+/g, "").toUpperCase().slice(0, 40); }
 function setAuthMode(mode) {
@@ -199,7 +209,7 @@ function setAuthMode(mode) {
   $("authHelp").hidden = !(mode === "forgot" || mode === "reset");
   $("authHelp").textContent = mode === "forgot" ? "Escribe tu correo y te enviamos un enlace para crear una contraseña nueva." : mode === "reset" ? "Elige una contraseña nueva de al menos 10 caracteres, con letras y números." : "";
   $("authErr").textContent = ""; $("authOk").textContent = ""; $("inviteErr").textContent = "";
-  showInviteField();
+  showInviteField(); showCourseField();
   if (mode === "register") loadInviteCfg();
 }
 function showAuth() { $("authView").hidden = false; $("appView").hidden = true; $("logoutBtn").hidden = true; $("daypill").hidden = true; $("lvlChip").hidden = true; $("streakChip").hidden = true; }
@@ -235,6 +245,7 @@ $("authForm").onsubmit = async e => {
         body.name = $("aName").value || "Estudiante"; body.timezone = userTimezone();
         const invite = cleanInvite($("aInvite").value);
         if (invite || inviteRequired) body.invite = invite;
+        if (openCourses.length > 1 && $("aCourse").value) body.course = $("aCourse").value;
       }
       const r = await api(authMode === "register" ? "/auth/register" : "/auth/login", { method: "POST", body });
       setToken(r.token); start();

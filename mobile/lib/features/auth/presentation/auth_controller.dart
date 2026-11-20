@@ -29,9 +29,9 @@ class AuthController extends AsyncNotifier<UserProfile?> {
     state = AsyncData(await _repo.me());
   }
 
-  Future<void> register({required String name, required String email, required String password, String? invite}) async {
+  Future<void> register({required String name, required String email, required String password, String? invite, String? course}) async {
     final tz = await ref.read(reminderServiceProvider).timezoneName();
-    await _repo.register(name: name, email: email, password: password, invite: invite, timezone: tz);
+    await _repo.register(name: name, email: email, password: password, invite: invite, timezone: tz, course: course);
     state = AsyncData(await _repo.me());
   }
 

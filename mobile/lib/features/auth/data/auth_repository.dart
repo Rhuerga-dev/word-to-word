@@ -22,14 +22,31 @@ class AuthRepository {
       _useToken(asString(asMap(await _api.post('/auth/login', {'email': email, 'password': password}))['token']));
 
   /// Crea la cuenta y entra. [invite] es el código de invitación (el servidor ignora espacios y mayúsculas).
-  Future<void> register({required String name, required String email, required String password, String? invite, String? timezone}) async =>
+  Future<void> register({required String name, required String email, required String password, String? invite, String? timezone, String? course}) async =>
       _useToken(asString(asMap(await _api.post('/auth/register', {
         'name': name,
         'email': email,
         'password': password,
         if (timezone != null) 'timezone': timezone,
         if (invite != null) 'invite': invite,
+        if (course != null) 'course': course, // qué quiere aprender (solo si había más de un curso para elegir)
       }))['token']));
+
+  /// Los cursos abiertos (GET /config → courses), para elegir uno al registrarse: (código, nombre, idioma que se
+  /// aprende, idioma del alumno). Vacío si el servidor es viejo o no se puede saber: entonces no se pregunta.
+  Future<List<({String code, String name, String learn, String from})>> openCourses() async {
+    try {
+      final list = asMap(await _api.get('/config'))['courses'];
+      return [
+        if (list is List)
+          for (final c in list)
+            if (c is Map && c['code'] is String && c['name'] is String)
+              (code: c['code'] as String, name: c['name'] as String, learn: asString(c['learn']), from: asString(c['from'])),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
 
   /// Si el registro pide código de invitación. Si no se puede saber (sin conexión), se pide por si acaso.
   Future<bool> inviteRequired() async {

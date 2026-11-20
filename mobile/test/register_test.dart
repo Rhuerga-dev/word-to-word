@@ -21,6 +21,7 @@ class _Server implements HttpClientAdapter {
   bool inviteRequired = true;
   bool closed = false; // migración sin aplicar: 503
   Map? registered;
+  List<Map<String, String>> courses = const []; // cursos abiertos que ofrece /config
 
   @override
   Future<ResponseBody> fetch(RequestOptions o, Stream<Uint8List>? body, Future<void>? cancel) async {
@@ -30,7 +31,7 @@ class _Server implements HttpClientAdapter {
 
     switch (path) {
       case '/config':
-        return json({'ai': true, 'invite_required': inviteRequired});
+        return json({'ai': true, 'invite_required': inviteRequired, if (courses.isNotEmpty) 'courses': courses});
       case '/auth/register':
         if (closed) return json({'message': 'El registro está cerrado un momento. Vuelve a intentarlo más tarde.'}, 503);
         final data = o.data as Map;
@@ -86,6 +87,34 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Crear cuenta'));
     await tester.pumpAndSettle();
   }
+
+  const english = {'code': 'en-es', 'name': 'Inglés para hispanohablantes', 'learn': 'en', 'from': 'es'};
+  const spanish = {'code': 'es-en', 'name': 'Spanish for English speakers', 'learn': 'es', 'from': 'en'};
+
+  testWidgets('con un solo curso (o un servidor viejo) no se pregunta qué aprender ni se manda nada', (tester) async {
+    server = _Server()..courses = [english];
+    await open(tester);
+
+    expect(find.text('¿Qué quieres aprender?'), findsNothing);
+    await fill(tester, 'familia');
+    expect(server.registered?.containsKey('course'), isFalse);
+  });
+
+  testWidgets('con dos cursos abiertos se elige uno al registrarse y se manda al servidor', (tester) async {
+    server = _Server()..courses = [english, spanish];
+    await open(tester);
+
+    expect(find.text('¿Qué quieres aprender?'), findsOneWidget);
+    expect(find.text('Inglés para hispanohablantes'), findsOneWidget);
+    expect(find.text('Spanish for English speakers'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('signup-course-es-en')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<ListTile>(find.byKey(const Key('signup-course-es-en'))).selected, isTrue);
+
+    await fill(tester, 'familia');
+    expect(server.registered?['course'], 'es-en');
+  });
 
   testWidgets('crear cuenta: muestra el código, lo pasa a mayúsculas y lo manda como invite', (tester) async {
     server = _Server();

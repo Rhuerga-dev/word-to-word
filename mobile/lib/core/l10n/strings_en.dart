@@ -457,6 +457,8 @@ const stringsEn = <String, String>{
   "Modo Brainy": "Brainy mode",
   "Avisos de Brainy": "Brainy alerts",
   "Qué aprendes": "What you are learning",
+  "¿Qué quieres aprender?": "What do you want to learn?",
+  "Escucha y repite 5 frases": "Listen and repeat 5 sentences",
   "En construcción (solo para probar)": "Under construction (testing only)",
   "Cada curso guarda su progreso aparte: al cambiar no pierdes nada.": "Each course keeps its own progress: you lose nothing when you switch.",
   "No se pudo cambiar de curso. Inténtalo otra vez.": "Could not switch course. Please try again.",

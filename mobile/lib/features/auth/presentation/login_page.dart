@@ -34,6 +34,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _inviteRequired = true;
   bool _configAsked = false;
 
+  /// Cursos abiertos para elegir al registrarse (con uno solo no se pregunta) y el elegido.
+  List<({String code, String name, String learn, String from})> _courses = const [];
+  String? _course;
+
   /// Error del servidor para el código (errors.invite), debajo de su campo.
   String? _inviteError;
 
@@ -81,6 +85,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           email: _email.text.trim(),
           password: _password.text,
           invite: invite.isNotEmpty || _inviteRequired ? invite : null,
+          course: _courses.length > 1 ? _course : null,
         ));
     TextInput.finishAutofillContext(shouldSave: ok);
   }
@@ -95,6 +100,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _configAsked = true;
       ref.read(authRepositoryProvider).inviteRequired().then((v) {
         if (mounted) setState(() => _inviteRequired = v);
+      });
+      ref.read(authRepositoryProvider).openCourses().then((list) {
+        if (!mounted || list.length < 2) return;
+        // Se propone el curso pensado para el idioma del teléfono (inglés → español para angloparlantes).
+        final phone = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+        setState(() {
+          _courses = list;
+          _course = (list.where((c) => c.from == phone).firstOrNull ?? list.first).code;
+        });
       });
     }
   }
@@ -122,6 +136,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             const SizedBox(height: 32),
             AutofillGroup(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            if (_register && _courses.length > 1) ...[
+              Text(tr('¿Qué quieres aprender?'), style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              for (final c in _courses)
+                ListTile(
+                  key: Key('signup-course-${c.code}'),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Text(switch (c.learn) { 'en' => '🇺🇸', 'es' => '🇪🇸', _ => '🌐' }, style: const TextStyle(fontSize: 22)),
+                  title: Text(c.name),
+                  trailing: Text(_course == c.code ? '✓' : '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                  selected: _course == c.code,
+                  onTap: _busy ? null : () => setState(() => _course = c.code),
+                ),
+              const SizedBox(height: 12),
+            ],
             if (_register) ...[
               TextField(
                 controller: _name,
