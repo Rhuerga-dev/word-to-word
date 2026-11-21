@@ -56,6 +56,15 @@ class PetService
         return $this->state($user);
     }
 
+    /** Avisos de Brainy en la web (push del servidor): el alumno los enciende o apaga. Devuelve la mascota. */
+    public function setWebAlerts(User $user, bool $on): array
+    {
+        $row = $this->care->row($user);
+        DB::table('pets')->where('id', $row->id)->update(['web_alerts' => $on, 'updated_at' => now()]);
+
+        return $this->state($user);
+    }
+
     public function state(User $user): array
     {
         $learned = UserWord::where('user_id', $user->id)->whereNotNull('introduced_at');
@@ -89,6 +98,7 @@ class PetService
             $state['welcomed'] = ($row->welcomed_at ?? null) !== null;
             $color = $row->color ?? null;
             $state['color'] = in_array($color, self::COLORS, true) ? $color : null;
+            $state['web_alerts'] = (bool) ($row->web_alerts ?? false);
         } catch (Throwable $e) {
             report($e);
         }

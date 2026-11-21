@@ -38,6 +38,14 @@ class PetController extends Controller
         return $pet->rename($request->user(), $data['name'] ?: null);
     }
 
+    /** PUT /pet/alerts: avisos de Brainy en la web (push). Para que lleguen hace falta la suscripción del navegador. */
+    public function alerts(Request $request, PetService $pet)
+    {
+        $data = $request->validate(['enabled' => ['required', 'boolean']]);
+
+        return $pet->setWebAlerts($request->user(), (bool) $data['enabled']);
+    }
+
     /** PUT /pet/color: elegir el color de la mascota (lista fija). null = el color neutro con el que nace. */
     public function recolor(Request $request, PetService $pet)
     {

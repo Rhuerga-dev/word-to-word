@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Schedule;
 // Recordatorio diario de estudio (notificaciones push).
 // En el servidor hace falta el cron: * * * * * php /ruta/a/word-to-word/artisan schedule:run
 Schedule::command('reminders:send')->everyFiveMinutes()->withoutOverlapping();
+// Avisos de Brainy en la web (quien los activó en Ajustes): «tiene hambre» / «quiere jugar».
+Schedule::command('pet:alerts')->everyFiveMinutes()->withoutOverlapping();
 
 // Caché de voces: borra audios viejos y no deja que pase de 500 MB.
 Schedule::command('tts:prune')->daily()->withoutOverlapping();

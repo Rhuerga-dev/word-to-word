@@ -63,7 +63,7 @@ class WebAppParityTest extends TestCase
             $this->assertStringContainsString($needle, $html);
         }
         $js = $this->file('pet.js');
-        foreach (['"/pet"', '"/pet/name"', '"/pet/color"', '"/pet/" + a', '"/experiments/brainy"'] as $endpoint) {
+        foreach (['"/pet"', '"/pet/name"', '"/pet/color"', '"/pet/" + a', '"/experiments/brainy"', '"/pet/alerts"'] as $endpoint) {
             $this->assertStringContainsString($endpoint, $js);
         }
         // Los 4 botones de cuidado son los que acepta la ruta POST /pet/{action}.

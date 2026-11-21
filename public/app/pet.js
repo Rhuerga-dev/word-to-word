@@ -275,12 +275,32 @@ async function petSettingsRender() {
   box.innerHTML = `<h3 class="acct-h">Brainy</h3>
     <label class="inl" for="petModeOn">Modo Brainy <input type="checkbox" id="petModeOn"${petModeOn() ? " checked" : ""}></label>
     <p class="note">Hoy muestra a tu mascota: cuidarla es estudiar. La sesión de siempre sigue a un toque.</p>
+    ${petModeOn() ? `<label class="inl" for="petAlertsOn">Avisos de Brainy <input type="checkbox" id="petAlertsOn"${p.web_alerts ? " checked" : ""}></label>
+      <p class="note">Te avisa cuando tenga hambre o quiera jugar. Como mucho 2 al día y nunca de noche.</p>` : ""}
     ${pet.naming ? `<label class="inl" for="petNameIn">Nombre de tu mascota <input type="text" id="petNameIn" maxlength="20" value="${esc(p.name)}" autocomplete="off"></label>
       <div class="row"><button type="button" class="primary" data-pet="name-save">Guardar</button><button type="button" data-pet="name-cancel">Cancelar</button></div>`
     : `<div class="row"><button type="button" data-pet="name-edit">Nombre de tu mascota: <b>${esc(p.name)}</b></button></div>`}
     <span>Color de tu mascota</span>${petSwatches(p.color, "set-color")}
     ${pet.msg ? `<p class="note" aria-live="polite">${esc(pet.msg)}</p>` : ""}`;
-  $("petModeOn").onchange = e => { petSetMode(e.target.checked); td.classic = false; };
+  $("petModeOn").onchange = async e => {
+    petSetMode(e.target.checked); td.classic = false;
+    // Sin Modo Brainy no hay avisos (como en la app).
+    if (!e.target.checked && pet.data.web_alerts) await petSetAlerts(false);
+    petSettingsRender();
+  };
+  if ($("petAlertsOn")) $("petAlertsOn").onchange = e => petSetAlerts(e.target.checked);
+}
+/** Avisos de Brainy en la web: los manda el servidor por notificación (hace falta el permiso del navegador). */
+async function petSetAlerts(on) {
+  const box = $("petAlertsOn"); if (box) box.disabled = true;
+  pet.msg = on ? "Activando…" : "";
+  try {
+    if (on && typeof subscribePush === "function") await subscribePush();
+    const j = await api("/pet/alerts", { method: "PUT", body: { enabled: on } });
+    if (j && j.stage) pet.data = j;
+    pet.msg = on ? "Listo: Brainy te avisará cuando te necesite." : "";
+  } catch (e) { pet.msg = e.message; }
+  petSettingsRender();
 }
 async function petSaveName() {
   const name = ($("petNameIn").value || "").replace(/\s+/g, " ").trim();
