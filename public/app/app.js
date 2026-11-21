@@ -805,7 +805,7 @@ $("dictBtn").onclick = async () => {
 };
 // Secciones. Abajo: today (Hoy), path (Camino), practice (Practicar), progress (Progreso).
 // Dentro de Practicar: cards (fichas), speak (hablar), chat. true/false = chat/fichas (llamadas viejas).
-const NAV_OF = { today: "today", path: "path", practice: "practice", progress: "progress", settings: "settings", cards: "practice", speak: "practice", chat: "practice" };
+const NAV_OF = { today: "today", path: "path", practice: "practice", progress: "progress", settings: "settings", cards: "practice", speak: "practice", chat: "practice", pet: "today" };
 let currentTab = "today";
 function showTab(which) {
   which = which === true ? "chat" : which === false ? "cards" : which;
@@ -817,6 +817,7 @@ function showTab(which) {
   $("tabCards").setAttribute("aria-selected", which === "cards"); $("tabChat").setAttribute("aria-selected", which === "chat"); $("tabSpeak").setAttribute("aria-selected", which === "speak"); $("tabProgress").setAttribute("aria-selected", which === "progress");
   $("main").hidden = which !== "cards"; $("queue").hidden = which !== "cards"; $("chatView").hidden = which !== "chat"; $("speakView").hidden = which !== "speak"; $("progressView").hidden = which !== "progress";
   $("todayView").hidden = which !== "today"; $("settingsView").hidden = which !== "settings"; $("pathView").hidden = which !== "path"; $("practiceView").hidden = which !== "practice";
+  if ($("petView")) $("petView").hidden = which !== "pet";
   document.querySelectorAll("#bottomNav [data-nav]").forEach(b => b.toggleAttribute("aria-current", false) || (b.dataset.nav === NAV_OF[which] && b.setAttribute("aria-current", "page")));
   if (which === "chat") renderChat();
   if (which === "speak" && typeof spOpen === "function") spOpen();
@@ -825,6 +826,7 @@ function showTab(which) {
   if (which === "practice" && typeof prOpen === "function") prOpen();
   if (which === "path" && typeof pathOpen === "function") pathOpen();
   if (which === "settings") renderSettings();
+  if (which === "pet" && typeof petOpen === "function") petOpen();
   window.scrollTo({ top: 0 });
 }
 $("tabCards").onclick = () => showTab("cards");
@@ -1040,6 +1042,7 @@ function renderSettings() {
   renderMicSelect();
   if (typeof fbRender === "function") fbRender();   // sugerencias y enlace de apoyo (feedback.js)
   if (typeof acctRender === "function") acctRender();   // curso y profesión (account.js)
+  if (typeof petSettingsRender === "function") petSettingsRender();   // Brainy (pet.js)
   const r = profile.reminder;
   $("remOn").checked = !!r.enabled;
   $("remAuto").checked = !!r.auto;

@@ -56,6 +56,29 @@ class WebAppParityTest extends TestCase
         $this->assertStringContainsString('++rv.errs >= 2', $js);
     }
 
+    public function test_brainy_esta_en_la_web(): void
+    {
+        $html = $this->file('index.html');
+        foreach (['id="petView"', 'id="petSettings"', '/app/pet-draw.js', '/app/pet.js'] as $needle) {
+            $this->assertStringContainsString($needle, $html);
+        }
+        $js = $this->file('pet.js');
+        foreach (['"/pet"', '"/pet/name"', '"/pet/color"', '"/pet/" + a', '"/experiments/brainy"'] as $endpoint) {
+            $this->assertStringContainsString($endpoint, $js);
+        }
+        // Los 4 botones de cuidado son los que acepta la ruta POST /pet/{action}.
+        foreach (['feed', 'play', 'clean', 'medicine'] as $action) {
+            $this->assertMatchesRegularExpression('/\["'.$action.'", "/', $js);
+        }
+        $this->assertStringNotContainsString('onclick=', $js);
+    }
+
+    public function test_los_colores_de_brainy_son_los_del_servidor(): void
+    {
+        preg_match_all("/^\\s*\\['([a-z]+)', '/m", $this->file('pet-draw.js'), $m);
+        $this->assertSame(\App\Services\PetService::COLORS, $m[1]);
+    }
+
     public function test_los_textos_nuevos_tienen_traduccion_al_ingles(): void
     {
         $en = json_decode(file_get_contents(base_path('lang/en.json')), true);

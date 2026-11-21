@@ -18,11 +18,13 @@ const SPEAK_LABEL = { narrate: ["Hablar 1 min", "narración del día"], picture:
 async function tdOpen() {
   const el = $("todayView"); if (!el) return;
   if (!td.data) el.innerHTML = '<p class="note">Cargando tu día…</p>';
+  td.classic = false;   // Modo Brainy: al volver a Hoy se ve la mascota
   try {
-    const [t, p] = await Promise.all([api("/session/today"), api("/path").catch(() => null)]);
+    const [t, p] = await Promise.all([api("/session/today"), api("/path").catch(() => null), typeof petLoad === "function" ? petLoad() : null]);
     td.data = t; if (p) pth.data = p; td.error = "";
   } catch (e) { td.error = e.message; }
   tdRender();
+  if (typeof petMaybeBirth === "function") petMaybeBirth();
 }
 
 function tdSound(plan) {
@@ -33,6 +35,7 @@ function tdRender() {
   const el = $("todayView"); if (!el) return;
   const d = td.data;
   if (!d) { el.innerHTML = `<p class="warnbox">${esc(td.error || "No se pudo cargar tu día.")}</p>`; return; }
+  if (typeof petHomeRender === "function" && petHomeRender(el)) return;   // Modo Brainy (pet.js)
   const x = d.xp, p = d.plan, pct = Math.min(1, x.xp / x.goal), C = 2 * Math.PI * 31;
   const sound = tdSound(p), sp1 = SPEAK_LABEL[p.speak] || SPEAK_LABEL.narrate;
   const name = typeof firstName === "function" ? firstName() : "";
@@ -61,12 +64,14 @@ function tdRender() {
       <button type="button" class="td-go" id="tdGo">${SVG.play}${x.sessions ? "Otra ronda" : "Empezar"}</button>
     </section>
     ${typeof acctTodayCard === "function" ? acctTodayCard() : ""}
+    ${typeof petTodayCard === "function" ? petTodayCard() : ""}
     ${tdPathLink()}
     <div class="td-row">
       <div class="td-mini"><span>Hablaste hoy</span><b>${String(d.minutes).replace(".", ",")} min</b></div>
       <div class="td-mini"><span>Esta semana</span><b>${x.week.reduce((a, w) => a + w.xp, 0)} XP</b></div>
     </div>`;
   $("tdGo").onclick = () => sessStart();
+  if (typeof petMountAll === "function") petMountAll(el);
   if ($("tdPath")) $("tdPath").onclick = () => showTab("path");
   if (empty) $("tdGo").title = "Hoy no hay pendientes: la sesión será de pronunciación y hablar.";
 }
