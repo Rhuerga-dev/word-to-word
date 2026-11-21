@@ -3,7 +3,7 @@
 > Memoria del proyecto entre chats. **Léelo antes de empezar** y actualízalo al terminar.
 > Lo mantiene al día la bitácora nocturna y el cierre de cada sesión.
 
-_Última actualización: 2026-11-20_
+_Última actualización: 2026-11-21_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
@@ -15,6 +15,15 @@ _Última actualización: 2026-11-20_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (21/11) **Por qué hoy no hay palabras nuevas** (Metodología (a)): `/session/today` manda `new_pause_at`; la web (Hoy clásico:
+  «nuevas en pausa» y una nota) y la app (bajo «En la sesión») dicen «Hoy no hay palabras nuevas: tienes N repasos atrasados. Cuando
+  bajen de 21, vuelven las nuevas.». En Modo Brainy (web) no sale. Commit `53a1ca7`, **parche 34**, `today.js?v=10`, caché v54.
+- (21/11) **API sin sesión → 401 en JSON** (antes 500 «Route [login] not defined» sin cabecera Accept): `redirectGuestsTo` en
+  `bootstrap/app.php`. Comprobado en vivo (401). Test en `SecurityRulesTest`.
+- (21/11) **APK suelta** en iCloud (`W2W-1.0.14.apk`, código de hoy). Firmada con la clave de subida, no la de Play: no se instala
+  encima de la versión de Play (hay que desinstalar antes) y **no recibe parches de Shorebird**. Se compila con el Flutter de
+  Shorebird (`~/.shorebird/bin/cache/flutter/*/bin/flutter build apk --release`); el Flutter normal falla en el hook de `objective_c`
+  (si pasa, borrar `mobile/.dart_tool/hooks_runner`).
 - (20/11) **La web ya tiene lo mismo que la app** (pedido por Reynaldo: «Todo, Brainy completo»). Comparación hecha con un inventario
   de las dos (la web ya tenía MÁS: conversación libre, foto, chat, taller completo, recuperar contraseña). Lo que faltaba, hecho en 3 commits:
   1. `af4cce6` **Ajustes → «Qué aprendes»** (curso, solo si hay 2+) y **«Tu trabajo»** (profesión + para qué), tarjeta «¿A qué te dedicas?»
@@ -210,6 +219,7 @@ _Última actualización: 2026-11-20_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] Ver el aviso «Hoy no hay palabras nuevas» en Hoy (web clásica y Android tras abrir 2 veces, **parche 34**). Con tus ~49 repasos debería salir. No probado en teléfono real.
 - [ ] Probar en el **iPhone (web en pantalla de inicio)**: Ajustes (curso, tu trabajo, Brainy), el nacimiento de Brainy, Modo Brainy y un
   botón de cuidado; un error para repasar diciendo mal una palabra (mini-taller). Activar «Avisos de Brainy» y ver que llega uno
   cuando tenga hambre (no de noche). Nada de esto se probó en un teléfono real (fluidez del dibujo en Safari incluida).
@@ -352,8 +362,7 @@ _Última actualización: 2026-11-20_
   no frenar el ritmo, tras cada ejercicio. Y que «Empezar» de la bienvenida abra directamente el primer ejercicio.
 - [ ] **Metodología (revisión del 19/11):** el diseño es correcto (FSRS-4.5 bien implementado, recordar activo, Oído, shadowing, errores
   propios espaciados) pero **no hay datos para decir que funciona**: solo un alumno activo (Reynaldo, 8 días; 85 % de aciertos en
-  repasos). Falta: (a) **decir en pantalla por qué hoy no hay palabras nuevas** (el servidor ya manda `new_paused`; ni la web ni la app
-  lo muestran); (b) **hablar apenas se usa** (1 minuto en 9 días con meta de 5 al día; 2 sesiones guiadas completas): replantear la
+  repasos). Falta: (a) ~~decir por qué hoy no hay palabras nuevas~~ hecho el 21/11; (b) **hablar apenas se usa** (1 minuto en 9 días con meta de 5 al día; 2 sesiones guiadas completas): replantear la
   sesión para que hablar sea el centro y medir minutos reales — pensarlo con Reynaldo; (c) más alumnos antes de juzgar el método.
 - [ ] Experimento Brainy: el panel recibe `experiments.brainy` en `metrics.json` pero aún no lo pinta. Límites conocidos del informe:
   los repasos y ejercicios salen de los puntos del día (`xp_days.by_source`), que tienen tope diario (100 repasos buenos); «palabras bien
@@ -364,9 +373,6 @@ _Última actualización: 2026-11-20_
   da cada cosa, topes de desorden). Sin hacer del diseño del HANDOFF: **avisos locales** de Brainy (máx. 2 al día, nunca de noche; no
   añadí ninguno), frases con solo palabras ya aprendidas (hoy son 6 frases fijas de inglés muy fácil), árbol de evolución con dibujo
   (hoy es una lista con fechas). Sigue el **Paso 6b** («Enséñale una palabra»).
-- [ ] Las rutas `/api/*` sin la cabecera `Accept: application/json` y sin sesión dan **500** («Route [login] not defined») en vez de
-  401. Viene de antes (pasa en `/api/progress` también); la app siempre manda la cabecera, así que no se nota. Arreglo fácil: que la
-  API responda siempre JSON.
 - [ ] (opcional) Usar `hf.server()` en los demás ejercicios de manos libres (Oído, Sonido, shadowing, narración) para que un error suelto tampoco los pause.
 - Palabras nuevas que se añadan: escribir su contenido con Claude Code y `words:content` (si no, las rellena el API de noche como antes).
 - [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
