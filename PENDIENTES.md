@@ -3,7 +3,7 @@
 > Memoria del proyecto entre chats. **Léelo antes de empezar** y actualízalo al terminar.
 > Lo mantiene al día la bitácora nocturna y el cierre de cada sesión.
 
-_Última actualización: 2026-11-19_
+_Última actualización: 2026-11-20_
 
 ## Estado actual
 - **Servidor** Laravel en esta carpeta, publicado en `w2w.huergalabs.dev` por el túnel de Cloudflare (procesos en el panel).
@@ -15,6 +15,19 @@ _Última actualización: 2026-11-19_
 - **Publicación automática**: cambios en `main` de GitHub → tests → migrar (panel → «Publicación»). La app Android va por parche aparte.
 
 ## Funciones hechas (recientes)
+- (20/11) **La web ya tiene lo mismo que la app** (pedido por Reynaldo: «Todo, Brainy completo»). Comparación hecha con un inventario
+  de las dos (la web ya tenía MÁS: conversación libre, foto, chat, taller completo, recuperar contraseña). Lo que faltaba, hecho en 3 commits:
+  1. `af4cce6` **Ajustes → «Qué aprendes»** (curso, solo si hay 2+) y **«Tu trabajo»** (profesión + para qué), tarjeta «¿A qué te dedicas?»
+     en Hoy (`account.js`); **mini-taller de la palabra** en «errores para repasar», también por voz, con interruptor en Ajustes
+     (`worddrill.js`, mismos umbrales que la app 60/70/2); **manos libres de errores aguanta un error suelto** (antes saltaba el error).
+  2. `a691aea` **Brainy en la web**: `pet-draw.js` (dibujo y animaciones en canvas, portado por un agente: mismo cerebro de 680 neuronas,
+     etapas, ánimos, formas, colores, nacimiento de 7 s) y `pet.js` (tarjeta en Hoy, pantalla de Brainy, Modo Brainy, botones de cuidado
+     que abren el ejercicio, nacimiento con nombre y color, Ajustes → Brainy, experimento A/B como la app). Modo Brainy se guarda en el navegador.
+  3. `896ff0a` **Avisos de Brainy en la web** por push del servidor: migración aditiva aprobada (`pets.web_alerts`, `web_alerted_at`,
+     `web_alerts_today`; copia en `~/Backups/w2w/database-2026-11-20-antes-avisos-brainy-web.sqlite`), `PUT /pet/alerts`, tarea `pet:alerts`
+     cada 5 min (nunca 21:00–8:30, máx. 2/día, 3 h de separación, uno por ausencia). Interruptor solo con Modo Brainy.
+  Tests: servidor 336 ✓ (+13: `WebAppParityTest`, `PetWebAlertsTest`). Probado en Chrome sin pantalla con la **demo** (sin errores de JS;
+  capturas revisadas). La cuenta de pruebas no se pudo usar (el sistema de permisos no dejó crearle un acceso). **No probado en iPhone/Safari.**
 - (20/11) **Correos «No se publicó: word-to-word»: arreglado** (`39a0dcc`). La publicación automática del panel prueba la app en una
   copia recién sacada de git, y `mobile/test/fonts/*.ttf` estaba en `.gitignore`: sin fuentes fallaban los tests de pantalla (15–26
   fallos) en CADA push desde el 19/11, y la marca de «publicado» se había quedado en `75df917`. Las fuentes (3 MB, licencia OFL) ya
@@ -197,6 +210,9 @@ _Última actualización: 2026-11-19_
 - Recursos de la tienda: icono 512, gráfico 1024×500 y 4 capturas en `mobile/store/`.
 
 ## Pendiente (Reynaldo)
+- [ ] Probar en el **iPhone (web en pantalla de inicio)**: Ajustes (curso, tu trabajo, Brainy), el nacimiento de Brainy, Modo Brainy y un
+  botón de cuidado; un error para repasar diciendo mal una palabra (mini-taller). Activar «Avisos de Brainy» y ver que llega uno
+  cuando tenga hambre (no de noche). Nada de esto se probó en un teléfono real (fluidez del dibujo en Safari incluida).
 - [ ] **Probar el curso de español** con la cuenta `test@huergalabs.dev` (o la tuya: eres cuenta de prueba): Ajustes → «Qué aprendes» →
   Spanish for English speakers. Android: abrir 2 veces (parche 29). iPhone: instalar `W2W-iPhone.zip` de iCloud desde la MacBook.
   Apuntar lo que salga en inglés o roto. Antes: **cambiar la contraseña de esa cuenta** (tenía la de fábrica de Laravel) — quitar
@@ -352,7 +368,6 @@ _Última actualización: 2026-11-19_
   401. Viene de antes (pasa en `/api/progress` también); la app siempre manda la cabecera, así que no se nota. Arreglo fácil: que la
   API responda siempre JSON.
 - [ ] (opcional) Usar `hf.server()` en los demás ejercicios de manos libres (Oído, Sonido, shadowing, narración) para que un error suelto tampoco los pause.
-- Mini-taller de palabra en la web (`speak.js`): solo está en la app.
 - Palabras nuevas que se añadan: escribir su contenido con Claude Code y `words:content` (si no, las rellena el API de noche como antes).
 - [ ] La pestaña Hoy de la app no muestra el protector (`/session/today` no lo trae); solo Progreso.
 - [ ] (opcional) Seguir partiendo `public/app/app.js` (~1100 líneas): niveles, conversación.
@@ -360,6 +375,8 @@ _Última actualización: 2026-11-19_
 - [ ] **Idea a futuro: W2W en el carro (CarPlay / Android Auto).** Decidido (19/11): ahora NO; es código nativo en los dos sistemas (versión nueva, no parche), solo admiten ciertas categorías (W2W entraría como «audio»; «educación» no existe), la pantalla es de ellos (sin Brainy ni ejercicios) y el micrófono para evaluar el habla es dudoso. Con ~5 alumnos no compensa. Pasos, en orden: (1) Reynaldo prueba el **modo manos libres por Bluetooth en un carro real** (¿sale por las bocinas?, ¿el micrófono del carro entiende?) — sin código; usar la página `/prueba-micro` (una prueba con el teléfono solo y otra con el carro, y pasarle a Claude lo de «Copiar resultados»); (2) controles en pantalla de bloqueo y volante (pausa/siguiente): cambio nativo pequeño y base de lo siguiente; (3) CarPlay y Android Auto de verdad cuando haya más alumnos y alguno lo pida. En el carro, solo escuchar y repetir (nada que obligue a mirar o tocar). **Por verificar antes de decidir:** si Apple abrió CarPlay a apps de conversación por voz (encajaría mejor que «audio»).
 
 ## Decisiones
+- (20/11) Web = app: Brainy completo también en la web. Los avisos de Brainy en la web los manda el servidor (la web no puede programar
+  avisos locales); se guardan en `pets` (migración aditiva aprobada por Reynaldo).
 - (19/11) **Actualizar el iPhone fuera de casa**: la app compilada en el iMac ya va firmada para el iPhone, así que se instala desde
   cualquier Mac con Xcode: `ditto -c -k --keepParent build/ios/iphoneos/Runner.app W2W-iPhone.zip` → iCloud Drive → en la MacBook,
   iPhone por cable y `xcrun devicectl device install app --device <UDID> <ruta a Runner.app>` (arrastrar el archivo a Terminal para
