@@ -1,6 +1,8 @@
 /// Copia de respaldo de las traducciones al inglés, para la primera vez sin conexión.
 /// La fuente es el servidor (lang/en.json, GET /api/i18n/en): lo que llega de allí manda.
 const stringsEn = <String, String>{
+  "Hoy no hay palabras nuevas: tienes {0} repasos atrasados. Cuando bajen de {1}, vuelven las nuevas.": "No new words today: you have {0} overdue reviews. When they drop below {1}, new words come back.",
+  "Hoy no hay palabras nuevas: primero ponte al día con tus {0} repasos atrasados.": "No new words today: first catch up on your {0} overdue reviews.",
   " (tú)": " (you)",
   "1 minuto sin parar": "1 minute non-stop",
   "A las {0}": "At {0}",

@@ -1,4 +1,9 @@
 {
+    "nuevas en pausa": "new words paused",
+    "Hoy no hay palabras nuevas: tienes {n} repasos atrasados. Cuando bajen de {n}, vuelven las nuevas.": "No new words today: you have {n} overdue reviews. When they drop below {n}, new words come back.",
+    "Hoy no hay palabras nuevas: primero ponte al día con tus {n} repasos atrasados.": "No new words today: first catch up on your {n} overdue reviews.",
+    "Hoy no hay palabras nuevas: tienes {0} repasos atrasados. Cuando bajen de {1}, vuelven las nuevas.": "No new words today: you have {0} overdue reviews. When they drop below {1}, new words come back.",
+    "Hoy no hay palabras nuevas: primero ponte al día con tus {0} repasos atrasados.": "No new words today: first catch up on your {0} overdue reviews.",
     " (tú)": " (you)",
     "! Es buen momento para el examen de nivel (en Progreso).": "! It's a good time for the level exam (in Progress).",
     ". Si no aparece, desliza la lista hacia abajo.": ". If it doesn't show up, scroll the list down.",

@@ -56,11 +56,12 @@ function tdRender() {
       <h2 id="tdTitle">${x.sessions ? "Otra ronda" : "Sesión de hoy"} <small>unos 10 min</small></h2>
       <div class="td-steps">
         ${(p.ear || []).length ? `<div class="td-step"><b>Oído · ${p.ear.length} ${p.ear.length === 1 ? "palabra" : "palabras"}</b><span>reconócelas al oírlas</span></div>` : ""}
-        ${p.reviews.length || p.new.length ? `<div class="td-step"><b>${p.reviews.length + p.new.length} fichas</b><span>${p.reviews.length} repasos · ${p.new.length} nuevas</span></div>` : `<div class="td-step done"><b>Fichas</b><span>al día</span></div>`}
+        ${p.reviews.length || p.new.length ? `<div class="td-step"><b>${p.reviews.length + p.new.length} fichas</b><span>${p.reviews.length} repasos · ${d.new_paused ? "nuevas en pausa" : p.new.length + " nuevas"}</span></div>` : `<div class="td-step done"><b>Fichas</b><span>al día</span></div>`}
         ${sound ? `<div class="td-step"><b>Sonido /${esc(sound.phoneme)}/</b><span>tu más débil</span></div>` : `<div class="td-step"><b>Pronunciación</b><span>una palabra difícil</span></div>`}
         <div class="td-step"><b>${esc(sp1[0])}</b><span>${esc(sp1[1])}</span></div>
         ${p.mistakes.length ? `<div class="td-step"><b>${p.mistakes.length} ${p.mistakes.length === 1 ? "error" : "errores"}</b><span>dilos bien</span></div>` : `<div class="td-step done"><b>Errores</b><span>ninguno pendiente</span></div>`}
       </div>
+      ${tdPausedNote(d)}
       <button type="button" class="td-go" id="tdGo">${SVG.play}${x.sessions ? "Otra ronda" : "Empezar"}</button>
     </section>
     ${typeof acctTodayCard === "function" ? acctTodayCard() : ""}
@@ -74,6 +75,15 @@ function tdRender() {
   if (typeof petMountAll === "function") petMountAll(el);
   if ($("tdPath")) $("tdPath").onclick = () => showTab("path");
   if (empty) $("tdGo").title = "Hoy no hay pendientes: la sesión será de pronunciación y hablar.";
+}
+
+/** Por qué hoy no hay palabras nuevas (el servidor las frena con demasiados repasos atrasados). */
+function tdPausedNote(d) {
+  if (!d.new_paused) return "";
+  const at = d.new_pause_at || 0;
+  return `<p class="note" id="tdPaused">${at
+    ? `Hoy no hay palabras nuevas: tienes ${d.reviews_due} repasos atrasados. Cuando bajen de ${at + 1}, vuelven las nuevas.`
+    : `Hoy no hay palabras nuevas: primero ponte al día con tus ${d.reviews_due} repasos atrasados.`}</p>`;
 }
 
 function tdPathLink() {

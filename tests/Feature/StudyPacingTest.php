@@ -74,7 +74,7 @@ class StudyPacingTest extends TestCase
         $today = $this->getJson('/api/today')->assertOk()->assertJsonPath('new_paused', true)->assertJsonPath('reviews_due', 21);
         $this->assertCount(0, collect($today->json('cards'))->where('mode', 'new'));
         $this->assertCount(21, collect($today->json('cards'))->where('mode', 'review'), 'los repasos siguen ahí');
-        $this->getJson('/api/session/today')->assertOk()->assertJsonPath('new_paused', true)->assertJsonCount(0, 'plan.new')->assertJsonCount(5, 'plan.reviews');
+        $this->getJson('/api/session/today')->assertOk()->assertJsonPath('new_paused', true)->assertJsonPath('reviews_due', 21)->assertJsonPath('new_pause_at', 20)->assertJsonCount(0, 'plan.new')->assertJsonCount(5, 'plan.reviews');
     }
 
     public function test_al_ponerse_al_dia_vuelven_las_palabras_nuevas(): void

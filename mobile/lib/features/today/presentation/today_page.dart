@@ -142,6 +142,10 @@ class _TodayBody extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(children: [Expanded(child: Text(what, style: const TextStyle(fontSize: 15))), Text(time, style: const TextStyle(color: W.muted))]),
               ),
+            if (!d.offline && d.newPaused) ...[
+              const SizedBox(height: 6),
+              Text(pausedNote(d), key: const Key('today-new-paused'), style: const TextStyle(color: W.muted, height: 1.35)),
+            ],
           ]),
         ),
         // Hasta que elija su profesión: la app le pregunta a qué se dedica.
@@ -267,3 +271,8 @@ class _Ring extends CustomPainter {
   @override
   bool shouldRepaint(covariant _Ring old) => old.value != value;
 }
+
+/// Por qué hoy no hay palabras nuevas (el servidor las frena con demasiados repasos atrasados).
+String pausedNote(TodayData d) => d.newPauseAt > 0
+    ? tr('Hoy no hay palabras nuevas: tienes {0} repasos atrasados. Cuando bajen de {1}, vuelven las nuevas.', [d.reviewsDue, d.newPauseAt + 1])
+    : tr('Hoy no hay palabras nuevas: primero ponte al día con tus {0} repasos atrasados.', [d.reviewsDue]);

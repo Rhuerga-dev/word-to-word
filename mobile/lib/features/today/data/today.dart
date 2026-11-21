@@ -37,6 +37,9 @@ class TodayData {
     this.ear = const [],
     this.offline = false,
     this.steps,
+    this.newPaused = false,
+    this.reviewsDue = 0,
+    this.newPauseAt = 0,
   });
 
   final XpToday xp;
@@ -65,6 +68,11 @@ class TodayData {
   /// Viene de lo guardado (sin conexión): solo se pueden hacer las fichas.
   final bool offline;
 
+  /// Hoy no hay palabras nuevas porque hay demasiados repasos atrasados ([reviewsDue]); vuelven con [newPauseAt] o menos.
+  final bool newPaused;
+  final int reviewsDue;
+  final int newPauseAt;
+
   bool get studied => xp.xp > 0;
 
   factory TodayData.fromJson(Map<String, dynamic> j, {bool offline = false}) {
@@ -81,6 +89,9 @@ class TodayData {
       ear: listOf(plan['ear'], EarItem.fromJson),
       offline: offline,
       steps: plan['steps'] is List ? {for (final x in plan['steps'] as List) if (x is String) x} : null,
+      newPaused: j['new_paused'] == true,
+      reviewsDue: asInt(j['reviews_due']),
+      newPauseAt: asInt(j['new_pause_at']),
     );
   }
 }

@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\LogVisit::class);
         // Demo students: no e-mails/push and a small allowance for the paid features.
         $middleware->api(append: [\App\Http\Middleware\DemoGuard::class]);
+        // Sin sesión en la API: 401 en JSON. Antes buscaba la ruta «login» (no existe) y daba 500.
+        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') || $request->expectsJson() ? null : '/app/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -80,6 +80,8 @@ class SessionController extends Controller
             // true = hoy no hay palabras nuevas porque hay demasiados repasos atrasados.
             'new_paused' => $q['new_paused'],
             'reviews_due' => $q['reviews']->count(),
+            // Con cuántos repasos atrasados (o menos) vuelven las nuevas.
+            'new_pause_at' => (int) config('vocab.new_pause_reviews', 0),
         ];
     }
 

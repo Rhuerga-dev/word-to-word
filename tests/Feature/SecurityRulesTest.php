@@ -106,4 +106,12 @@ class SecurityRulesTest extends TestCase
         $this->postJson('/api/reset', ['password' => 'password'])->assertNoContent();
         $this->assertSame(0, $user->fresh()->xp_total);
     }
+
+    public function test_api_without_session_answers_401_json_even_without_accept_header(): void
+    {
+        // Antes: 500 («Route [login] not defined») si faltaba la cabecera Accept: application/json.
+        $this->get('/api/progress')->assertUnauthorized()->assertJson(['message' => 'Unauthenticated.']);
+        $this->get('/api/session/today')->assertUnauthorized();
+        $this->getJson('/api/progress')->assertUnauthorized();
+    }
 }

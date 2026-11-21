@@ -1,6 +1,6 @@
 // Service worker de Word to Word: guarda la "cáscara" de la app para que abra rápido.
 // La API (/api/...) nunca se guarda en caché: siempre va a la red.
-const CACHE = "wtw-shell-v53";
+const CACHE = "wtw-shell-v54";
 const SHELL = [
   "/app/",
   "/app/i18n.js?v=5",
@@ -15,7 +15,7 @@ const SHELL = [
   "/app/worddrill.js?v=1",
   "/app/speak.js?v=15",
   "/app/progress.js?v=5",
-  "/app/today.js?v=9",
+  "/app/today.js?v=10",
   "/app/mictest.js?v=3",
   "/app/manifest.webmanifest",
   "/app/icons/apple-touch-icon.png?v=2",
