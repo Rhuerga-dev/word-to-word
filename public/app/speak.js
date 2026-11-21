@@ -211,7 +211,7 @@ async function spReviewStart() {
 // Comandos (en inglés): "repeat" repite la frase correcta, "skip" salta, "stop" termina.
 async function spReviewLoop() {
   const rv = sp.review; if (!rv || rv.looping) return;
-  rv.looping = true; rv.misses = 0;
+  rv.looping = true; rv.misses = 0; rv.errs = 0;
   try {
     while (sp.reviewHf && sp.view === "review" && sp.review === rv && rv.i < rv.list.length) {
       const m = rv.list[rv.i];
@@ -227,7 +227,13 @@ async function spReviewLoop() {
       const cmd = typeof labCmd === "function" ? labCmd(r.heard) : null;
       if (cmd === "stop") { sp.reviewHf = false; spSaveRevHf(); renderSpeak(); break; }
       if (cmd === "repeat") { rv.result = null; await spSayEs("Se dice:"); await spSay(m.correct); continue; }
-      if (cmd === "skip" || r.passed || (r.passed === false && ++rv.attempts >= 2) || r.error) {
+      if (r.error) {
+        // Error suelto del servidor: se avisa y se vuelve a intentar; al 2.º seguido, en pausa (como en la app).
+        if (++rv.errs >= 2) { rv.errs = 0; sp.reviewHf = false; spSaveRevHf(); renderSpeak(); await spSayEs("El servidor no responde. Lo dejo en pausa."); break; }
+        rv.result = null; await spSay("Sorry, something went wrong. Try again."); continue;
+      }
+      rv.errs = 0;
+      if (cmd === "skip" || r.passed || (r.passed === false && ++rv.attempts >= 2)) {
         rv.i++; rv.result = null; rv.shown = true; rv.attempts = 0; rv.misses = 0; renderSpeak();
         await new Promise(res => setTimeout(res, 700));
         continue;
@@ -235,6 +241,13 @@ async function spReviewLoop() {
       if (r.silent) {
         if (++rv.misses >= 2) { sp.reviewHf = false; spSaveRevHf(); renderSpeak(); await spSayEs("No te oigo. Lo dejo en pausa."); break; }
         rv.result = null; await spSayEs("No te oí."); continue;
+      }
+      if (rv.drill) {
+        const d = rv.drill, alive = () => sp.reviewHf && sp.view === "review" && sp.review === rv && rv.drill === d;
+        await wdHandsFree(d, alive);
+        if (!alive()) break;
+        rv.drill = null; renderSpeak();
+        await spSay(m.correct);
       }
       rv.result = null; // falló: otro intento
     }
@@ -245,7 +258,8 @@ function spSaveRevHf() { try { localStorage.setItem("wtw_rev_hf", sp.reviewHf ? 
 async function spReviewSay() {
   const rv = sp.review, m = rv && rv.list[rv.i]; if (!m || sp.busy) return;
   unlockAudio();
-  sp.busy = true; rv.result = null; rv.listening = true; renderSpeak();
+  sp.busy = true; rv.result = null; rv.listening = true; rv.drill = null; renderSpeak();
+  let tips = null;
   try {
     let body;
     if (cfg.pronunciation) {
@@ -253,6 +267,8 @@ async function spReviewSay() {
       rv.listening = false; renderSpeak();
       if (!wav.heard) { rv.result = { silent: true }; return; }
       body = new FormData(); body.append("audio", wav, "voz.wav");
+      // Las palabras flojas se piden A LA VEZ que la nota (mini-taller, worddrill.js): solo la 1.ª vez por error.
+      if (typeof wdOn === "function" && wdOn() && rv.drilledFor !== m.id) tips = wdTips(m.correct, wav);
     } else {
       let alts = []; try { alts = await browserListen(); } catch (e) { if (!/No oí/.test(e.message)) throw e; }
       if (!alts.length) { rv.result = { silent: true }; return; }
@@ -261,7 +277,12 @@ async function spReviewSay() {
     rv.listening = false; rv.checking = true; renderSpeak();
     rv.result = await api(`/speaking/mistakes/${m.id}/review`, { method: "POST", body });
     if (rv.result.passed) rv.ok++;
-    if (!rv.result.silent) { rv.shown = true; rv.speaking = spSay(m.correct); }
+    if (!rv.result.silent && !rv.result.passed && tips) {
+      rv.drilledFor = m.id;
+      const plan = wdPick(await tips, m.correct, rv.result.tokens);
+      if (plan) rv.drill = plan;
+    }
+    if (!rv.result.silent) { rv.shown = true; if (!rv.drill) rv.speaking = spSay(m.correct); }
   } catch (e) { rv.result = { error: e.message }; }
   finally { sp.busy = false; rv.listening = false; rv.checking = false; renderSpeak(); }
 }
@@ -287,9 +308,16 @@ function renderSpeak() {
   on("spReview", spReviewStart);
   on("spHome", () => { sp.view = "home"; sp.status = ""; spOpen(); });
   on("spSay", spReviewSay);
+  el.querySelectorAll("[data-wd]").forEach(b => b.onclick = () => {
+    const d = sp.review && sp.review.drill; if (!d) return;
+    const k = b.dataset.wd;
+    if (k === "listen") { unlockAudio(); say(d.stage === "chunk" ? d.chunk : d.word, true); }
+    else if (k === "say") { unlockAudio(); wdAttempt(d, renderSpeak); }
+    else if (k === "skip" || k === "back") { sp.review.drill = null; renderSpeak(); spSay(sp.review.list[sp.review.i].correct); }
+  });
   on("spShow", () => { sp.review.shown = true; renderSpeak(); spSay(sp.review.list[sp.review.i].correct); });
   on("spListen", () => { unlockAudio(); spSay(sp.review.list[sp.review.i].correct); });
-  on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.shown = false; renderSpeak(); });
+  on("spNext", () => { sp.review.i++; sp.review.result = null; sp.review.drill = null; sp.review.shown = false; renderSpeak(); });
   on("spPic", () => spPicStart());
   on("spGoTalk", () => { sp.view = "scenarios"; sp.status = ""; renderSpeak(); });
   on("spGoNarr", () => { sp.view = "narrPick"; sp.status = ""; renderSpeak(); });
@@ -439,6 +467,7 @@ function reviewHTML() {
     else html += `<p>${(r.tokens || []).map(t => `<span class="tok ${t.ok ? "ok" : "miss"}">${esc(t.w)}</span>`).join("")}</p>
       <p class="${r.passed ? "banner ok" : "warnbox"}">${r.passed ? `¡Bien dicho! Vuelve ${r.mastered ? "— ya lo dominas 🎉" : `en ${r.days} ${r.days === 1 ? "día" : "días"}`}.` : `Entendí: “${esc(r.heard)}”. Escucha la frase y prueba otra vez.`}</p>`;
   }
+  if (rv.drill) return html + wdHTML(rv.drill);
   const answered = r && !r.silent && !r.error;
   html += `<div class="row">
     ${!answered || !r.passed ? `<button type="button" class="primary" id="spSay"${sp.busy ? " disabled" : ""}>🎙️ ${answered ? "Intentar otra vez" : "Decirlo"}</button>` : ""}

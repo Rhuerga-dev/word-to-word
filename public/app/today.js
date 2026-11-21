@@ -60,6 +60,7 @@ function tdRender() {
       </div>
       <button type="button" class="td-go" id="tdGo">${SVG.play}${x.sessions ? "Otra ronda" : "Empezar"}</button>
     </section>
+    ${typeof acctTodayCard === "function" ? acctTodayCard() : ""}
     ${tdPathLink()}
     <div class="td-row">
       <div class="td-mini"><span>Hablaste hoy</span><b>${String(d.minutes).replace(".", ",")} min</b></div>

@@ -1039,6 +1039,7 @@ function renderSettings() {
   $("voiceCmp").hidden = !cfg.tts_local;   // comparar voces solo si la voz local está configurada
   renderMicSelect();
   if (typeof fbRender === "function") fbRender();   // sugerencias y enlace de apoyo (feedback.js)
+  if (typeof acctRender === "function") acctRender();   // curso y profesión (account.js)
   const r = profile.reminder;
   $("remOn").checked = !!r.enabled;
   $("remAuto").checked = !!r.auto;
