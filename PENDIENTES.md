@@ -24,7 +24,7 @@ _Última actualización: 2026-11-20_
      etapas, ánimos, formas, colores, nacimiento de 7 s) y `pet.js` (tarjeta en Hoy, pantalla de Brainy, Modo Brainy, botones de cuidado
      que abren el ejercicio, nacimiento con nombre y color, Ajustes → Brainy, experimento A/B como la app). Modo Brainy se guarda en el navegador.
   3. `896ff0a` **Avisos de Brainy en la web** por push del servidor: migración aditiva aprobada (`pets.web_alerts`, `web_alerted_at`,
-     `web_alerts_today`; copia en `~/Backups/w2w/database-2026-11-20-antes-avisos-brainy-web.sqlite`), `PUT /pet/alerts`, tarea `pet:alerts`
+     `web_alerts_today`; copia en `~/Backups/w2w/database-2026-11-20-antes-avisos-brainy-web.sqlite`) — **aplicada a mano el 20/11 21:40** (la publicación automática no migra los commits hechos en el Mac), `PUT /pet/alerts`, tarea `pet:alerts`
      cada 5 min (nunca 21:00–8:30, máx. 2/día, 3 h de separación, uno por ausencia). Interruptor solo con Modo Brainy.
   Tests: servidor 336 ✓ (+13: `WebAppParityTest`, `PetWebAlertsTest`). Probado en Chrome sin pantalla con la **demo** (sin errores de JS;
   capturas revisadas). La cuenta de pruebas no se pudo usar (el sistema de permisos no dejó crearle un acceso). **No probado en iPhone/Safari.**
